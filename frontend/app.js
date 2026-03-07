@@ -503,9 +503,13 @@ function setChatLoading(loading) {
 }
 // ── 科普小教室 互動邏輯 ──────────────────────────────
 function expandKnowledge(index) {
+  const container = $("welcomeKnowledge");
   const grid = $("knowledgeGrid");
   const backBtn = $("knowledgeBackBtn");
   const title = $("knowledgeTitle");
+  
+  // 先滾動到科普區
+  container.scrollIntoView({ behavior: "smooth", block: "start" });
   
   // 設置 Grid 狀態
   grid.classList.add("expanded");
