@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "rewrites": [
+    { "source": "/full/(.*)", "destination": "/backend/server.js" },
+    { "source": "/chat", "destination": "/backend/server.js" },
+    { "source": "/static/(.*)", "destination": "/frontend/$1" },
+    { "source": "/(.*)", "destination": "/backend/server.js" }
+  ]
+}

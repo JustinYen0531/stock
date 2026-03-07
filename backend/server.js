@@ -311,3 +311,6 @@ app.listen(PORT, () => {
   console.log(`\n  🚀 StockAI 後端啟動！`);
   console.log(`  📊 http://localhost:${PORT}\n`);
 });
+
+export default app;
+
