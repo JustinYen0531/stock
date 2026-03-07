@@ -76,36 +76,55 @@
       </div>
 
       <!-- 💡 新手科普區 -->
-      <div class="welcome-knowledge">
-        <h2 class="knowledge-title">💡 投資新手村：這些圖標代表什麼？</h2>
-        <div class="knowledge-grid">
-          <div class="knowledge-item">
-            <div class="k-header">
-              <span class="k-icon">🕯️</span>
-              <span class="k-name">蠟燭圖</span>
+      <div class="welcome-knowledge" id="welcomeKnowledge">
+        <h2 class="knowledge-title" id="knowledgeTitle">💡 投資新手村：這些圖標代表什麼？</h2>
+        <div class="knowledge-grid-container">
+          <button id="knowledgeBackBtn" class="k-back-btn hidden" onclick="resetKnowledge()">← 返回列表</button>
+          <div class="knowledge-grid" id="knowledgeGrid">
+            <div class="knowledge-item" id="k-item-0" onclick="expandKnowledge(0)">
+              <div class="k-header">
+                <span class="k-icon">🕯️</span>
+                <span class="k-name">蠟燭圖</span>
+              </div>
+              <p class="k-desc"><b>「股市的心情溫度計」</b><br/>紅色代表股市心情超棒（漲），綠色代表股市正在休息（跌）。蠟燭的高低代表當天心情起伏的範圍喔！</p>
+              <div class="k-detail hidden">
+                <hr/>
+                <p>蠟燭圖（K線）是由開盤價、最高價、最低價、收盤價組成的。如果收盤比開盤高，就是紅色；反之則是綠色。它能幫我們一眼看出這一段時間內，買方和賣方誰的力氣比較大！</p>
+              </div>
             </div>
-            <p class="k-desc"><b>「股市的心情溫度計」</b><br/>紅色代表股市心情超棒（漲），綠色代表股市正在休息（跌）。蠟燭的高低代表當天心情起伏的範圍喔！</p>
-          </div>
-          <div class="knowledge-item">
-            <div class="k-header">
-              <span class="k-icon">📉</span>
-              <span class="k-name">RSI 指數</span>
+            <div class="knowledge-item" id="k-item-1" onclick="expandKnowledge(1)">
+              <div class="k-header">
+                <span class="k-icon">📉</span>
+                <span class="k-name">RSI 指數</span>
+              </div>
+              <p class="k-desc"><b>「體力過剩儀表板」</b><br/>數字太高（超過 70）代表大家衝太快累壞了；數字太低（低於 30）代表大家垂頭喪氣，可能快要振作了！</p>
+              <div class="k-detail hidden">
+                <hr/>
+                <p>RSI 是用來衡量最近漲跌的快慢。當大家都瘋狂在買，RSI 就會衝很高，這時候反而要當心大家「體力透支」而回檔。反過來，大家都心灰意冷時，可能就是反彈的機會喔！</p>
+              </div>
             </div>
-            <p class="k-desc"><b>「體力過剩儀表板」</b><br/>數字太高（超過 70）代表大家衝太快累壞了；數字太低（低於 30）代表大家垂頭喪氣，可能快要振作了！</p>
-          </div>
-          <div class="knowledge-item">
-            <div class="k-header">
-              <span class="k-icon">🌊</span>
-              <span class="k-name">MACD</span>
+            <div class="knowledge-item" id="k-item-2" onclick="expandKnowledge(2)">
+              <div class="k-header">
+                <span class="k-icon">🌊</span>
+                <span class="k-name">MACD</span>
+              </div>
+              <p class="k-desc"><b>「股市衝浪浪潮」</b><br/>我們用它來看波浪的大方向。當兩條線交叉時，就像海浪變向，是提醒你準備衝浪或是上岸休息的信號。</p>
+              <div class="k-detail hidden">
+                <hr/>
+                <p>MACD 是利用長短不同時間的平均線，計算出動量的指標。我們通常看「交叉」，快線往上穿過慢線叫黃金交叉（適合衝浪！），快線往下穿過慢線叫死亡交叉（趕快上岸！）。</p>
+              </div>
             </div>
-            <p class="k-desc"><b>「股市衝浪浪潮」</b><br/>我們用它來看波浪的大方向。當兩條線交叉時，就像海浪變向，是提醒你準備衝浪或是上岸休息的信號。</p>
-          </div>
-          <div class="knowledge-item">
-            <div class="k-header">
-              <span class="k-icon">🤖</span>
-              <span class="k-name">AI 建議</span>
+            <div class="knowledge-item" id="k-item-3" onclick="expandKnowledge(3)">
+              <div class="k-header">
+                <span class="k-icon">🤖</span>
+                <span class="k-name">AI 建議</span>
+              </div>
+              <p class="k-desc"><b>「你的專屬戰術參謀」</b><br/>AI 幫你讀完所有複雜的數據，並給你一份最白話的分析。雖然它很聰明，但最後下單的將軍還是你喔！</p>
+              <div class="k-detail hidden">
+                <hr/>
+                <p>我們的 AI Agent 會綜合均線走向、RSI 體力、MACD 浪潮和最新新聞。它像是一個智囊團，幫你整理出最核心的進攻（買入）或撤退（賣出）建議，讓你更有底氣！</p>
+              </div>
             </div>
-            <p class="k-desc"><b>「你的專屬戰術參謀」</b><br/>AI 幫你讀完所有複雜的數據，並給你一份最白話的分析。雖然它很聰明，但最後下單的將軍還是你喔！</p>
           </div>
         </div>
       </div>

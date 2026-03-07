@@ -341,11 +341,41 @@ body::before {
   gap: 10px;
 }
 
+.knowledge-grid-container {
+  position: relative;
+  min-height: 400px;
+}
+
+.k-back-btn {
+  background: var(--bg-card2);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.k-back-btn:hover {
+  background: var(--accent-glow);
+  transform: translateX(-4px);
+}
+
 .knowledge-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
   text-align: left;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.knowledge-grid.expanded {
+  grid-template-columns: 1fr;
 }
 
 .knowledge-item {
@@ -353,13 +383,29 @@ body::before {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
 }
 
-.knowledge-item:hover {
+.knowledge-item:hover:not(.expanded) {
   background: rgba(26, 37, 64, 0.4);
   border-color: var(--border-light);
   transform: translateX(5px);
+}
+
+.knowledge-item.expanded {
+  background: rgba(26, 37, 64, 0.6);
+  border-color: var(--accent);
+  cursor: default;
+  padding: 2.5rem;
+  transform: none !important;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+}
+
+.knowledge-item.hidden {
+  display: none;
 }
 
 .k-header {
@@ -369,8 +415,22 @@ body::before {
   margin-bottom: 10px;
 }
 
+.knowledge-item.expanded .k-header {
+  margin-bottom: 20px;
+}
+
+.knowledge-item.expanded .k-icon {
+  font-size: 3rem;
+  margin-right: 8px;
+}
+
+.knowledge-item.expanded .k-name {
+  font-size: 1.5rem;
+}
+
 .k-icon {
   font-size: 1.4rem;
+  transition: all 0.4s;
 }
 
 .k-name {
@@ -383,12 +443,37 @@ body::before {
   font-size: 0.9rem;
   line-height: 1.6;
   color: var(--text-secondary);
+  transition: all 0.4s;
+}
+
+.knowledge-item.expanded .k-desc {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 20px;
 }
 
 .k-desc b {
   color: var(--text-primary);
   display: block;
   margin-bottom: 4px;
+}
+
+.k-detail {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  animation: slideDown 0.5s ease forwards;
+}
+
+.k-detail hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 1.5rem 0;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 768px) {

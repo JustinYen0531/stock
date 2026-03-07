@@ -501,3 +501,43 @@ function setChatLoading(loading) {
     document.getElementById("typingIndicator")?.remove();
   }
 }
+// ── 科普小教室 互動邏輯 ──────────────────────────────
+function expandKnowledge(index) {
+  const grid = $("knowledgeGrid");
+  const backBtn = $("knowledgeBackBtn");
+  const title = $("knowledgeTitle");
+  
+  // 設置 Grid 狀態
+  grid.classList.add("expanded");
+  backBtn.classList.remove("hidden");
+  title.classList.add("hidden");
+  
+  // 處理各個項目
+  for (let i = 0; i < 4; i++) {
+    const item = $(`k-item-${i}`);
+    if (i === index) {
+      item.classList.add("expanded");
+      item.classList.remove("hidden");
+      item.querySelector(".k-detail").classList.remove("hidden");
+    } else {
+      item.classList.add("hidden");
+      item.classList.remove("expanded");
+    }
+  }
+}
+
+function resetKnowledge() {
+  const grid = $("knowledgeGrid");
+  const backBtn = $("knowledgeBackBtn");
+  const title = $("knowledgeTitle");
+  
+  grid.classList.remove("expanded");
+  backBtn.classList.add("hidden");
+  title.classList.remove("hidden");
+  
+  for (let i = 0; i < 4; i++) {
+    const item = $(`k-item-${i}`);
+    item.classList.remove("expanded", "hidden");
+    item.querySelector(".k-detail").classList.add("hidden");
+  }
+}
