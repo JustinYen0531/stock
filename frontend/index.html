@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>股市分析 — AI 技術面儀表板</title>
+  <meta name="description" content="即時股票分析儀表板，自動計算 MA、RSI、MACD 技術指標，並提供 AI 投資建議。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- ═══ HEADER ═══ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">📈</span>
+        <span class="logo-text">StockAI</span>
+        <span class="logo-sub">技術面分析</span>
+      </div>
+      <div class="search-bar">
+        <input
+          id="symbolInput"
+          type="text"
+          placeholder="輸入股票代碼... (e.g. AAPL, 2330.TW)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <select id="periodSelect">
+          <option value="1mo">1 個月</option>
+          <option value="3mo" selected>3 個月</option>
+          <option value="6mo">6 個月</option>
+          <option value="1y">1 年</option>
+          <option value="2y">2 年</option>
+        </select>
+        <button id="searchBtn" class="btn-search" onclick="loadStock()">
+          <span id="searchBtnText">分析</span>
+          <span id="searchSpinner" class="spinner hidden"></span>
+        </button>
+      </div>
+      <div class="quick-picks">
+        <span class="quick-label">快速：</span>
+        <button class="quick-btn" onclick="quickSearch('AAPL')">AAPL</button>
+        <button class="quick-btn" onclick="quickSearch('TSLA')">TSLA</button>
+        <button class="quick-btn" onclick="quickSearch('NVDA')">NVDA</button>
+        <button class="quick-btn" onclick="quickSearch('2330.TW')">台積電</button>
+        <button class="quick-btn" onclick="quickSearch('0050.TW')">0050</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main-container">
+    <!-- 歡迎頁 -->
+    <div id="welcomePage" class="welcome-page">
+      <div class="welcome-icon">📊</div>
+      <h1 class="welcome-title">AI 股市分析儀表板</h1>
+      <p class="welcome-sub">輸入股票代碼，即時計算 MA、RSI、MACD 技術指標<br />並由 AI Agent 生成多空建議</p>
+      <div class="welcome-features">
+        <div class="feature-card">
+          <span class="feat-icon">🕯️</span>
+          <span>蠟燭圖 + 均線</span>
+        </div>
+        <div class="feature-card">
+          <span class="feat-icon">📉</span>
+          <span>RSI 強弱指數</span>
+        </div>
+        <div class="feature-card">
+          <span class="feat-icon">🌊</span>
+          <span>MACD 動能</span>
+        </div>
+        <div class="feature-card">
+          <span class="feat-icon">🤖</span>
+          <span>AI 投資建議</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 錯誤訊息 -->
+    <div id="errorBox" class="error-box hidden">
+      <span class="error-icon">⚠️</span>
+      <span id="errorMsg"></span>
+    </div>
+
+    <!-- 股票資訊區 -->
+    <div id="dashboard" class="dashboard hidden">
+
+      <!-- 股票基本資訊 -->
+      <div class="stock-header-card">
+        <div class="stock-title-area">
+          <h2 id="stockName" class="stock-name">—</h2>
+          <span id="stockSymbol" class="stock-symbol-badge">—</span>
+          <span id="stockExchange" class="stock-exchange">—</span>
+        </div>
+        <div class="stock-price-area">
+          <div class="price-stat">
+            <span class="stat-label">最新收盤</span>
+            <span id="latestClose" class="stat-value price-value">—</span>
+          </div>
+          <div class="price-stat">
+            <span class="stat-label">漲跌幅</span>
+            <span id="priceChange" class="stat-value">—</span>
+          </div>
+          <div class="price-stat">
+            <span class="stat-label">成交量</span>
+            <span id="latestVolume" class="stat-value">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 建議卡 -->
+      <div id="adviceCard" class="advice-card">
+        <div class="advice-header">
+          <span class="advice-icon">🤖</span>
+          <span class="advice-title">AI Agent 投資建議</span>
+          <span id="signalBadge" class="signal-badge">—</span>
+        </div>
+        <p id="adviceSummary" class="advice-summary">—</p>
+        <div id="adviceReasons" class="advice-reasons"></div>
+        <p id="adviceDisclaimer" class="advice-disclaimer">—</p>
+      </div>
+
+      <!-- 指標 tabs -->
+      <div class="chart-tabs">
+        <button class="tab-btn active" onclick="switchTab('price')" id="tab-price">📈 K線圖 + MA</button>
+        <button class="tab-btn" onclick="switchTab('rsi')" id="tab-rsi">📊 RSI</button>
+        <button class="tab-btn" onclick="switchTab('macd')" id="tab-macd">🌊 MACD</button>
+      </div>
+
+      <!-- 圖表容器 -->
+      <div class="charts-area">
+        <div id="panel-price" class="chart-panel">
+          <div class="chart-card">
+            <div class="chart-label">K線圖 + 移動平均線</div>
+            <div class="chart-wrapper">
+              <canvas id="priceChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card volume-card">
+            <div class="chart-label">成交量</div>
+            <div class="chart-wrapper chart-wrapper-sm">
+              <canvas id="volumeChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-rsi" class="chart-panel hidden">
+          <div class="chart-card">
+            <div class="chart-label">RSI (14) — 相對強弱指數</div>
+            <div class="chart-info">
+              <span class="info-tag bear">RSI &gt; 70 超買</span>
+              <span class="info-tag neutral">30–70 中性</span>
+              <span class="info-tag bull">RSI &lt; 30 超賣</span>
+            </div>
+            <div class="chart-wrapper chart-wrapper-lg">
+              <canvas id="rsiChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-macd" class="chart-panel hidden">
+          <div class="chart-card">
+            <div class="chart-label">MACD — 指數移動平均收斂發散</div>
+            <div class="chart-info">
+              <span class="info-tag bull">MACD 黃金交叉 → 買入信號</span>
+              <span class="info-tag bear">死亡交叉 → 賣出信號</span>
+            </div>
+            <div class="chart-wrapper chart-wrapper-lg">
+              <canvas id="macdChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 指標數值 -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-card-title">MA5</div>
+          <div id="stat-ma5" class="stat-card-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">MA20</div>
+          <div id="stat-ma20" class="stat-card-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">MA60</div>
+          <div id="stat-ma60" class="stat-card-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">RSI(14)</div>
+          <div id="stat-rsi" class="stat-card-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">MACD</div>
+          <div id="stat-macd" class="stat-card-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">Signal</div>
+          <div id="stat-signal" class="stat-card-value">—</div>
+        </div>
+      </div>
+
+    </div><!-- /dashboard -->
+  </main>
+
+  <footer class="footer">
+    <span>資料來源：Yahoo Finance（via yfinance）｜僅供學習研究，不構成投資建議</span>
+  </footer>
+
+  <!-- ═══ AI 聊天視窗 ═══ -->
+  <!-- 浮動開關按鈕 -->
+  <button id="chatToggleBtn" class="chat-toggle-btn" onclick="toggleChat()" title="AI 股票專家">
+    <span class="chat-toggle-icon">🤖</span>
+    <span class="chat-toggle-label">AI 專家</span>
+  </button>
+
+  <!-- 聊天面板 -->
+  <div id="chatPanel" class="chat-panel hidden">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <span class="chat-avatar">🤖</span>
+        <div>
+          <div class="chat-title">AI 股票分析師</div>
+          <div class="chat-subtitle" id="chatSubtitle">由 Gemini 2.0 Flash 驅動</div>
+        </div>
+      </div>
+      <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+    </div>
+    <div id="chatMessages" class="chat-messages">
+      <div class="chat-msg ai">
+        <div class="chat-bubble">
+          👋 你好！我是 AI 股票分析師。<br/>
+          你可以問我任何關於技術指標的問題，例如：<br/>
+          <span class="chat-hint" onclick="sendHint(this)">「這支股票現在適合買嗎？」</span>
+          <span class="chat-hint" onclick="sendHint(this)">「RSI 超賣代表什麼？」</span>
+          <span class="chat-hint" onclick="sendHint(this)">「幫我分析目前的 MACD 趨勢」</span>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <textarea
+        id="chatInput"
+        class="chat-input"
+        placeholder="問我任何股票問題..."
+        rows="1"
+        onkeydown="handleChatKey(event)"
+      ></textarea>
+      <button id="chatSendBtn" class="chat-send-btn" onclick="sendChat()">
+        <span id="chatSendIcon">➤</span>
+        <span id="chatSendSpinner" class="spinner hidden"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
