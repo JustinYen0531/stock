@@ -12,15 +12,22 @@
   const MIN_SPEED      = 3.0;  // 極限最低速
   const MAX_SPEED      = 11.0; // 極限最高速
   const SCROLL_SENS    = 18;   // 滾輪靈敏度
+  const BOOST_MULTIPLIER = 2.8; // 按住中鍵時的滾輪增幅
   const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
-  const DANGER_FRAMES  = 45;   // 超線多少 frame 才判死（寬容緩衝）
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
+  const PERIOD_TUNING = {
+    "1mo": { mapWidth: 3.2, heightScale: 1.45, slopeAccel: 0.095, dangerTolerance: 38 },
+    "3mo": { mapWidth: 4.2, heightScale: 1.2, slopeAccel: 0.085, dangerTolerance: 42 },
+    "6mo": { mapWidth: 5.0, heightScale: 1.0, slopeAccel: 0.075, dangerTolerance: 45 },
+    "1y":  { mapWidth: 7.5, heightScale: 0.82, slopeAccel: 0.065, dangerTolerance: 50 },
+    "2y":  { mapWidth: 10.5, heightScale: 0.68, slopeAccel: 0.055, dangerTolerance: 56 },
+  };
 
   /* ── 狀態 ───────────────────────────────────────── */
   let canvas, ctx;
   let animId;
   let gameState = 'idle'; // idle | countdown | playing | dead | complete
-  let stockData = null;   // { symbol, closes, dates }
+  let stockData = null;   // { symbol, closes, dates, period }
 
   // 地形
   let terrainPoints = []; // [{x, y}] 已映射到畫面座標
@@ -29,6 +36,7 @@
   // 角色
   let charY = 200;        // 角色中心 Y
   let charTargetY = 200;  // 滾輪目標 Y（加平滑）
+  let isBoosting = false; // 中鍵按住時提升上下移動幅度
 
   // 危險計時
   let dangerFrames = 0;
@@ -48,12 +56,16 @@
   // 速度
   let currentSpeed = SCROLL_SPEED;
 
+  function getPeriodConfig() {
+    return PERIOD_TUNING[stockData?.period] || PERIOD_TUNING["6mo"];
+  }
+
   /* ══════════════════════════════════════════════════
      公開 API — 從 app.js 呼叫
   ══════════════════════════════════════════════════ */
   window.SkiGame = {
     launch(data) {
-      stockData = data; // { symbol, closes: [], dates: [] }
+      stockData = data; // { symbol, closes: [], dates: [], period }
       openModal();
       initGame();
     },
@@ -70,6 +82,7 @@
     modal.classList.remove('hidden');
     canvas = document.getElementById('skiCanvas');
     ctx    = canvas.getContext('2d');
+    updateCursorVisibility();
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
   }
@@ -78,6 +91,7 @@
     cancelAnimationFrame(animId);
     gameState = 'idle';
     particles = [];
+    unbindInput();
     window.removeEventListener('resize', resizeCanvas);
     document.getElementById('skiGameModal')?.classList.add('hidden');
   }
@@ -114,14 +128,14 @@
     const minP = Math.min(...closes);
     const maxP = Math.max(...closes);
     const range = maxP - minP || 1;
-
-    // 地形總寬度 = 畫面寬 * 15 (讓關卡變得很長，有探險與長征感)
-    const totalW = W * 15;
+    const config = getPeriodConfig();
+    const totalW = W * config.mapWidth;
     const segW   = totalW / (N - 1);
-
-    // 線條的 Y 範圍：路程變長後，為了維持陡峭感，擴大 Y 軸垂直範圍
-    const yMin = H * 0.15;
-    const yMax = H * 0.85;
+    const centerY = H * 0.5;
+    const baseAmplitude = H * 0.35;
+    const amplitude = Math.min(H * 0.42, baseAmplitude * config.heightScale);
+    const yMin = centerY - amplitude;
+    const yMax = centerY + amplitude;
 
     terrainPoints = closes.map((c, i) => ({
       x: i * segW,
@@ -131,6 +145,8 @@
 
   /* ── 初始化遊戲 ──────────────────────────────────── */
   function initGame() {
+    cancelAnimationFrame(animId);
+    unbindInput();
     terrainScrollX = 0;
     score          = 0;
     surviveFrames  = 0;
@@ -149,32 +165,67 @@
     const lastX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     maxPossibleScore = Math.floor((lastX / SCROLL_SPEED) * 10);
 
-    // 角色起始 Y = 第一個地形點的 Y
-    charY       = terrainPoints[0]?.y ?? canvas.height * LINE_Y_MID;
+    // 角色起始 Y 對齊玩家所在 X 位置的地形中心，開場就精準壓在線上
+    charY       = getLineYAt(canvas.width * CHAR_X_RATIO);
     charTargetY = charY;
 
     gameState = 'countdown';
     bindInput();
+    updateCursorVisibility();
     animId = requestAnimationFrame(loop);
   }
 
   /* ── 輸入綁定 ────────────────────────────────────── */
   function bindInput() {
     canvas.addEventListener('wheel', onWheel, { passive: false });
+    canvas.addEventListener('mousedown', onMouseDown);
+    canvas.addEventListener('mouseup', onMouseUp);
+    canvas.addEventListener('mouseleave', onMouseUp);
     document.addEventListener('keydown', onKey);
   }
 
   function unbindInput() {
     canvas?.removeEventListener('wheel', onWheel);
+    canvas?.removeEventListener('mousedown', onMouseDown);
+    canvas?.removeEventListener('mouseup', onMouseUp);
+    canvas?.removeEventListener('mouseleave', onMouseUp);
     document.removeEventListener('keydown', onKey);
+  }
+
+  function disableWheelInput() {
+    canvas?.removeEventListener('wheel', onWheel);
+    canvas?.removeEventListener('mousedown', onMouseDown);
+    canvas?.removeEventListener('mouseup', onMouseUp);
+    canvas?.removeEventListener('mouseleave', onMouseUp);
+    isBoosting = false;
+  }
+
+  function updateCursorVisibility() {
+    if (!canvas) return;
+    const showCursor = gameState === 'dead' || gameState === 'complete';
+    canvas.classList.toggle('ski-canvas-show-cursor', showCursor);
   }
 
   function onWheel(e) {
     e.preventDefault();
     if (gameState !== 'playing') return;
-    charTargetY += e.deltaY > 0 ? SCROLL_SENS : -SCROLL_SENS;
+    const moveAmount = SCROLL_SENS * (isBoosting ? BOOST_MULTIPLIER : 1);
+    charTargetY += e.deltaY > 0 ? moveAmount : -moveAmount;
     // 夾在畫面範圍內
     charTargetY = Math.max(HITBOX_H / 2 + 5, Math.min(canvas.height - HITBOX_H / 2 - 5, charTargetY));
+  }
+
+  function onMouseDown(e) {
+    if (e.button === 1) {
+      e.preventDefault();
+      isBoosting = true;
+    }
+  }
+
+  function onMouseUp(e) {
+    if (!e || e.button === 1) {
+      isBoosting = false;
+    }
   }
 
   function onKey(e) {
@@ -209,7 +260,8 @@
     surviveFrames++;
     
     // ── 動態計分系統 ──
-    const dangerRatio = dangerFrames / DANGER_FRAMES;
+    const config = getPeriodConfig();
+    const dangerRatio = dangerFrames / config.dangerTolerance;
     let multiplier = 10; // 完美狀態 x10
     
     if (dangerRatio > 0.6) {
@@ -232,8 +284,7 @@
     const slope     = (nextLineY - lineY) / lookAhead; // 正=下坡, 負=上坡
 
     // 根據斜率累加/減速度 (加速度模型)
-    const accelStrength = 0.025; 
-    currentSpeed += slope * accelStrength;
+    currentSpeed += slope * config.slopeAccel;
 
     // 空氣阻力：緩緩拉回基準速度 (讓速度不會永遠卡在最高或最低)
     const drag = 0.004;
@@ -254,7 +305,7 @@
       dangerFrames++;
       isDangerAbove = aboveLine;
       isDangerBelow = belowLine;
-      if (dangerFrames >= DANGER_FRAMES) {
+      if (dangerFrames >= config.dangerTolerance) {
         triggerDeath(lineY);
         return;
       }
@@ -268,7 +319,8 @@
     const lastX = terrainPoints[terrainPoints.length - 1].x;
     if (terrainScrollX + canvas.width * CHAR_X_RATIO >= lastX) {
       gameState = 'complete';
-      unbindInput();
+      disableWheelInput();
+      updateCursorVisibility();
       spawnPartyParticles();
     }
 
@@ -308,7 +360,8 @@
   /* ── 死亡 ────────────────────────────────────────── */
   function triggerDeath(lineY) {
     gameState = 'dead';
-    unbindInput();
+    disableWheelInput();
+    updateCursorVisibility();
     for (let i = 0; i < 40; i++) {
       particles.push({
         x: canvas.width * CHAR_X_RATIO,
@@ -378,7 +431,7 @@
     drawParticles(true);
 
     // 角色
-    if (gameState === 'playing' || gameState === 'dead') {
+    if (gameState === 'countdown' || gameState === 'playing' || gameState === 'dead') {
       drawCharacter(W);
     }
 
@@ -467,7 +520,7 @@
     }
 
     // 危險狀態下線條閃爍顏色
-    const dangerRatio = dangerFrames / DANGER_FRAMES;
+    const dangerRatio = dangerFrames / getPeriodConfig().dangerTolerance;
     let lineColor;
     if (dangerRatio > 0) {
       const r = Math.floor(96  + dangerRatio * 159);
@@ -529,7 +582,7 @@
     const cx      = W * CHAR_X_RATIO;
     const cy      = charY;
     const lineY   = getLineYAt(terrainScrollX + cx);
-    const DR      = dangerFrames / DANGER_FRAMES; // 0~1 危險程度
+    const DR      = dangerFrames / getPeriodConfig().dangerTolerance; // 0~1 危險程度
     const t       = Date.now() / 1000;
 
     /* ── hitbox 框（不隨姿態旋轉）─────────────────── */
@@ -689,7 +742,7 @@
   }
 
   function drawDangerVignette(W, H) {
-    const ratio = dangerFrames / DANGER_FRAMES;
+    const ratio = dangerFrames / getPeriodConfig().dangerTolerance;
     const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 80);
     const alpha = ratio * 0.45 * pulse;
 
@@ -758,6 +811,12 @@
     ctx.fillText(grade, 105, 54);
     ctx.font = '600 10px Inter, sans-serif';
     ctx.fillText('RANK', 105, 38);
+
+    if (isBoosting && gameState === 'playing') {
+      ctx.font = '700 11px Inter, sans-serif';
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText('BOOST', 150, 54);
+    }
 
     // 進度條
     const charWorldX = terrainScrollX + W * CHAR_X_RATIO;

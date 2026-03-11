@@ -31,6 +31,10 @@
   cursor: none;
 }
 
+#skiCanvas.ski-canvas-show-cursor {
+  cursor: default;
+}
+
 /* ── 關閉按鈕 ─────────────────────────────────── */
 .ski-close-btn {
   position: absolute;
@@ -75,19 +79,23 @@
 .ski-launch-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 10px;
   background: linear-gradient(135deg, #1e3a5f 0%, #1a2f4e 100%);
   color: #60a5fa;
   border: 1px solid rgba(96, 165, 250, 0.35);
-  border-radius: 10px;
-  padding: 8px 18px;
-  font-size: 13px;
+  border-radius: 12px;
+  padding: 12px 22px;
+  min-width: 150px;
+  min-height: 44px;
+  font-size: 14px;
   font-family: 'Inter', sans-serif;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.22s ease;
   white-space: nowrap;
   letter-spacing: 0.01em;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
 }
 
 .ski-launch-btn:hover {
@@ -104,4 +112,8 @@
 
 .ski-launch-btn .ski-btn-icon {
   font-size: 16px;
+}
+
+.ski-launch-btn .ski-btn-text {
+  line-height: 1;
 }

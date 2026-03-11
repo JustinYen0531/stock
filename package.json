@@ -1,9 +1,9 @@
 {
-  "name": "stock-main",
+  "name": "stockai",
   "private": true,
   "scripts": {
-    "dev": "node backend/server.js",
-    "start": "node backend/server.js",
+    "dev": "npm --prefix backend run dev",
+    "start": "npm --prefix backend run start",
     "install:backend": "npm --prefix backend install"
   }
 }

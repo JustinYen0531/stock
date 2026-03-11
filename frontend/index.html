@@ -142,28 +142,34 @@
 
       <!-- 股票基本資訊 -->
       <div class="stock-header-card">
-        <div class="stock-title-area">
-          <h2 id="stockName" class="stock-name">—</h2>
-          <span id="stockSymbol" class="stock-symbol-badge">—</span>
-          <span id="stockExchange" class="stock-exchange">—</span>
+        <div class="stock-header-main">
+          <div class="stock-title-area">
+            <h2 id="stockName" class="stock-name">—</h2>
+            <span id="stockSymbol" class="stock-symbol-badge">—</span>
+            <span id="stockExchange" class="stock-exchange">—</span>
+          </div>
+          <div class="stock-price-area">
+            <div class="price-stat">
+              <span class="stat-label">最新收盤</span>
+              <span id="latestClose" class="stat-value price-value">—</span>
+            </div>
+            <div class="price-stat">
+              <span class="stat-label">漲跌幅</span>
+              <span id="priceChange" class="stat-value">—</span>
+            </div>
+            <div class="price-stat">
+              <span class="stat-label">成交量</span>
+              <span id="latestVolume" class="stat-value">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="stock-action-card">
+        <div class="stock-action-area">
           <button class="ski-launch-btn" onclick="launchSkiGame()" title="把這支股票變成滑雪關卡！">
             <span class="ski-btn-icon">⛷️</span>
-            滑雪挑戰！
+            <span class="ski-btn-text">滑雪挑戰！</span>
           </button>
-        </div>
-        <div class="stock-price-area">
-          <div class="price-stat">
-            <span class="stat-label">最新收盤</span>
-            <span id="latestClose" class="stat-value price-value">—</span>
-          </div>
-          <div class="price-stat">
-            <span class="stat-label">漲跌幅</span>
-            <span id="priceChange" class="stat-value">—</span>
-          </div>
-          <div class="price-stat">
-            <span class="stat-label">成交量</span>
-            <span id="latestVolume" class="stat-value">—</span>
-          </div>
         </div>
       </div>
 

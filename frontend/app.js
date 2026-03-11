@@ -147,6 +147,7 @@ function renderDashboard(data) {
     symbol,
     dates,
     closes: ohlcv.map(d => d.Close),
+    period: $("periodSelect").value,
   };
 }
 
@@ -628,4 +629,3 @@ function filterPickerStocks() {
     cat.classList.toggle('all-hidden', !anyVisible);
   });
 }
-
