@@ -1,0 +1,107 @@
+/* ═══════════════════════════════════════════════
+   ski-game.css  —  Stock Ski Game Overlay Styles
+   ═══════════════════════════════════════════════ */
+
+/* ── 全螢幕 Modal ─────────────────────────────── */
+.ski-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0a0f1e;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  animation: skiModalIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ski-modal.hidden {
+  display: none;
+}
+
+@keyframes skiModalIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Canvas ───────────────────────────────────── */
+#skiCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: none;
+}
+
+/* ── 關閉按鈕 ─────────────────────────────────── */
+.ski-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: rgba(30, 45, 69, 0.85);
+  color: #94a3b8;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  z-index: 10000;
+}
+
+.ski-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* ── 操作提示 ─────────────────────────────────── */
+.ski-hint {
+  position: absolute;
+  bottom: 14px;
+  right: 16px;
+  background: rgba(10, 20, 40, 0.7);
+  color: rgba(148, 163, 184, 0.7);
+  border: 1px solid rgba(96, 165, 250, 0.15);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  pointer-events: none;
+  z-index: 10000;
+}
+
+/* ── 觸發按鈕（顯示在儀表板上）─────────────────── */
+.ski-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #1a2f4e 100%);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.ski-launch-btn:hover {
+  background: linear-gradient(135deg, #1e4a8f 0%, #1a3a6e 100%);
+  border-color: rgba(96, 165, 250, 0.6);
+  color: #93c5fd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(96, 165, 250, 0.18);
+}
+
+.ski-launch-btn:active {
+  transform: translateY(0);
+}
+
+.ski-launch-btn .ski-btn-icon {
+  font-size: 16px;
+}

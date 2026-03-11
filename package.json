@@ -1,0 +1,9 @@
+{
+  "name": "stock-main",
+  "private": true,
+  "scripts": {
+    "dev": "node backend/server.js",
+    "start": "node backend/server.js",
+    "install:backend": "npm --prefix backend install"
+  }
+}

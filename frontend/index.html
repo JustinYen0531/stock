@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>股市分析 — AI 技術面儀表板</title>
+  <meta name="description" content="即時股票分析儀表板，自動計算 MA、RSI、MACD 技術指標，並提供 AI 投資建議。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/ski-game.css" />
+</head>
+<body>
+  <!-- ═══ HEADER ═══ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">📈</span>
+        <span class="logo-text">StockAI</span>
+        <span class="logo-sub">技術面分析</span>
+      </div>
+      <div class="search-bar">
+        <input
+          id="symbolInput"
+          type="text"
+          placeholder="輸入股票代碼... (e.g. AAPL, 2330.TW)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <select id="periodSelect">
+          <option value="1mo">1 個月</option>
+          <option value="3mo" selected>3 個月</option>
+          <option value="6mo">6 個月</option>
+          <option value="1y">1 年</option>
+          <option value="2y">2 年</option>
+        </select>
+        <button id="searchBtn" class="btn-search" onclick="loadStock()">
+          <span id="searchBtnText">分析</span>
+          <span id="searchSpinner" class="spinner hidden"></span>
+        </button>
+      </div>
+      <!-- 分類股票選股器 -->
+      <div class="stock-picker-wrapper">
+        <button class="stock-picker-toggle" id="stockPickerToggle" onclick="toggleStockPicker()">
+          <span class="picker-icon">📂</span>
+          <span>股票瀏覽</span>
+          <span class="picker-arrow" id="pickerArrow">▾</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main-container">
+    <!-- 歡迎頁 -->
+    <div id="welcomePage" class="welcome-page">
+      <div class="welcome-icon">📊</div>
+      <h1 class="welcome-title">AI 股市分析儀表板</h1>
+      <p class="welcome-sub">輸入股票代碼，即時計算 MA、RSI、MACD 技術指標<br />並由 AI Agent 生成多空建議</p>
+      <div class="welcome-features">
+        <div class="feature-card" title="查看 K 線與均線" onclick="expandKnowledge(0)">
+          <span class="feat-icon">🕯️</span>
+          <span>蠟燭圖 + 均線</span>
+        </div>
+        <div class="feature-card" title="查看 RSI 指數" onclick="expandKnowledge(1)">
+          <span class="feat-icon">📉</span>
+          <span>RSI 強弱指數</span>
+        </div>
+        <div class="feature-card" title="查看 MACD 動能" onclick="expandKnowledge(2)">
+          <span class="feat-icon">🌊</span>
+          <span>MACD 動能</span>
+        </div>
+        <div class="feature-card" title="獲取 AI 投資建議" onclick="expandKnowledge(3)">
+          <span class="feat-icon">🤖</span>
+          <span>AI 投資建議</span>
+        </div>
+      </div>
+
+      <!-- 💡 新手科普區 -->
+      <div class="welcome-knowledge" id="welcomeKnowledge">
+        <h2 class="knowledge-title" id="knowledgeTitle">💡 投資新手村：這些圖標代表什麼？</h2>
+        <div class="knowledge-grid-container">
+          <button id="knowledgeBackBtn" class="k-back-btn hidden" onclick="resetKnowledge()">← 返回列表</button>
+          <div class="knowledge-grid" id="knowledgeGrid">
+            <div class="knowledge-item" id="k-item-0" onclick="expandKnowledge(0)">
+              <div class="k-header">
+                <span class="k-icon">🕯️</span>
+                <span class="k-name">蠟燭圖</span>
+              </div>
+              <p class="k-desc"><b>「股市的心情溫度計」</b><br/>紅色代表股市心情超棒（漲），綠色代表股市正在休息（跌）。蠟燭的高低代表當天心情起伏的範圍喔！</p>
+              <div class="k-detail hidden">
+                <hr/>
+                <p>蠟燭圖（K線）是由開盤價、最高價、最低價、收盤價組成的。如果收盤比開盤高，就是紅色；反之則是綠色。它能幫我們一眼看出這一段時間內，買方和賣方誰的力氣比較大！</p>
+              </div>
+            </div>
+            <div class="knowledge-item" id="k-item-1" onclick="expandKnowledge(1)">
+              <div class="k-header">
+                <span class="k-icon">📉</span>
+                <span class="k-name">RSI 指數</span>
+              </div>
+              <p class="k-desc"><b>「體力過剩儀表板」</b><br/>數字太高（超過 70）代表大家衝太快累壞了；數字太低（低於 30）代表大家垂頭喪氣，可能快要振作了！</p>
+              <div class="k-detail hidden">
+                <hr/>
+                <p>RSI 是用來衡量最近漲跌的快慢。當大家都瘋狂在買，RSI 就會衝很高，這時候反而要當心大家「體力透支」而回檔。反過來，大家都心灰意冷時，可能就是反彈的機會喔！</p>
+              </div>
+            </div>
+            <div class="knowledge-item" id="k-item-2" onclick="expandKnowledge(2)">
+              <div class="k-header">
+                <span class="k-icon">🌊</span>
+                <span class="k-name">MACD</span>
+              </div>
+              <p class="k-desc"><b>「股市衝浪浪潮」</b><br/>我們用它來看波浪的大方向。當兩條線交叉時，就像海浪變向，是提醒你準備衝浪或是上岸休息的信號。</p>
+              <div class="k-detail hidden">
+                <hr/>
+                <p>MACD 是利用長短不同時間的平均線，計算出動量的指標。我們通常看「交叉」，快線往上穿過慢線叫黃金交叉（適合衝浪！），快線往下穿過慢線叫死亡交叉（趕快上岸！）。</p>
+              </div>
+            </div>
+            <div class="knowledge-item" id="k-item-3" onclick="expandKnowledge(3)">
+              <div class="k-header">
+                <span class="k-icon">🤖</span>
+                <span class="k-name">AI 建議</span>
+              </div>
+              <p class="k-desc"><b>「你的專屬戰術參謀」</b><br/>AI 幫你讀完所有複雜的數據，並給你一份最白話的分析。雖然它很聰明，但最後下單的將軍還是你喔！</p>
+              <div class="k-detail hidden">
+                <hr/>
+                <p>我們的 AI Agent 會綜合均線走向、RSI 體力、MACD 浪潮和最新新聞。它像是一個智囊團，幫你整理出最核心的進攻（買入）或撤退（賣出）建議，讓你更有底氣！</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 錯誤訊息 -->
+    <div id="errorBox" class="error-box hidden">
+      <span class="error-icon">⚠️</span>
+      <span id="errorMsg"></span>
+    </div>
+
+    <!-- 股票資訊區 -->
+    <div id="dashboard" class="dashboard hidden">
+
+      <!-- 股票基本資訊 -->
+      <div class="stock-header-card">
+        <div class="stock-title-area">
+          <h2 id="stockName" class="stock-name">—</h2>
+          <span id="stockSymbol" class="stock-symbol-badge">—</span>
+          <span id="stockExchange" class="stock-exchange">—</span>
+          <button class="ski-launch-btn" onclick="launchSkiGame()" title="把這支股票變成滑雪關卡！">
+            <span class="ski-btn-icon">⛷️</span>
+            滑雪挑戰！
+          </button>
+        </div>
+        <div class="stock-price-area">
+          <div class="price-stat">
+            <span class="stat-label">最新收盤</span>
+            <span id="latestClose" class="stat-value price-value">—</span>
+          </div>
+          <div class="price-stat">
+            <span class="stat-label">漲跌幅</span>
+            <span id="priceChange" class="stat-value">—</span>
+          </div>
+          <div class="price-stat">
+            <span class="stat-label">成交量</span>
+            <span id="latestVolume" class="stat-value">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 建議卡 -->
+      <div id="adviceCard" class="advice-card">
+        <div class="advice-header">
+          <span class="advice-icon">🤖</span>
+          <span class="advice-title">AI Agent 投資建議</span>
+          <span id="signalBadge" class="signal-badge">—</span>
+        </div>
+        <p id="adviceSummary" class="advice-summary">—</p>
+        <div id="adviceReasons" class="advice-reasons"></div>
+        <p id="adviceDisclaimer" class="advice-disclaimer">—</p>
+      </div>
+
+      <!-- 指標 tabs -->
+      <div class="chart-tabs">
+        <button class="tab-btn active" onclick="switchTab('price')" id="tab-price">📈 K線圖 + MA</button>
+        <button class="tab-btn" onclick="switchTab('rsi')" id="tab-rsi">📊 RSI</button>
+        <button class="tab-btn" onclick="switchTab('macd')" id="tab-macd">🌊 MACD</button>
+      </div>
+
+      <!-- 圖表容器 -->
+      <div class="charts-area">
+        <div id="panel-price" class="chart-panel">
+          <div class="chart-card">
+            <div class="chart-label">K線圖 + 移動平均線</div>
+            <div class="chart-wrapper">
+              <canvas id="priceChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card volume-card">
+            <div class="chart-label">成交量</div>
+            <div class="chart-wrapper chart-wrapper-sm">
+              <canvas id="volumeChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-rsi" class="chart-panel hidden">
+          <div class="chart-card">
+            <div class="chart-label">RSI (14) — 相對強弱指數</div>
+            <div class="chart-info">
+              <span class="info-tag bear">RSI &gt; 70 超買</span>
+              <span class="info-tag neutral">30–70 中性</span>
+              <span class="info-tag bull">RSI &lt; 30 超賣</span>
+            </div>
+            <div class="chart-wrapper chart-wrapper-lg">
+              <canvas id="rsiChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-macd" class="chart-panel hidden">
+          <div class="chart-card">
+            <div class="chart-label">MACD — 指數移動平均收斂發散</div>
+            <div class="chart-info">
+              <span class="info-tag bull">MACD 黃金交叉 → 買入信號</span>
+              <span class="info-tag bear">死亡交叉 → 賣出信號</span>
+            </div>
+            <div class="chart-wrapper chart-wrapper-lg">
+              <canvas id="macdChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 指標數值 -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-card-title">MA5</div>
+          <div id="stat-ma5" class="stat-card-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">MA20</div>
+          <div id="stat-ma20" class="stat-card-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">MA60</div>
+          <div id="stat-ma60" class="stat-card-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">RSI(14)</div>
+          <div id="stat-rsi" class="stat-card-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">MACD</div>
+          <div id="stat-macd" class="stat-card-value">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-title">Signal</div>
+          <div id="stat-signal" class="stat-card-value">—</div>
+        </div>
+      </div>
+
+    </div><!-- /dashboard -->
+  </main>
+
+  <footer class="footer">
+    <span>資料來源：Yahoo Finance（via yfinance）｜僅供學習研究，不構成投資建議</span>
+  </footer>
+
+  <!-- ═══ AI 聊天視窗 ═══ -->
+  <!-- 浮動開關按鈕 -->
+  <button id="chatToggleBtn" class="chat-toggle-btn" onclick="toggleChat()" title="AI 股票專家">
+    <span class="chat-toggle-icon">🤖</span>
+    <span class="chat-toggle-label">AI 專家</span>
+  </button>
+
+  <!-- 聊天面板 -->
+  <div id="chatPanel" class="chat-panel hidden">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <span class="chat-avatar">🤖</span>
+        <div>
+          <div class="chat-title">AI 股票分析師</div>
+          <div class="chat-subtitle" id="chatSubtitle">由 Gemini 2.0 Flash 驅動</div>
+        </div>
+      </div>
+      <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+    </div>
+    <div id="chatMessages" class="chat-messages">
+      <div class="chat-msg ai">
+        <div class="chat-bubble">
+          👋 你好！我是 AI 股票分析師。<br/>
+          你可以問我任何關於技術指標的問題，例如：<br/>
+          <span class="chat-hint" onclick="sendHint(this)">「這支股票現在適合買嗎？」</span>
+          <span class="chat-hint" onclick="sendHint(this)">「RSI 超賣代表什麼？」</span>
+          <span class="chat-hint" onclick="sendHint(this)">「幫我分析目前的 MACD 趨勢」</span>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <textarea
+        id="chatInput"
+        class="chat-input"
+        placeholder="問我任何股票問題..."
+        rows="1"
+        onkeydown="handleChatKey(event)"
+      ></textarea>
+      <button id="chatSendBtn" class="chat-send-btn" onclick="sendChat()">
+        <span id="chatSendIcon">➤</span>
+        <span id="chatSendSpinner" class="spinner hidden"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ 分類股票選股面板 ═══ -->
+  <div id="stockPickerPanel" class="stock-picker-panel hidden">
+    <div class="picker-panel-inner">
+      <div class="picker-search-row">
+        <input id="pickerSearchInput" class="picker-search" type="text" placeholder="🔍 搜尋股票代碼或名稱..." oninput="filterPickerStocks()" autocomplete="off" />
+        <button class="picker-close-btn" onclick="toggleStockPicker()">✕</button>
+      </div>
+      <div class="picker-categories" id="pickerCategories">
+
+        <!-- 美國科技 -->
+        <div class="picker-category">
+          <div class="picker-cat-header">
+            <span class="picker-cat-icon">💻</span>
+            <span class="picker-cat-name">美國科技</span>
+          </div>
+          <div class="picker-stocks">
+            <button class="picker-stock-btn" onclick="pickStock('AAPL')" data-name="Apple"><span class="ps-sym">AAPL</span><span class="ps-name">Apple</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('MSFT')" data-name="Microsoft"><span class="ps-sym">MSFT</span><span class="ps-name">Microsoft</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('GOOGL')" data-name="Google Alphabet"><span class="ps-sym">GOOGL</span><span class="ps-name">Google</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('META')" data-name="Meta Facebook"><span class="ps-sym">META</span><span class="ps-name">Meta</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('AMZN')" data-name="Amazon"><span class="ps-sym">AMZN</span><span class="ps-name">Amazon</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('NFLX')" data-name="Netflix"><span class="ps-sym">NFLX</span><span class="ps-name">Netflix</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('NVDA')" data-name="Nvidia"><span class="ps-sym">NVDA</span><span class="ps-name">Nvidia</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('AMD')" data-name="AMD Advanced Micro Devices"><span class="ps-sym">AMD</span><span class="ps-name">AMD</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('CRM')" data-name="Salesforce"><span class="ps-sym">CRM</span><span class="ps-name">Salesforce</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('ORCL')" data-name="Oracle"><span class="ps-sym">ORCL</span><span class="ps-name">Oracle</span></button>
+          </div>
+        </div>
+
+        <!-- 半導體 -->
+        <div class="picker-category">
+          <div class="picker-cat-header">
+            <span class="picker-cat-icon">⚙️</span>
+            <span class="picker-cat-name">半導體</span>
+          </div>
+          <div class="picker-stocks">
+            <button class="picker-stock-btn" onclick="pickStock('QCOM')" data-name="Qualcomm"><span class="ps-sym">QCOM</span><span class="ps-name">Qualcomm</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('INTC')" data-name="Intel"><span class="ps-sym">INTC</span><span class="ps-name">Intel</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('AVGO')" data-name="Broadcom"><span class="ps-sym">AVGO</span><span class="ps-name">Broadcom</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('MU')" data-name="Micron"><span class="ps-sym">MU</span><span class="ps-name">Micron</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('AMAT')" data-name="Applied Materials"><span class="ps-sym">AMAT</span><span class="ps-name">Applied Materials</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('LRCX')" data-name="Lam Research"><span class="ps-sym">LRCX</span><span class="ps-name">Lam Research</span></button>
+          </div>
+        </div>
+
+        <!-- 電動車 / 新能源 -->
+        <div class="picker-category">
+          <div class="picker-cat-header">
+            <span class="picker-cat-icon">⚡</span>
+            <span class="picker-cat-name">電動車 / 新能源</span>
+          </div>
+          <div class="picker-stocks">
+            <button class="picker-stock-btn" onclick="pickStock('TSLA')" data-name="Tesla 電動車"><span class="ps-sym">TSLA</span><span class="ps-name">Tesla</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('RIVN')" data-name="Rivian 電動車"><span class="ps-sym">RIVN</span><span class="ps-name">Rivian</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('LCID')" data-name="Lucid Motors 電動車"><span class="ps-sym">LCID</span><span class="ps-name">Lucid Motors</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('NIO')" data-name="蔚來 NIO 電動車"><span class="ps-sym">NIO</span><span class="ps-name">蔚來 NIO</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('ENPH')" data-name="Enphase 太陽能"><span class="ps-sym">ENPH</span><span class="ps-name">Enphase</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('PLUG')" data-name="Plug Power 氫能"><span class="ps-sym">PLUG</span><span class="ps-name">Plug Power</span></button>
+          </div>
+        </div>
+
+        <!-- 美國金融 -->
+        <div class="picker-category">
+          <div class="picker-cat-header">
+            <span class="picker-cat-icon">🏦</span>
+            <span class="picker-cat-name">美國金融</span>
+          </div>
+          <div class="picker-stocks">
+            <button class="picker-stock-btn" onclick="pickStock('JPM')" data-name="JPMorgan Chase 摩根大通"><span class="ps-sym">JPM</span><span class="ps-name">JPMorgan</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('BAC')" data-name="Bank of America 美國銀行"><span class="ps-sym">BAC</span><span class="ps-name">Bank of America</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('GS')" data-name="Goldman Sachs 高盛"><span class="ps-sym">GS</span><span class="ps-name">Goldman Sachs</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('V')" data-name="Visa"><span class="ps-sym">V</span><span class="ps-name">Visa</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('MA')" data-name="Mastercard"><span class="ps-sym">MA</span><span class="ps-name">Mastercard</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('BRK-B')" data-name="Berkshire Hathaway 波克夏"><span class="ps-sym">BRK-B</span><span class="ps-name">Berkshire B</span></button>
+          </div>
+        </div>
+
+        <!-- 台灣科技 -->
+        <div class="picker-category">
+          <div class="picker-cat-header">
+            <span class="picker-cat-icon">🇹🇼</span>
+            <span class="picker-cat-name">台灣科技</span>
+          </div>
+          <div class="picker-stocks">
+            <button class="picker-stock-btn" onclick="pickStock('2330.TW')" data-name="台積電 TSMC"><span class="ps-sym">2330</span><span class="ps-name">台積電</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('2317.TW')" data-name="鴻海 Foxconn"><span class="ps-sym">2317</span><span class="ps-name">鴻海</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('2454.TW')" data-name="聯發科 MediaTek"><span class="ps-sym">2454</span><span class="ps-name">聯發科</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('2303.TW')" data-name="聯電 UMC"><span class="ps-sym">2303</span><span class="ps-name">聯電</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('2308.TW')" data-name="台達電"><span class="ps-sym">2308</span><span class="ps-name">台達電</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('3711.TW')" data-name="日月光投控 ASE"><span class="ps-sym">3711</span><span class="ps-name">日月光</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('2382.TW')" data-name="廣達電腦"><span class="ps-sym">2382</span><span class="ps-name">廣達</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('2395.TW')" data-name="研華科技"><span class="ps-sym">2395</span><span class="ps-name">研華</span></button>
+          </div>
+        </div>
+
+        <!-- 台灣 ETF -->
+        <div class="picker-category">
+          <div class="picker-cat-header">
+            <span class="picker-cat-icon">📦</span>
+            <span class="picker-cat-name">台灣 ETF</span>
+          </div>
+          <div class="picker-stocks">
+            <button class="picker-stock-btn" onclick="pickStock('0050.TW')" data-name="元大台灣50 ETF"><span class="ps-sym">0050</span><span class="ps-name">台灣50</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('0056.TW')" data-name="元大高股息 ETF"><span class="ps-sym">0056</span><span class="ps-name">高股息</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('006208.TW')" data-name="富邦台50 ETF"><span class="ps-sym">006208</span><span class="ps-name">富邦台50</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('00878.TW')" data-name="國泰永續高股息 ETF"><span class="ps-sym">00878</span><span class="ps-name">國泰永續高股息</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('00919.TW')" data-name="群益台灣精選高息 ETF"><span class="ps-sym">00919</span><span class="ps-name">群益高息</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('00929.TW')" data-name="復華台灣科技優息 ETF"><span class="ps-sym">00929</span><span class="ps-name">復華科技優息</span></button>
+          </div>
+        </div>
+
+        <!-- 能源 / 原物料 -->
+        <div class="picker-category">
+          <div class="picker-cat-header">
+            <span class="picker-cat-icon">🛢️</span>
+            <span class="picker-cat-name">能源 / 原物料</span>
+          </div>
+          <div class="picker-stocks">
+            <button class="picker-stock-btn" onclick="pickStock('XOM')" data-name="ExxonMobil 埃克森美孚"><span class="ps-sym">XOM</span><span class="ps-name">ExxonMobil</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('CVX')" data-name="Chevron 雪佛龍"><span class="ps-sym">CVX</span><span class="ps-name">Chevron</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('COP')" data-name="ConocoPhillips"><span class="ps-sym">COP</span><span class="ps-name">ConocoPhillips</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('GLD')" data-name="Gold SPDR ETF 黃金"><span class="ps-sym">GLD</span><span class="ps-name">黃金 ETF</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('SLV')" data-name="Silver Trust ETF 白銀"><span class="ps-sym">SLV</span><span class="ps-name">白銀 ETF</span></button>
+          </div>
+        </div>
+
+        <!-- 中概股 -->
+        <div class="picker-category">
+          <div class="picker-cat-header">
+            <span class="picker-cat-icon">🐉</span>
+            <span class="picker-cat-name">中概股</span>
+          </div>
+          <div class="picker-stocks">
+            <button class="picker-stock-btn" onclick="pickStock('BABA')" data-name="阿里巴巴 Alibaba"><span class="ps-sym">BABA</span><span class="ps-name">阿里巴巴</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('PDD')" data-name="拼多多 Pinduoduo Temu"><span class="ps-sym">PDD</span><span class="ps-name">拼多多</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('JD')" data-name="京東 JD.com"><span class="ps-sym">JD</span><span class="ps-name">京東</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('BIDU')" data-name="百度 Baidu"><span class="ps-sym">BIDU</span><span class="ps-name">百度</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('9988.HK')" data-name="阿里巴巴 港股 Alibaba HK"><span class="ps-sym">9988.HK</span><span class="ps-name">阿里 (港)</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('700.HK')" data-name="騰訊 Tencent 港股"><span class="ps-sym">700.HK</span><span class="ps-name">騰訊</span></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="/static/app.js"></script>
+  <script src="/static/ski-game.js"></script>
+</body>
+</html>

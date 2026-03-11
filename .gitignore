@@ -1,0 +1,22 @@
+# 環境變數（含 API Key，絕對不上傳）
+backend/.env
+.env
+
+# Node.js 相依套件
+backend/node_modules/
+node_modules/
+
+# 快取與日誌
+*.log
+npm-debug.log*
+
+# Python 產生的暫存檔
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+
+# OS 產生的垃圾
+.DS_Store
+Thumbs.db
