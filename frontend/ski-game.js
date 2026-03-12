@@ -1219,9 +1219,15 @@
     ctx.font = '600 9px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
     ctx.fillText('VELOCITY', gx, gy + 14);
-    ctx.font = '700 10px JetBrains Mono, monospace';
-    ctx.fillStyle = currentSpeed > SCROLL_SPEED ? '#fbbf24' : currentSpeed < SCROLL_SPEED ? '#fca5a5' : '#93c5fd';
-    ctx.fillText(`${speedMult}x`, gx, gy + 28);
+
+    const speedMultColor = currentSpeed > SCROLL_SPEED ? '#fbbf24' : currentSpeed < SCROLL_SPEED ? '#fca5a5' : '#93c5fd';
+    ctx.font = '800 48px JetBrains Mono, monospace';
+    ctx.fillStyle = speedMultColor;
+    ctx.textAlign = 'center';
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = speedMultColor;
+    ctx.fillText(`${speedMult}x`, W / 2, H - 26);
+    ctx.shadowBlur = 0;
 
     ctx.restore();
   }
