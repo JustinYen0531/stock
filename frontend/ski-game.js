@@ -96,6 +96,14 @@
     return Math.min(1, dangerFrames / getDangerLimit());
   }
 
+  function getAccuracyPct() {
+    return Math.max(70, 100 - getDangerRatio() * 30);
+  }
+
+  function getAccuracyBarRatio() {
+    return Math.max(0, Math.min(1, (getAccuracyPct() - 70) / 30));
+  }
+
   function getPeriodConfig() {
     const base = PERIOD_TUNING[stockData?.period] || PERIOD_TUNING["6mo"];
     if (!practiceMode) return base;
@@ -1075,6 +1083,8 @@
 
     // ── 偏離累積條 (Accumulation / Heat Bar) ──
     const heatRatio = getDangerRatio();
+    const accuracyPct = getAccuracyPct();
+    const accuracyBarRatio = getAccuracyBarRatio();
     
     // 進度條參數
     const hbW = 120; // 寬度
@@ -1091,33 +1101,33 @@
 
     // 2. 顏色判定 (綠 -> 黃 -> 紅)
     let heatColor = '#4ade80'; // 安全綠
-    if (heatRatio > 0.8) heatColor = '#f87171';      // 極限紅
-    else if (heatRatio > 0.4) heatColor = '#fbbf24'; // 警告黃
+    if (accuracyPct <= 78) heatColor = '#f87171';      // 紅
+    else if (accuracyPct <= 88) heatColor = '#fbbf24'; // 黃
 
     // 3. 填充進度
-    if (heatRatio > 0.01) {
+    if (accuracyBarRatio > 0.01) {
       ctx.fillStyle = heatColor;
       
       // 危險時增加外發光特效 (WOW effect)
-      if (heatRatio > 0.6) {
+      if (accuracyPct <= 82) {
         ctx.shadowBlur = 12;
         ctx.shadowColor = heatColor;
       }
       
-      ctx.fillRect(hbx + 2, hby + 2, (hbW - 4) * heatRatio, hbH - 4);
+      ctx.fillRect(hbx + 2, hby + 2, (hbW - 4) * accuracyBarRatio, hbH - 4);
       ctx.shadowBlur = 0; // 重置發光防止污染
     }
 
     // 4. 文字與百分比
     ctx.textAlign = 'left';
     ctx.font = 'bold 12px Inter, sans-serif';
-    ctx.fillStyle = heatRatio > 0.8 ? '#f87171' : '#f8fafc';
-    ctx.fillText('偏離值 ⚡', hbx, hby - 10);
+    ctx.fillStyle = accuracyPct <= 78 ? '#f87171' : '#f8fafc';
+    ctx.fillText('準確值 ⚡', hbx, hby - 10);
     
     ctx.textAlign = 'right';
     ctx.font = '700 11px JetBrains Mono, monospace';
     ctx.fillStyle = heatColor;
-    ctx.fillText(`${Math.floor(heatRatio * 100)}%`, hbx + hbW, hby - 10);
+    ctx.fillText(`${accuracyPct.toFixed(0)}%`, hbx + hbW, hby - 10);
 
     // 外圈半圓 (速度計)
     ctx.beginPath();
