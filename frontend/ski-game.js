@@ -796,6 +796,7 @@
     const cy      = charY;
     const lineY   = getLineYAt(terrainScrollX + cx);
     const DR      = getDangerRatio(); // 0~1 危險程度
+    const isOffTrack = isDangerAbove || isDangerBelow;
     const t       = Date.now() / 1000;
 
     /* ── hitbox 框（不隨姿態旋轉）─────────────────── */
@@ -803,11 +804,11 @@
     ctx.save();
     const hitAlpha  = 0.12 + DR * 0.28;
     // 練習模式：hitbox 邊框帶橘色提示
-    const hitBorder = DR > 0
+    const hitBorder = isOffTrack
       ? `rgba(255,${Math.floor(Math.max(0, 100 - DR*100))},${Math.floor(Math.max(0, 100 - DR*100))},0.85)`
       : practiceMode ? 'rgba(251,191,36,0.55)' : 'rgba(96,165,250,0.45)';
     ctx.strokeStyle = hitBorder;
-    ctx.fillStyle   = DR > 0
+    ctx.fillStyle   = isOffTrack
       ? `rgba(255,80,80,${hitAlpha})`
       : practiceMode ? `rgba(251,191,36,${hitAlpha * 0.8})` : `rgba(96,165,250,${hitAlpha})`;
     ctx.lineWidth   = practiceMode ? 2.5 : 2;
