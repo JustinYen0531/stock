@@ -80,6 +80,16 @@
   let timeLimitFrames = 0;
   let countdownVal = 3;
   let countdownTimer = 0;
+  let perfectStreakDistance = 0;
+  let bestPerfectStreakDistance = 0;
+  let streakBonusScore = 0;
+  let scoreBandFrames = {
+    perfect: 0,
+    light: 0,
+    mild: 0,
+    medium: 0,
+    heavy: 0,
+  };
 
   // 粒子
   let particles = [];
@@ -111,6 +121,42 @@
 
   function getFinalScore() {
     return Math.round(score * getScoreMultiplier());
+  }
+
+  function getDangerBand(ratio) {
+    if (ratio <= 0) return 'perfect';
+    if (ratio <= 0.12) return 'light';
+    if (ratio <= 0.28) return 'mild';
+    if (ratio <= 0.5) return 'medium';
+    return 'heavy';
+  }
+
+  function getBandScore(ratio) {
+    const band = getDangerBand(ratio);
+    if (band === 'perfect') {
+      const totalDistance = Math.max(1, terrainPoints[terrainPoints.length - 1]?.x || 1);
+      const streakPct = (perfectStreakDistance / totalDistance) * 100;
+      if (streakPct >= 50) return 20;
+      if (streakPct >= 40) return 18;
+      if (streakPct >= 30) return 16;
+      if (streakPct >= 20) return 14;
+      if (streakPct >= 10) return 12;
+      return 10;
+    }
+    if (band === 'light') return 7;
+    if (band === 'mild') return 5;
+    if (band === 'medium') return 3;
+    return 1;
+  }
+
+  function getBandPct(key) {
+    const total = Math.max(1, surviveFrames);
+    return (scoreBandFrames[key] / total) * 100;
+  }
+
+  function getBestPerfectPct() {
+    const totalDistance = Math.max(1, terrainPoints[terrainPoints.length - 1]?.x || 1);
+    return (bestPerfectStreakDistance / totalDistance) * 100;
   }
 
   function getEarnedStars() {
@@ -281,6 +327,16 @@
     leftMouseDown  = false;
     rightMouseDown = false;
     mouseOnlyRun   = true;
+    perfectStreakDistance = 0;
+    bestPerfectStreakDistance = 0;
+    streakBonusScore = 0;
+    scoreBandFrames = {
+      perfect: 0,
+      light: 0,
+      mild: 0,
+      medium: 0,
+      heavy: 0,
+    };
 
     buildTerrain();
 
@@ -411,19 +467,6 @@
 
     surviveFrames++;
     
-    // ── 動態計分系統 ──
-    const config = getPeriodConfig();
-    const dangerRatio = getDangerRatio();
-    let multiplier = 10; // 完美狀態 x10
-    
-    if (dangerRatio > 0.6) {
-      multiplier = 1;   // 極度危險：只能拿 10% 分數
-    } else if (dangerRatio > 0) {
-      multiplier = 5;   // 有點不穩：拿 50% 分數
-    }
-    
-    score += multiplier;
-
     const charX = canvas.width * CHAR_X_RATIO;
 
     // 平滑移動角色
@@ -501,6 +544,24 @@
     } else {
       isDangerAbove  = false;
       isDangerBelow  = false;
+    }
+
+    // ── 動態計分系統 ──
+    const postDangerRatio = getDangerRatio();
+    const scoreBand = getDangerBand(postDangerRatio);
+    scoreBandFrames[scoreBand]++;
+
+    if (scoreBand === 'perfect') {
+      perfectStreakDistance += currentSpeed;
+      bestPerfectStreakDistance = Math.max(bestPerfectStreakDistance, perfectStreakDistance);
+    } else {
+      perfectStreakDistance = 0;
+    }
+
+    const frameScore = getBandScore(postDangerRatio);
+    score += frameScore;
+    if (scoreBand === 'perfect' && frameScore > 10) {
+      streakBonusScore += frameScore - 10;
     }
 
     // 關卡完成：捲過地形最後一點
@@ -1381,18 +1442,36 @@
       ctx.fillText('純滑鼠操作獎勵 1.3x', W / 2, H / 2 + 42);
     }
 
+    ctx.font = '500 14px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(226,232,240,0.88)';
+    ctx.fillText(
+      `穩定 ${getBandPct('perfect').toFixed(0)}%｜微偏 ${getBandPct('light').toFixed(0)}%｜有偏 ${getBandPct('mild').toFixed(0)}%`,
+      W / 2,
+      H / 2 + 74
+    );
+    ctx.fillText(
+      `中偏 ${getBandPct('medium').toFixed(0)}%｜重偏 ${getBandPct('heavy').toFixed(0)}%｜連穩加分 +${streakBonusScore}`,
+      W / 2,
+      H / 2 + 98
+    );
+    ctx.fillText(
+      `最高連續穩定 ${getBestPerfectPct().toFixed(0)}%｜規則：穩定 10/12/14/16/18/20，微偏 7，有偏 5，中偏 3，重偏 1`,
+      W / 2,
+      H / 2 + 122
+    );
+
     // 方向提示
     const tip = surviveFrames > timeLimitFrames
       ? '速度不夠快——下次多利用加速把通關時間壓進 80% 內'
       : isDangerAbove ? '飛太高了——下次試試往下一點 🖱️↓' : '掉太低了——下次試試往上一點 🖱️↑';
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
-    ctx.fillText(tip, W / 2, H / 2 + 55);
+    ctx.fillText(tip, W / 2, H / 2 + 150);
 
     // 按鍵提示
     ctx.font = '500 14px Inter, sans-serif';
     ctx.fillStyle = 'rgba(96,165,250,0.8)';
-    ctx.fillText('[ R ] 重試　　[ Esc ] 離開', W / 2, H / 2 + 100);
+    ctx.fillText('[ R ] 重試　　[ Esc ] 離開', W / 2, H / 2 + 190);
 
     ctx.restore();
   }
@@ -1435,8 +1514,26 @@
     ctx.fillText(`評價：${stars === 3 ? '完美滑行！' : stars === 2 ? '技術湛！' : '還有進步空間'}`, W / 2, H / 2 + 110);
 
     ctx.font = '500 14px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(226,232,240,0.88)';
+    ctx.fillText(
+      `穩定 ${getBandPct('perfect').toFixed(0)}%｜微偏 ${getBandPct('light').toFixed(0)}%｜有偏 ${getBandPct('mild').toFixed(0)}%`,
+      W / 2,
+      H / 2 + 136
+    );
+    ctx.fillText(
+      `中偏 ${getBandPct('medium').toFixed(0)}%｜重偏 ${getBandPct('heavy').toFixed(0)}%｜連穩加分 +${streakBonusScore}`,
+      W / 2,
+      H / 2 + 160
+    );
+    ctx.fillText(
+      `最高連續穩定 ${getBestPerfectPct().toFixed(0)}%｜規則：穩定 10/12/14/16/18/20，微偏 7，有偏 5，中偏 3，重偏 1`,
+      W / 2,
+      H / 2 + 184
+    );
+
+    ctx.font = '500 14px Inter, sans-serif';
     ctx.fillStyle = 'rgba(96,165,250,0.8)';
-    ctx.fillText('[ R ] 再玩一次　　[ Esc ] 離開', W / 2, H / 2 + 150);
+    ctx.fillText('[ R ] 再玩一次　　[ Esc ] 離開', W / 2, H / 2 + 220);
 
     ctx.restore();
   }
