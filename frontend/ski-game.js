@@ -1214,10 +1214,14 @@
     ctx.fillStyle = '#e8f0fe';
     ctx.textAlign = 'center';
     const kmh = Math.floor(currentSpeed * 15);
+    const speedMult = (currentSpeed / SCROLL_SPEED).toFixed(2);
     ctx.fillText(`${kmh}`, gx, gy - 12);
     ctx.font = '600 9px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
     ctx.fillText('VELOCITY', gx, gy + 14);
+    ctx.font = '700 10px JetBrains Mono, monospace';
+    ctx.fillStyle = currentSpeed > SCROLL_SPEED ? '#fbbf24' : currentSpeed < SCROLL_SPEED ? '#fca5a5' : '#93c5fd';
+    ctx.fillText(`${speedMult}x`, gx, gy + 28);
 
     ctx.restore();
   }
