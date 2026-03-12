@@ -120,10 +120,10 @@
 
 /* ── 右側大型開始按鈕 ─────────────────────────── */
 .ski-launch-big {
-  padding: 14px 34px;
-  font-size: 1.15rem;
-  font-weight: 800;
-  min-width: 168px;
+  padding: 14px 22px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  min-width: 150px;
   min-height: 52px;
   border-radius: 14px;
   background: linear-gradient(135deg, #1d4ed8 0%, #0e7490 100%);
@@ -134,7 +134,7 @@
   flex-shrink: 0;
 }
 .ski-launch-big .ski-btn-icon {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
 }
 .ski-launch-big:hover {
   background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
@@ -186,12 +186,12 @@
   align-items: center;
   justify-content: center;
   gap: 0.28rem;
-  width: 148px;
-  min-height: 148px;
-  padding: 1rem 0.7rem;
+  width: 118px;
+  min-height: 118px;
+  padding: 0.8rem 0.56rem;
   background: rgba(15, 24, 37, 0.42);
   border: 1px solid rgba(96, 165, 250, 0.12);
-  border-radius: 22px;
+  border-radius: 18px;
   color: rgba(148, 163, 184, 0.42);
   opacity: 0.55;
   transition: all 0.22s ease;
@@ -206,12 +206,12 @@
 }
 
 .ski-medal-icon {
-  font-size: 2.9rem;
+  font-size: 2.3rem;
   line-height: 1;
 }
 
 .ski-medal-text {
-  font-size: 1.2rem;
+  font-size: 0.96rem;
   font-weight: 700;
   text-align: center;
   line-height: 1.15;
