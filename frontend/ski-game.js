@@ -1003,6 +1003,7 @@
 
   function drawHUD(W, H) {
     ctx.save();
+    const dangerRatio = getDangerRatio();
 
     // 股票名稱 + 練習模式標示
     ctx.font = '600 13px Inter, sans-serif';
