@@ -66,6 +66,7 @@
   let charY = 200;        // 角色中心 Y
   let charTargetY = 200;  // 滾輪目標 Y（加平滑）
   let isBoosting = false; // 滑鼠中鍵按住時提升上下移動幅度
+  let spaceBoostDown = false;
 
   // 危險計時
   let dangerFrames = 0;
@@ -339,6 +340,7 @@
     leftMouseDown  = false;
     rightMouseDown = false;
     mouseOnlyRun   = true;
+    spaceBoostDown = false;
     perfectStreakDistance = 0;
     bestPerfectStreakDistance = 0;
     streakBonusScore = 0;
@@ -444,7 +446,7 @@
 
   function onMouseUp(e) {
     if (!e || e.button === 1) {
-      isBoosting = false;
+      isBoosting = spaceBoostDown;
     }
     if (!e || e.button === 0) leftMouseDown = false;
     if (!e || e.button === 2) rightMouseDown = false;
@@ -467,11 +469,21 @@
       rightKeyDown = true;
       mouseOnlyRun = false;
     }
+    if (e.code === 'Space' && !spaceBoostDown) {
+      e.preventDefault();
+      spaceBoostDown = true;
+      isBoosting = true;
+      mouseOnlyRun = false;
+    }
   }
 
   function onKeyUp(e) {
     if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftKeyDown = false;
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightKeyDown = false;
+    if (e.code === 'Space') {
+      spaceBoostDown = false;
+      isBoosting = false;
+    }
   }
 
   /* ── 主迴圈 ──────────────────────────────────────── */
