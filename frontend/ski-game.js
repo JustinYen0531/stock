@@ -15,6 +15,11 @@
   const BOOST_MULTIPLIER = 2.8; // 按住中鍵時的滾輪增幅
   const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
+  const X_DRIFT_SPEED  = 1.15;
+  const X_ACCEL        = 0.12;
+  const X_DECAY        = 0.94;
+  const X_MAX_SPEED    = 4.5;
+  const X_RIGHT_LIMIT  = 0.42;
   const PERIOD_TUNING = {
     "1mo": { mapWidth: 3.2, heightScale: 1.45, slopeAccel: 0.095, dangerTolerance: 38 },
     "3mo": { mapWidth: 4.2, heightScale: 1.2, slopeAccel: 0.085, dangerTolerance: 42 },
@@ -47,6 +52,16 @@
   // 地形
   let terrainPoints = []; // [{x, y}] 已映射到畫面座標
   let terrainScrollX = 0; // 目前已捲過多少 px
+  let activeCloses = [];
+  let activeDates = [];
+  let priceMin = 0;
+  let priceMax = 1;
+  let terrainYMin = 0;
+  let terrainYMax = 1;
+  let charX = 0;
+  let charXSpeed = 0;
+  let leftKeyDown = false;
+  let rightKeyDown = false;
 
   // 角色
   let charY = 200;        // 角色中心 Y
@@ -140,7 +155,7 @@
     modal.innerHTML = `
       <canvas id="skiCanvas"></canvas>
       <button class="ski-close-btn" onclick="SkiGame.close()">✕ 離開</button>
-      <div class="ski-hint">🖱️ 滾輪上下移動 &nbsp;·&nbsp; 保持角色在線上</div>
+      <div class="ski-hint">🖱️ 滾輪上下移動 &nbsp;·&nbsp; 同時按住 ←→ 或 A+D 往右衝刺 &nbsp;·&nbsp; 別被拖到最左邊</div>
     `;
     return modal;
   }
@@ -156,15 +171,21 @@
   function buildTerrain() {
     if (!stockData || !canvas) return;
     const allCloses = stockData.closes;
+    const allDates = stockData.dates || [];
     const allN = allCloses.length;
 
     // 練習模式：依百分比切片地形
     let closes = allCloses;
+    let dates = allDates;
     if (practiceMode && (practiceOpts.startPct > 0 || practiceOpts.endPct < 100)) {
       const s = Math.floor(allN * practiceOpts.startPct / 100);
       const e = Math.min(allN, Math.ceil(allN * practiceOpts.endPct  / 100));
       closes = allCloses.slice(s, e);
+      dates = allDates.slice(s, e);
     }
+
+    activeCloses = closes;
+    activeDates = dates;
 
     const N = closes.length;
     if (N < 2) return;
@@ -183,6 +204,10 @@
     const amplitude = Math.min(H * 0.42, baseAmplitude * config.heightScale);
     const yMin = centerY - amplitude;
     const yMax = centerY + amplitude;
+    priceMin = minP;
+    priceMax = maxP;
+    terrainYMin = yMin;
+    terrainYMax = yMax;
 
     terrainPoints = closes.map((c, i) => ({
       x: i * segW,
@@ -204,6 +229,9 @@
     currentSpeed   = SCROLL_SPEED;
     countdownVal   = 3;
     countdownTimer = 0;
+    charXSpeed     = 0;
+    leftKeyDown    = false;
+    rightKeyDown   = false;
 
     buildTerrain();
 
@@ -213,7 +241,8 @@
     maxPossibleScore = Math.floor((lastX / SCROLL_SPEED) * 10);
 
     // 角色起始 Y 對齊玩家所在 X 位置的地形中心，開場就精準壓在線上
-    charY       = getLineYAt(canvas.width * CHAR_X_RATIO);
+    charX       = canvas.width * CHAR_X_RATIO;
+    charY       = getLineYAt(charX);
     charTargetY = charY;
 
     gameState = 'countdown';
@@ -225,25 +254,18 @@
   /* ── 輸入綁定 ────────────────────────────────────── */
   function bindInput() {
     canvas.addEventListener('wheel', onWheel, { passive: false });
-    canvas.addEventListener('mousedown', onMouseDown);
-    canvas.addEventListener('mouseup', onMouseUp);
-    canvas.addEventListener('mouseleave', onMouseUp);
     document.addEventListener('keydown', onKey);
+    document.addEventListener('keyup', onKeyUp);
   }
 
   function unbindInput() {
     canvas?.removeEventListener('wheel', onWheel);
-    canvas?.removeEventListener('mousedown', onMouseDown);
-    canvas?.removeEventListener('mouseup', onMouseUp);
-    canvas?.removeEventListener('mouseleave', onMouseUp);
     document.removeEventListener('keydown', onKey);
+    document.removeEventListener('keyup', onKeyUp);
   }
 
   function disableWheelInput() {
     canvas?.removeEventListener('wheel', onWheel);
-    canvas?.removeEventListener('mousedown', onMouseDown);
-    canvas?.removeEventListener('mouseup', onMouseUp);
-    canvas?.removeEventListener('mouseleave', onMouseUp);
     isBoosting = false;
   }
 
@@ -263,24 +285,20 @@
     charTargetY = Math.max(hh / 2 + 5, Math.min(canvas.height - hh / 2 - 5, charTargetY));
   }
 
-  function onMouseDown(e) {
-    if (e.button === 1) {
-      e.preventDefault();
-      isBoosting = true;
-    }
-  }
-
-  function onMouseUp(e) {
-    if (!e || e.button === 1) {
-      isBoosting = false;
-    }
-  }
-
   function onKey(e) {
     if (e.key === 'Escape') closeGame();
     if ((e.key === 'r' || e.key === 'R') && (gameState === 'dead' || gameState === 'complete')) {
       initGame();
     }
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftKeyDown = true;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightKeyDown = true;
+    isBoosting = leftKeyDown && rightKeyDown;
+  }
+
+  function onKeyUp(e) {
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftKeyDown = false;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightKeyDown = false;
+    isBoosting = leftKeyDown && rightKeyDown;
   }
 
   /* ── 主迴圈 ──────────────────────────────────────── */
@@ -322,13 +340,27 @@
 
     // 平滑移動角色
     charY += (charTargetY - charY) * 0.18;
+    if (isBoosting) {
+      charXSpeed = Math.min(X_MAX_SPEED, charXSpeed + X_ACCEL);
+    } else {
+      charXSpeed *= X_DECAY;
+    }
+    charX += charXSpeed - X_DRIFT_SPEED;
+    const leftFailX = HITBOX_W / 2 + 4;
+    const rightLimitX = canvas.width * X_RIGHT_LIMIT;
+    if (charX <= leftFailX) {
+      charX = leftFailX;
+      triggerDeath(getLineYAt(terrainScrollX + charX));
+      return;
+    }
+    charX = Math.min(rightLimitX, charX);
 
     // 計算目前捲動位置對應的地形 Y
-    const lineY = getLineYAt(terrainScrollX + canvas.width * CHAR_X_RATIO);
+    const lineY = getLineYAt(terrainScrollX + charX);
 
     // ── 持續式速度物理 ──
     const lookAhead = 25; // 地圖變長後，讀取更遠一點的點來反應斜率變化
-    const nextLineY = getLineYAt(terrainScrollX + canvas.width * CHAR_X_RATIO + lookAhead);
+    const nextLineY = getLineYAt(terrainScrollX + charX + lookAhead);
     const slope     = (nextLineY - lineY) / lookAhead; // 正=下坡, 負=上坡
 
     // 根據斜率累加/減速度 (加速度模型)
@@ -366,7 +398,7 @@
 
     // 關卡完成：捲過地形最後一點
     const lastX = terrainPoints[terrainPoints.length - 1].x;
-    if (terrainScrollX + canvas.width * CHAR_X_RATIO >= lastX) {
+    if (terrainScrollX + charX >= lastX) {
       gameState = 'complete';
       disableWheelInput();
       updateCursorVisibility();
@@ -406,6 +438,38 @@
     return pts[lo].y + t * (pts[hi].y - pts[lo].y);
   }
 
+  function getInterpolatedCloseAt(worldX) {
+    if (!terrainPoints.length || !activeCloses.length) return null;
+    const pts = terrainPoints;
+    if (worldX <= pts[0].x) return activeCloses[0] ?? null;
+    if (worldX >= pts[pts.length - 1].x) return activeCloses[activeCloses.length - 1] ?? null;
+
+    let lo = 0, hi = pts.length - 1;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (pts[mid].x <= worldX) lo = mid; else hi = mid;
+    }
+
+    const leftClose = activeCloses[lo];
+    const rightClose = activeCloses[hi];
+    if (leftClose == null || rightClose == null) return leftClose ?? rightClose ?? null;
+
+    const t = (worldX - pts[lo].x) / (pts[hi].x - pts[lo].x);
+    return leftClose + (rightClose - leftClose) * t;
+  }
+
+  function getCloseAtScreenY(screenY) {
+    const clampedY = Math.max(terrainYMin, Math.min(terrainYMax, screenY));
+    const ratio = (terrainYMax - clampedY) / Math.max(1, terrainYMax - terrainYMin);
+    return priceMin + ratio * (priceMax - priceMin);
+  }
+
+  function getScreenYForClose(close) {
+    if (priceMax === priceMin) return (terrainYMin + terrainYMax) / 2;
+    const ratio = (close - priceMin) / (priceMax - priceMin);
+    return terrainYMax - ratio * (terrainYMax - terrainYMin);
+  }
+
   /* ── 死亡 ────────────────────────────────────────── */
   function triggerDeath(lineY) {
     gameState = 'dead';
@@ -413,7 +477,7 @@
     updateCursorVisibility();
     for (let i = 0; i < 40; i++) {
       particles.push({
-        x: canvas.width * CHAR_X_RATIO,
+        x: charX,
         y: charY,
         vx: (Math.random() - 0.5) * 6,
         vy: (Math.random() - 0.8) * 5,
@@ -547,8 +611,9 @@
   function drawTerrain(W, H) {
     if (!terrainPoints.length) return;
 
-    const charWorldX = terrainScrollX + W * CHAR_X_RATIO;
+    const charWorldX = terrainScrollX + charX;
     const lineY = getLineYAt(charWorldX);
+    drawReferenceGrid(W);
 
     // 畫地形線
     ctx.save();
@@ -600,6 +665,7 @@
 
     // 進度標記點（日期 dots）
     drawProgressDots(W, H);
+    drawCurrentPriceGuide(W);
   }
 
   function drawProgressDots(W, H) {
@@ -616,11 +682,78 @@
       ctx.arc(screenX, sy, 3, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(100,180,255,0.6)';
       ctx.fill();
-      if (stockData?.dates?.[i]) {
+      if (activeDates[i]) {
         ctx.fillStyle = 'rgba(150,200,255,0.5)';
-        ctx.fillText(stockData.dates[i].slice(5), screenX, sy - 8);
+        ctx.fillText(activeDates[i].slice(5), screenX, sy - 8);
       }
     }
+    ctx.restore();
+  }
+
+  function drawCurrentPriceGuide(W) {
+    const guideY = Math.max(terrainYMin, Math.min(terrainYMax, charY));
+    const currentClose = getCloseAtScreenY(guideY);
+    if (currentClose == null) return;
+
+    const priceText = currentClose.toFixed(2);
+    ctx.save();
+
+    ctx.setLineDash([7, 6]);
+    ctx.strokeStyle = 'rgba(250, 204, 21, 0.72)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, guideY);
+    ctx.lineTo(W - 86, guideY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font = '700 12px JetBrains Mono, monospace';
+    const textW = ctx.measureText(priceText).width;
+    const labelW = Math.max(60, textW + 20);
+    const labelH = 24;
+    const labelX = W - labelW - 16;
+    const labelY = Math.max(12, Math.min(canvas.height - labelH - 12, guideY - labelH / 2));
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.strokeStyle = 'rgba(250, 204, 21, 0.95)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(labelX, labelY, labelW, labelH, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#facc15';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(priceText, labelX + labelW / 2, labelY + labelH / 2 + 0.5);
+
+    ctx.restore();
+  }
+
+  function drawReferenceGrid(W) {
+    if (priceMax <= priceMin || terrainYMax <= terrainYMin) return;
+
+    const gridCount = 4;
+    ctx.save();
+    ctx.setLineDash([4, 7]);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.24)';
+    ctx.fillStyle = 'rgba(148, 163, 184, 0.72)';
+    ctx.font = '600 10px JetBrains Mono, monospace';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+
+    for (let i = 0; i < gridCount; i++) {
+      const ratio = (i + 1) / (gridCount + 1);
+      const close = priceMax - ratio * (priceMax - priceMin);
+      const y = getScreenYForClose(close);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W - 16, y);
+      ctx.stroke();
+      ctx.fillText(close.toFixed(2), W - 20, y);
+    }
+
     ctx.restore();
   }
 
@@ -628,7 +761,7 @@
      角色繪製 — 右向滑雪者，5 種姿態
   ══════════════════════════════════════════════════ */
   function drawCharacter(W) {
-    const cx      = W * CHAR_X_RATIO;
+    const cx      = charX;
     const cy      = charY;
     const lineY   = getLineYAt(terrainScrollX + cx);
     const DR      = dangerFrames / getPeriodConfig().dangerTolerance; // 0~1 危險程度
@@ -879,7 +1012,7 @@
     }
 
     // 進度條
-    const charWorldX = terrainScrollX + W * CHAR_X_RATIO;
+    const charWorldX = terrainScrollX + charX;
     const totalW = terrainPoints[terrainPoints.length - 1]?.x || 1;
     const prog = Math.min(1, charWorldX / totalW);
     const barW = 160, barH = 6, barX = W - barW - 16, barY = 18;
