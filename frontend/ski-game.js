@@ -1439,6 +1439,107 @@
     ctx.restore();
   }
 
+  function drawResultTable(W, topY) {
+    const cardW = 520;
+    const rowH = 34;
+    const headerH = 42;
+    const cardH = headerH + rowH * 4;
+    const x = W / 2 - cardW / 2;
+    const y = topY;
+    const labelX = x + 24;
+    const valueX = x + cardW - 24;
+    const rows = [
+      ['穩定 / 微偏 / 有偏', `${getBandPct('perfect').toFixed(0)}% / ${getBandPct('light').toFixed(0)}% / ${getBandPct('mild').toFixed(0)}%`],
+      ['中偏 / 重偏', `${getBandPct('medium').toFixed(0)}% / ${getBandPct('heavy').toFixed(0)}%`],
+      ['完成 / 合格 / 提早加分', `${getElapsedSeconds().toFixed(2)}s / ${getQualifyingSeconds().toFixed(2)}s / +${earlyFinishBonus}`],
+      ['連穩額外 / 最高連穩', `+${streakBonusScore} / ${getBestPerfectPct().toFixed(0)}%`],
+    ];
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(9, 18, 34, 0.88)';
+    ctx.strokeStyle = 'rgba(96, 165, 250, 0.24)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(x, y, cardW, cardH, 18);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(30, 41, 59, 0.85)';
+    ctx.beginPath();
+    ctx.roundRect(x + 2, y + 2, cardW - 4, headerH, 16);
+    ctx.fill();
+
+    ctx.font = '700 16px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillText('本局紀錄', labelX, y + headerH / 2 + 1);
+
+    ctx.font = '600 12px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(191, 219, 254, 0.9)';
+    ctx.fillText('規則：穩定 10/12/14/16/18/20，微偏 7，有偏 5，中偏 3，重偏 1', valueX, y + headerH / 2 + 1);
+
+    rows.forEach((row, index) => {
+      const rowY = y + headerH + index * rowH;
+      if (index > 0) {
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.14)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + 16, rowY);
+        ctx.lineTo(x + cardW - 16, rowY);
+        ctx.stroke();
+      }
+      ctx.textAlign = 'left';
+      ctx.font = '600 14px Inter, sans-serif';
+      ctx.fillStyle = 'rgba(191, 219, 254, 0.95)';
+      ctx.fillText(row[0], labelX, rowY + rowH / 2);
+
+      ctx.textAlign = 'right';
+      ctx.font = '700 15px JetBrains Mono, monospace';
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText(row[1], valueX, rowY + rowH / 2);
+    });
+    ctx.restore();
+
+    return y + cardH;
+  }
+
+  function drawResultButtons(W, y, retryLabel) {
+    const btnW = 150;
+    const btnH = 46;
+    const gap = 18;
+    const totalW = btnW * 2 + gap;
+    const startX = W / 2 - totalW / 2;
+    const labels = [
+      { text: retryLabel, x: startX, colorA: '#1d4ed8', colorB: '#0891b2', border: 'rgba(147,197,253,0.7)' },
+      { text: '離開', x: startX + btnW + gap, colorA: '#1e293b', colorB: '#334155', border: 'rgba(148,163,184,0.45)' },
+    ];
+
+    ctx.save();
+    labels.forEach((btn) => {
+      const grad = ctx.createLinearGradient(btn.x, y, btn.x + btnW, y + btnH);
+      grad.addColorStop(0, btn.colorA);
+      grad.addColorStop(1, btn.colorB);
+      ctx.fillStyle = grad;
+      ctx.strokeStyle = btn.border;
+      ctx.lineWidth = 2;
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = btn.colorA;
+      ctx.beginPath();
+      ctx.roundRect(btn.x, y, btnW, btnH, 14);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.stroke();
+      ctx.fillStyle = '#f8fafc';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '700 18px Inter, sans-serif';
+      ctx.fillText(btn.text, btn.x + btnW / 2, y + btnH / 2 + 1);
+    });
+    ctx.restore();
+  }
+
   function drawDeadScreen(W, H) {
     ctx.save();
     ctx.fillStyle = 'rgba(0,0,0,0.72)';
@@ -1465,29 +1566,7 @@
       ctx.fillStyle = '#4ade80';
       ctx.fillText('純滑鼠操作獎勵 1.3x', W / 2, H / 2 + 42);
     }
-
-    ctx.font = '500 14px Inter, sans-serif';
-    ctx.fillStyle = 'rgba(226,232,240,0.88)';
-    ctx.fillText(
-      `穩定 ${getBandPct('perfect').toFixed(0)}%｜微偏 ${getBandPct('light').toFixed(0)}%｜有偏 ${getBandPct('mild').toFixed(0)}%`,
-      W / 2,
-      H / 2 + 74
-    );
-    ctx.fillText(
-      `中偏 ${getBandPct('medium').toFixed(0)}%｜重偏 ${getBandPct('heavy').toFixed(0)}%｜連穩加分 +${streakBonusScore}`,
-      W / 2,
-      H / 2 + 98
-    );
-    ctx.fillText(
-      `完成 ${getElapsedSeconds().toFixed(2)}s｜合格 ${getQualifyingSeconds().toFixed(2)}s｜提早加分 +${earlyFinishBonus}`,
-      W / 2,
-      H / 2 + 122
-    );
-    ctx.fillText(
-      `最高連續穩定 ${getBestPerfectPct().toFixed(0)}%｜規則：穩定 10/12/14/16/18/20，微偏 7，有偏 5，中偏 3，重偏 1`,
-      W / 2,
-      H / 2 + 146
-    );
+    const tableBottom = drawResultTable(W, H / 2 + 70);
 
     // 方向提示
     const tip = surviveFrames > timeLimitFrames
@@ -1495,12 +1574,8 @@
       : isDangerAbove ? '飛太高了——下次試試往下一點 🖱️↓' : '掉太低了——下次試試往上一點 🖱️↑';
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
-    ctx.fillText(tip, W / 2, H / 2 + 174);
-
-    // 按鍵提示
-    ctx.font = '500 14px Inter, sans-serif';
-    ctx.fillStyle = 'rgba(96,165,250,0.8)';
-    ctx.fillText('[ R ] 重試　　[ Esc ] 離開', W / 2, H / 2 + 214);
+    ctx.fillText(tip, W / 2, tableBottom + 30);
+    drawResultButtons(W, tableBottom + 56, '重試');
 
     ctx.restore();
   }
@@ -1541,33 +1616,8 @@
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
     ctx.fillText(`評價：${stars === 3 ? '完美滑行！' : stars === 2 ? '技術湛！' : '還有進步空間'}`, W / 2, H / 2 + 110);
-
-    ctx.font = '500 14px Inter, sans-serif';
-    ctx.fillStyle = 'rgba(226,232,240,0.88)';
-    ctx.fillText(
-      `穩定 ${getBandPct('perfect').toFixed(0)}%｜微偏 ${getBandPct('light').toFixed(0)}%｜有偏 ${getBandPct('mild').toFixed(0)}%`,
-      W / 2,
-      H / 2 + 136
-    );
-    ctx.fillText(
-      `中偏 ${getBandPct('medium').toFixed(0)}%｜重偏 ${getBandPct('heavy').toFixed(0)}%｜連穩加分 +${streakBonusScore}`,
-      W / 2,
-      H / 2 + 160
-    );
-    ctx.fillText(
-      `完成 ${getElapsedSeconds().toFixed(2)}s｜合格 ${getQualifyingSeconds().toFixed(2)}s｜提早加分 +${earlyFinishBonus}`,
-      W / 2,
-      H / 2 + 184
-    );
-    ctx.fillText(
-      `最高連續穩定 ${getBestPerfectPct().toFixed(0)}%｜規則：穩定 10/12/14/16/18/20，微偏 7，有偏 5，中偏 3，重偏 1`,
-      W / 2,
-      H / 2 + 208
-    );
-
-    ctx.font = '500 14px Inter, sans-serif';
-    ctx.fillStyle = 'rgba(96,165,250,0.8)';
-    ctx.fillText('[ R ] 再玩一次　　[ Esc ] 離開', W / 2, H / 2 + 244);
+    const tableBottom = drawResultTable(W, H / 2 + 136);
+    drawResultButtons(W, tableBottom + 26, '再玩一次');
 
     ctx.restore();
   }
