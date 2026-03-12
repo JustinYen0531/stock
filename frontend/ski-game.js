@@ -15,11 +15,7 @@
   const BOOST_MULTIPLIER = 2.8; // 按住中鍵時的滾輪增幅
   const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
-  const X_DRIFT_SPEED  = 1.15;
-  const X_ACCEL        = 0.12;
-  const X_DECAY        = 0.94;
-  const X_MAX_SPEED    = 4.5;
-  const X_RIGHT_LIMIT  = 0.42;
+  const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const PERIOD_TUNING = {
     "1mo": { mapWidth: 3.2, heightScale: 1.45, slopeAccel: 0.095, dangerTolerance: 38 },
     "3mo": { mapWidth: 4.2, heightScale: 1.2, slopeAccel: 0.085, dangerTolerance: 42 },
@@ -59,8 +55,6 @@
   let priceMax = 1;
   let terrainYMin = 0;
   let terrainYMax = 1;
-  let charX = 0;
-  let charXSpeed = 0;
   let leftKeyDown = false;
   let rightKeyDown = false;
 
@@ -78,6 +72,7 @@
   let score = 0;
   let maxPossibleScore = 0; // 本關理論最高分
   let surviveFrames = 0;
+  let timeLimitFrames = 0;
   let countdownVal = 3;
   let countdownTimer = 0;
 
@@ -247,7 +242,6 @@
     currentSpeed   = SCROLL_SPEED;
     countdownVal   = 3;
     countdownTimer = 0;
-    charXSpeed     = 0;
     leftKeyDown    = false;
     rightKeyDown   = false;
 
@@ -257,9 +251,10 @@
     // 我們粗略估計：總距離 / 平均速度 = 總幀數 * 10
     const lastX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     maxPossibleScore = Math.floor((lastX / SCROLL_SPEED) * 10);
+    timeLimitFrames = Math.max(1, Math.floor((lastX / SCROLL_SPEED) * TIME_LIMIT_RATIO));
 
     // 角色起始 Y 對齊玩家所在 X 位置的地形中心，開場就精準壓在線上
-    charX       = canvas.width * CHAR_X_RATIO;
+    const charX = canvas.width * CHAR_X_RATIO;
     charY       = getLineYAt(charX);
     charTargetY = charY;
 
@@ -356,22 +351,10 @@
     
     score += multiplier;
 
+    const charX = canvas.width * CHAR_X_RATIO;
+
     // 平滑移動角色
     charY += (charTargetY - charY) * 0.18;
-    if (isBoosting) {
-      charXSpeed = Math.min(X_MAX_SPEED, charXSpeed + X_ACCEL);
-    } else {
-      charXSpeed *= X_DECAY;
-    }
-    charX += charXSpeed - X_DRIFT_SPEED;
-    const leftFailX = HITBOX_W / 2 + 4;
-    const rightLimitX = canvas.width * X_RIGHT_LIMIT;
-    if (charX <= leftFailX) {
-      charX = leftFailX;
-      triggerDeath(getLineYAt(terrainScrollX + charX));
-      return;
-    }
-    charX = Math.min(rightLimitX, charX);
 
     // 計算目前捲動位置對應的地形 Y
     const lineY = getLineYAt(terrainScrollX + charX);
@@ -392,6 +375,11 @@
     currentSpeed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, currentSpeed));
 
     terrainScrollX += currentSpeed;
+
+    if (surviveFrames > timeLimitFrames) {
+      triggerDeath(lineY);
+      return;
+    }
 
     // 判定：角色 hitbox 是否包住線
     const hh        = getHitboxH();
@@ -501,7 +489,7 @@
     updateCursorVisibility();
     for (let i = 0; i < 40; i++) {
       particles.push({
-        x: charX,
+        x: canvas.width * CHAR_X_RATIO,
         y: charY,
         vx: (Math.random() - 0.5) * 6,
         vy: (Math.random() - 0.8) * 5,
@@ -650,7 +638,7 @@
   function drawTerrain(W, H) {
     if (!terrainPoints.length) return;
 
-    const charWorldX = terrainScrollX + charX;
+    const charWorldX = terrainScrollX + canvas.width * CHAR_X_RATIO;
     const lineY = getLineYAt(charWorldX);
     drawReferenceGrid(W);
 
@@ -800,7 +788,7 @@
      角色繪製 — 右向滑雪者，5 種姿態
   ══════════════════════════════════════════════════ */
   function drawCharacter(W) {
-    const cx      = charX;
+    const cx      = canvas.width * CHAR_X_RATIO;
     const cy      = charY;
     const lineY   = getLineYAt(terrainScrollX + cx);
     const DR      = getDangerRatio(); // 0~1 危險程度
@@ -1053,7 +1041,7 @@
     }
 
     // 進度條
-    const charWorldX = terrainScrollX + charX;
+    const charWorldX = terrainScrollX + canvas.width * CHAR_X_RATIO;
     const totalW = terrainPoints[terrainPoints.length - 1]?.x || 1;
     const prog = Math.min(1, charWorldX / totalW);
     const barW = 160, barH = 6, barX = W - barW - 16, barY = 18;
@@ -1075,6 +1063,13 @@
     ctx.fillStyle = 'rgba(148,163,184,0.7)';
     ctx.textAlign = 'right';
     ctx.fillText(`${Math.floor(prog * 100)}%  完成`, W - 16, barY + barH + 16);
+
+    const timeLeftFrames = Math.max(0, timeLimitFrames - surviveFrames);
+    const timeLeftSec = (timeLeftFrames / 60).toFixed(1);
+    ctx.textAlign = 'left';
+    ctx.font = '600 11px Inter, sans-serif';
+    ctx.fillStyle = timeLeftFrames < 180 ? '#f87171' : 'rgba(148,163,184,0.82)';
+    ctx.fillText(`TIME ${timeLeftSec}s`, 16, 74);
 
     // ── 速度儀表 (Speedometer) ──
     const gaugeR = 45;
@@ -1221,7 +1216,7 @@
     ctx.fillStyle = '#f87171';
     ctx.shadowColor = '#f87171';
     ctx.shadowBlur  = 20;
-    ctx.fillText('💥 出界了！', W / 2, H / 2 - 60);
+    ctx.fillText(surviveFrames > timeLimitFrames ? '⏰ 超時了！' : '💥 出界了！', W / 2, H / 2 - 60);
 
     // 分數
     ctx.font = '700 32px JetBrains Mono, monospace';
@@ -1230,7 +1225,9 @@
     ctx.fillText(`得分：${score}`, W / 2, H / 2 + 10);
 
     // 方向提示
-    const tip = isDangerAbove ? '飛太高了——下次試試往下一點 🖱️↓' : '掉太低了——下次試試往上一點 🖱️↑';
+    const tip = surviveFrames > timeLimitFrames
+      ? '速度不夠快——下次多利用加速把通關時間壓進 80% 內'
+      : isDangerAbove ? '飛太高了——下次試試往下一點 🖱️↓' : '掉太低了——下次試試往上一點 🖱️↑';
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
     ctx.fillText(tip, W / 2, H / 2 + 55);
