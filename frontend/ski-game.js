@@ -383,15 +383,21 @@
     const belowLine = hitTop    > lineY; // hitbox 完全在線下方
 
     if (aboveLine || belowLine) {
-      dangerFrames++;
+      // 根據偏離距離的核心邏輯：離線越遠，累積越快
+      const dist = aboveLine ? (lineY - hitBottom) : (hitTop - lineY);
+      // 基礎增加 1，加上額外的距離加成（每偏離 20px 多增加 1 倍速）
+      const increaseRate = 1 + Math.min(3, dist / 20); 
+      
+      dangerFrames += increaseRate;
       isDangerAbove = aboveLine;
       isDangerBelow = belowLine;
+      
       if (dangerFrames >= config.dangerTolerance) {
         triggerDeath(lineY);
         return;
       }
     } else {
-      dangerFrames   = Math.max(0, dangerFrames - 2); // 恢復
+      dangerFrames   = Math.max(0, dangerFrames - 1.5); // 稍微放慢恢復速率，讓玩家更有壓力感
       isDangerAbove  = false;
       isDangerBelow  = false;
     }
@@ -523,13 +529,26 @@
     const W = canvas.width;
     const H = canvas.height;
 
+    // ── 畫面震動計算 ──
+    const dangerConfig = getPeriodConfig();
+    const heatRatio = dangerFrames / dangerConfig.dangerTolerance;
+    let shakeX = 0, shakeY = 0;
+    if (heatRatio > 0.75 && gameState === 'playing') {
+      const shakeAmp = (heatRatio - 0.75) * 15; // 震動幅度隨危險度增加
+      shakeX = (Math.random() - 0.5) * shakeAmp;
+      shakeY = (Math.random() - 0.5) * shakeAmp;
+    }
+
+    ctx.save();
+    ctx.translate(shakeX, shakeY); // 套用震動
+
     // 背景漸層（夜間雪山）
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0,   '#0a0f1e');
     bg.addColorStop(0.5, '#0d1829');
     bg.addColorStop(1,   '#111f35');
     ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
+    ctx.fillRect(-20, -20, W + 40, H + 40); // 這裡稍微畫大一點防止震動露底
 
     // 星星背景
     drawStars(W, H);
@@ -555,8 +574,10 @@
 
     // 粒子（碎片在前）
     drawParticles(false);
+    
+    ctx.restore(); // 結束震動影響範圍
 
-    // HUD
+    // HUD (不隨畫面震動，保持 UI 穩定)
     if (gameState === 'playing' || gameState === 'countdown') {
       drawHUD(W, H);
     }
@@ -1040,11 +1061,58 @@
     const gx = gaugeR + 25;
     const gy = H - 25;
 
-    // 外圈半圓
+    // ── 偏離累積條 (Accumulation / Heat Bar) ──
+    const dangerConfig = getPeriodConfig();
+    const heatRatio = Math.min(1, dangerFrames / dangerConfig.dangerTolerance);
+    
+    // 進度條參數
+    const hbW = 120; // 寬度
+    const hbH = 10;  // 高度
+    const hbx = 20;  // 靠左 20px
+    const hby = H - 140; // 距離底部 140px，確保在速度計之上
+
+    // 1. 背景底框
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.fillRect(hbx, hby, hbW, hbH);
+    ctx.strokeRect(hbx, hby, hbW, hbH);
+
+    // 2. 顏色判定 (綠 -> 黃 -> 紅)
+    let heatColor = '#4ade80'; // 安全綠
+    if (heatRatio > 0.8) heatColor = '#f87171';      // 極限紅
+    else if (heatRatio > 0.4) heatColor = '#fbbf24'; // 警告黃
+
+    // 3. 填充進度
+    if (heatRatio > 0.01) {
+      ctx.fillStyle = heatColor;
+      
+      // 危險時增加外發光特效 (WOW effect)
+      if (heatRatio > 0.6) {
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = heatColor;
+      }
+      
+      ctx.fillRect(hbx + 2, hby + 2, (hbW - 4) * heatRatio, hbH - 4);
+      ctx.shadowBlur = 0; // 重置發光防止污染
+    }
+
+    // 4. 文字與百分比
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 12px Inter, sans-serif';
+    ctx.fillStyle = heatRatio > 0.8 ? '#f87171' : '#f8fafc';
+    ctx.fillText('偏離值 ⚡', hbx, hby - 10);
+    
+    ctx.textAlign = 'right';
+    ctx.font = '700 11px JetBrains Mono, monospace';
+    ctx.fillStyle = heatColor;
+    ctx.fillText(`${Math.floor(heatRatio * 100)}%`, hbx + hbW, hby - 10);
+
+    // 外圈半圓 (速度計)
     ctx.beginPath();
     ctx.arc(gx, gy, gaugeR, Math.PI, 0);
     ctx.lineWidth = 8;
-    ctx.strokeStyle = 'rgba(30,45,69,0.8)';
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)'; // 弱化未使用的底圈
     ctx.stroke();
 
     // 速度分區顏色
