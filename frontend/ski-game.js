@@ -83,6 +83,8 @@
   let perfectStreakDistance = 0;
   let bestPerfectStreakDistance = 0;
   let streakBonusScore = 0;
+  let elapsedFrames = 0;
+  let earlyFinishBonus = 0;
   let scoreBandFrames = {
     perfect: 0,
     light: 0,
@@ -120,7 +122,7 @@
   }
 
   function getFinalScore() {
-    return Math.round(score * getScoreMultiplier());
+    return Math.round((score + earlyFinishBonus) * getScoreMultiplier());
   }
 
   function getDangerBand(ratio) {
@@ -157,6 +159,14 @@
   function getBestPerfectPct() {
     const totalDistance = Math.max(1, terrainPoints[terrainPoints.length - 1]?.x || 1);
     return (bestPerfectStreakDistance / totalDistance) * 100;
+  }
+
+  function getElapsedSeconds() {
+    return elapsedFrames / 60;
+  }
+
+  function getQualifyingSeconds() {
+    return timeLimitFrames / 60;
   }
 
   function getEarnedStars() {
@@ -330,6 +340,8 @@
     perfectStreakDistance = 0;
     bestPerfectStreakDistance = 0;
     streakBonusScore = 0;
+    elapsedFrames = 0;
+    earlyFinishBonus = 0;
     scoreBandFrames = {
       perfect: 0,
       light: 0,
@@ -466,6 +478,8 @@
     if (gameState !== 'playing') return;
 
     surviveFrames++;
+    elapsedFrames++;
+    const config = getPeriodConfig();
     
     const charX = canvas.width * CHAR_X_RATIO;
 
@@ -567,6 +581,8 @@
     // 關卡完成：捲過地形最後一點
     const lastX = terrainPoints[terrainPoints.length - 1].x;
     if (terrainScrollX + charX >= lastX) {
+      const secondsEarly = Math.max(0, getQualifyingSeconds() - getElapsedSeconds());
+      earlyFinishBonus = Math.round(secondsEarly * 50);
       gameState = 'complete';
       disableWheelInput();
       updateCursorVisibility();
@@ -1192,6 +1208,14 @@
     ctx.font = '600 10px Inter, sans-serif';
     ctx.fillText('RANK', 105, 38);
 
+    ctx.textAlign = 'center';
+    ctx.font = '700 26px JetBrains Mono, monospace';
+    ctx.fillStyle = '#e8f0fe';
+    ctx.fillText(getElapsedSeconds().toFixed(2), W / 2, 34);
+    ctx.font = '600 11px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(148,163,184,0.85)';
+    ctx.fillText(`合格 ${getQualifyingSeconds().toFixed(2)}s`, W / 2, 52);
+
     const accelActive = (rightKeyDown || rightMouseDown) && !(leftKeyDown || leftMouseDown);
     const brakeActive = (leftKeyDown || leftMouseDown) && !(rightKeyDown || rightMouseDown);
 
@@ -1455,9 +1479,14 @@
       H / 2 + 98
     );
     ctx.fillText(
-      `最高連續穩定 ${getBestPerfectPct().toFixed(0)}%｜規則：穩定 10/12/14/16/18/20，微偏 7，有偏 5，中偏 3，重偏 1`,
+      `完成 ${getElapsedSeconds().toFixed(2)}s｜合格 ${getQualifyingSeconds().toFixed(2)}s｜提早加分 +${earlyFinishBonus}`,
       W / 2,
       H / 2 + 122
+    );
+    ctx.fillText(
+      `最高連續穩定 ${getBestPerfectPct().toFixed(0)}%｜規則：穩定 10/12/14/16/18/20，微偏 7，有偏 5，中偏 3，重偏 1`,
+      W / 2,
+      H / 2 + 146
     );
 
     // 方向提示
@@ -1466,12 +1495,12 @@
       : isDangerAbove ? '飛太高了——下次試試往下一點 🖱️↓' : '掉太低了——下次試試往上一點 🖱️↑';
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
-    ctx.fillText(tip, W / 2, H / 2 + 150);
+    ctx.fillText(tip, W / 2, H / 2 + 174);
 
     // 按鍵提示
     ctx.font = '500 14px Inter, sans-serif';
     ctx.fillStyle = 'rgba(96,165,250,0.8)';
-    ctx.fillText('[ R ] 重試　　[ Esc ] 離開', W / 2, H / 2 + 190);
+    ctx.fillText('[ R ] 重試　　[ Esc ] 離開', W / 2, H / 2 + 214);
 
     ctx.restore();
   }
@@ -1526,14 +1555,19 @@
       H / 2 + 160
     );
     ctx.fillText(
-      `最高連續穩定 ${getBestPerfectPct().toFixed(0)}%｜規則：穩定 10/12/14/16/18/20，微偏 7，有偏 5，中偏 3，重偏 1`,
+      `完成 ${getElapsedSeconds().toFixed(2)}s｜合格 ${getQualifyingSeconds().toFixed(2)}s｜提早加分 +${earlyFinishBonus}`,
       W / 2,
       H / 2 + 184
+    );
+    ctx.fillText(
+      `最高連續穩定 ${getBestPerfectPct().toFixed(0)}%｜規則：穩定 10/12/14/16/18/20，微偏 7，有偏 5，中偏 3，重偏 1`,
+      W / 2,
+      H / 2 + 208
     );
 
     ctx.font = '500 14px Inter, sans-serif';
     ctx.fillStyle = 'rgba(96,165,250,0.8)';
-    ctx.fillText('[ R ] 再玩一次　　[ Esc ] 離開', W / 2, H / 2 + 220);
+    ctx.fillText('[ R ] 再玩一次　　[ Esc ] 離開', W / 2, H / 2 + 244);
 
     ctx.restore();
   }
