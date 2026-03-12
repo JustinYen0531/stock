@@ -166,10 +166,53 @@
       </div>
       <div class="stock-action-card">
         <div class="stock-action-area">
-          <button class="ski-launch-btn" onclick="launchSkiGame()" title="把這支股票變成滑雪關卡！">
-            <span class="ski-btn-icon">⛷️</span>
-            <span class="ski-btn-text">滑雪挑戰！</span>
-          </button>
+          <div class="ski-action-info">
+            <span class="ski-action-icon">⛷️</span>
+            <div class="ski-action-text">
+              <span class="ski-action-title">滑雪挑戰模式</span>
+              <span class="ski-action-desc">把這支股票的走勢變成滑雪關卡！</span>
+            </div>
+          </div>
+          <!-- 練習模式調整滑桿 -->
+          <div class="ski-sliders-panel">
+            <div class="ski-slider-row">
+              <span class="ski-slider-label">⛰️ 陡峭</span>
+              <input type="range" id="steepnessSlider" class="ski-slider" min="1" max="100" value="40"
+                     oninput="document.getElementById('steepnessVal').textContent=this.value;this.style.setProperty('--val',this.value)">
+              <span class="ski-slider-val" id="steepnessVal">40</span>
+            </div>
+            <div class="ski-slider-row">
+              <span class="ski-slider-label">📦 碰撞</span>
+              <input type="range" id="hitboxSlider" class="ski-slider" min="1" max="100" value="60"
+                     oninput="document.getElementById('hitboxVal').textContent=this.value;this.style.setProperty('--val',this.value)">
+              <span class="ski-slider-val" id="hitboxVal">60</span>
+            </div>
+            <!-- 練習區間 -->
+            <div class="ski-slider-row ski-range-row">
+              <span class="ski-slider-label">📍 區間</span>
+              <input type="number" id="rangeStart" class="ski-range-num" min="0" max="99" value="0">
+              <span class="ski-range-sep">% ～</span>
+              <input type="number" id="rangeEnd" class="ski-range-num" min="1" max="100" value="100">
+              <span class="ski-range-sep">%</span>
+            </div>
+            <!-- 快速預設列 -->
+            <div class="ski-slider-preset-row">
+              <button class="ski-preset-btn" onclick="setPracticeRange(0,33)"  title="前段 0~33%">前段</button>
+              <button class="ski-preset-btn" onclick="setPracticeRange(33,67)" title="中段 33~67%">中段</button>
+              <button class="ski-preset-btn" onclick="setPracticeRange(67,100)" title="後段 67~100%">後段</button>
+              <button class="ski-preset-btn ski-preset-normal" onclick="setNormalPreset()" title="難度跟一般模式一樣">⚡ 正常難度</button>
+            </div>
+          </div>
+          <div class="ski-btn-group">
+            <button class="ski-launch-btn ski-practice-btn" onclick="launchSkiGamePractice()" title="練習模式：依滑桿調整難度">
+              <span class="ski-btn-icon">🟡</span>
+              <span class="ski-btn-text">練習模式</span>
+            </button>
+            <button class="ski-launch-btn ski-launch-big" onclick="launchSkiGame()" title="把這支股票變成滑雪關卡！">
+              <span class="ski-btn-icon">🎿</span>
+              <span class="ski-btn-text">開始！</span>
+            </button>
+          </div>
         </div>
       </div>
 

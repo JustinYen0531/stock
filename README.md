@@ -30,12 +30,11 @@ GEMINI_API_KEY=您的_API_KEY
 
 ### 3. 安裝與執行
 ```bash
-# 安裝依賴
-cd backend
-npm install
+# 安裝後端依賴
+npm run install:backend
 
-# 啟動伺服器
-node server.js
+# 從專案根目錄啟動
+npm run dev
 ```
 開啟瀏覽器訪問 `http://localhost:8000`。
 

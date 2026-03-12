@@ -6,7 +6,7 @@
 
 (function () {
   /* ── 常數 ───────────────────────────────────────── */
-  const HITBOX_H       = 40;   // 角色 hitbox 高度 (px)
+  const HITBOX_H       = 40;   // 一般模式 hitbox 高度 (px)
   const HITBOX_W       = 28;   // 角色 hitbox 寬度 (px)
   const SCROLL_SPEED   = 6.0;  // 基準速度
   const MIN_SPEED      = 3.0;  // 極限最低速
@@ -22,12 +22,27 @@
     "1y":  { mapWidth: 7.5, heightScale: 0.82, slopeAccel: 0.065, dangerTolerance: 50 },
     "2y":  { mapWidth: 10.5, heightScale: 0.68, slopeAccel: 0.055, dangerTolerance: 56 },
   };
+  // 練習模式係數 (乘以一般值)
+  const PRACTICE_HEIGHT_SCALE_MULT  = 0.55; // 地形高度縮減到 55% (更平緩)
+  const PRACTICE_SLOPE_ACCEL_MULT   = 0.50; // 斜率加速只有 50% (更慢)
+  const PRACTICE_DANGER_TOL_MULT    = 2.5;  // 容忍時間放大 2.5 倍
+  const PRACTICE_HITBOX_H           = 72;   // 練習模式 hitbox 高度 (比一般大很多)
 
   /* ── 狀態 ───────────────────────────────────────── */
   let canvas, ctx;
   let animId;
   let gameState = 'idle'; // idle | countdown | playing | dead | complete
   let stockData = null;   // { symbol, closes, dates, period }
+  let practiceMode = false; // 練習模式開關
+  let practiceOpts = { steepness: 40, hitboxSize: 60, startPct: 0, endPct: 100 }; // 從滑框傳入
+
+  // 動態取得當前 hitbox 高度
+  // hitboxSize 1√100 → 映射到 40√100px
+  function getHitboxH() {
+    if (!practiceMode) return HITBOX_H;
+    const t = (practiceOpts.hitboxSize - 1) / 99; // 0~1
+    return Math.round(HITBOX_H + t * (100 - HITBOX_H)); // 40~100px
+  }
 
   // 地形
   let terrainPoints = []; // [{x, y}] 已映射到畫面座標
@@ -57,15 +72,37 @@
   let currentSpeed = SCROLL_SPEED;
 
   function getPeriodConfig() {
-    return PERIOD_TUNING[stockData?.period] || PERIOD_TUNING["6mo"];
+    const base = PERIOD_TUNING[stockData?.period] || PERIOD_TUNING["6mo"];
+    if (!practiceMode) return base;
+    // steepness 1~100 → 地形高度 0.08~1.0 倍，斜率加速 0.05~1.0 倍
+    const t = (practiceOpts.steepness - 1) / 99; // 0~1
+    const heightMult = 0.08 + t * 0.92;  // 0.08x (very flat) ~ 1.0x (normal)
+    const slopeMult  = 0.05 + t * 0.95;  // 0.05x (very slow) ~ 1.0x (normal)
+    return {
+      mapWidth:        base.mapWidth,
+      heightScale:     base.heightScale * heightMult,
+      slopeAccel:      base.slopeAccel  * slopeMult,
+      dangerTolerance: Math.round(base.dangerTolerance * PRACTICE_DANGER_TOL_MULT),
+    };
   }
 
   /* ══════════════════════════════════════════════════
      公開 API — 從 app.js 呼叫
   ══════════════════════════════════════════════════ */
   window.SkiGame = {
-    launch(data) {
-      stockData = data; // { symbol, closes: [], dates: [], period }
+    launch(data, options = {}) {
+      stockData    = data; // { symbol, closes: [], dates: [], period }
+      practiceMode = !!options.practice;
+      if (practiceMode) {
+        practiceOpts = {
+          steepness:  Math.max(1, Math.min(100, options.steepness  ?? 40)),
+          hitboxSize: Math.max(1, Math.min(100, options.hitboxSize ?? 60)),
+          startPct:   Math.max(0, Math.min(99,  options.startPct  ?? 0)),
+          endPct:     Math.max(1, Math.min(100, options.endPct    ?? 100)),
+        };
+        // 確保 start < end
+        if (practiceOpts.startPct >= practiceOpts.endPct) practiceOpts.endPct = Math.min(100, practiceOpts.startPct + 1);
+      }
       openModal();
       initGame();
     },
@@ -118,7 +155,17 @@
   /* ── 地形建構 ────────────────────────────────────── */
   function buildTerrain() {
     if (!stockData || !canvas) return;
-    const closes = stockData.closes;
+    const allCloses = stockData.closes;
+    const allN = allCloses.length;
+
+    // 練習模式：依百分比切片地形
+    let closes = allCloses;
+    if (practiceMode && (practiceOpts.startPct > 0 || practiceOpts.endPct < 100)) {
+      const s = Math.floor(allN * practiceOpts.startPct / 100);
+      const e = Math.min(allN, Math.ceil(allN * practiceOpts.endPct  / 100));
+      closes = allCloses.slice(s, e);
+    }
+
     const N = closes.length;
     if (N < 2) return;
 
@@ -212,7 +259,8 @@
     const moveAmount = SCROLL_SENS * (isBoosting ? BOOST_MULTIPLIER : 1);
     charTargetY += e.deltaY > 0 ? moveAmount : -moveAmount;
     // 夾在畫面範圍內
-    charTargetY = Math.max(HITBOX_H / 2 + 5, Math.min(canvas.height - HITBOX_H / 2 - 5, charTargetY));
+    const hh = getHitboxH();
+    charTargetY = Math.max(hh / 2 + 5, Math.min(canvas.height - hh / 2 - 5, charTargetY));
   }
 
   function onMouseDown(e) {
@@ -296,8 +344,9 @@
     terrainScrollX += currentSpeed;
 
     // 判定：角色 hitbox 是否包住線
-    const hitTop    = charY - HITBOX_H / 2;
-    const hitBottom = charY + HITBOX_H / 2;
+    const hh        = getHitboxH();
+    const hitTop    = charY - hh / 2;
+    const hitBottom = charY + hh / 2;
     const aboveLine = hitBottom < lineY; // hitbox 完全在線上方
     const belowLine = hitTop    > lineY; // hitbox 完全在線下方
 
@@ -586,21 +635,25 @@
     const t       = Date.now() / 1000;
 
     /* ── hitbox 框（不隨姿態旋轉）─────────────────── */
+    const hh = getHitboxH();
     ctx.save();
     const hitAlpha  = 0.12 + DR * 0.28;
+    // 練習模式：hitbox 邊框帶橘色提示
     const hitBorder = DR > 0
       ? `rgba(255,${Math.floor(Math.max(0, 100 - DR*100))},${Math.floor(Math.max(0, 100 - DR*100))},0.85)`
-      : 'rgba(96,165,250,0.45)';
+      : practiceMode ? 'rgba(251,191,36,0.55)' : 'rgba(96,165,250,0.45)';
     ctx.strokeStyle = hitBorder;
-    ctx.fillStyle   = DR > 0 ? `rgba(255,80,80,${hitAlpha})` : `rgba(96,165,250,${hitAlpha})`;
-    ctx.lineWidth   = 2;
+    ctx.fillStyle   = DR > 0
+      ? `rgba(255,80,80,${hitAlpha})`
+      : practiceMode ? `rgba(251,191,36,${hitAlpha * 0.8})` : `rgba(96,165,250,${hitAlpha})`;
+    ctx.lineWidth   = practiceMode ? 2.5 : 2;
     ctx.beginPath();
-    ctx.roundRect(cx - HITBOX_W / 2, cy - HITBOX_H / 2, HITBOX_W, HITBOX_H, 6);
+    ctx.roundRect(cx - HITBOX_W / 2, cy - hh / 2, HITBOX_W, hh, 6);
     ctx.fill();
     ctx.stroke();
 
     // 虛線：hitbox 邊緣到地形線
-    const edgeY = lineY > cy ? cy + HITBOX_H / 2 : cy - HITBOX_H / 2;
+    const edgeY = lineY > cy ? cy + hh / 2 : cy - hh / 2;
     ctx.setLineDash([3, 4]);
     ctx.strokeStyle = 'rgba(148,163,184,0.28)';
     ctx.lineWidth   = 1;
@@ -787,11 +840,18 @@
   function drawHUD(W, H) {
     ctx.save();
 
-    // 股票名稱
+    // 股票名稱 + 練習模式標示
     ctx.font = '600 13px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.9)';
     ctx.textAlign = 'left';
-    ctx.fillText(`⛷️  ${stockData?.symbol || ''}  關卡`, 16, 28);
+    let modeLabel;
+    if (practiceMode) {
+      const s = practiceOpts.startPct, e = practiceOpts.endPct;
+      modeLabel = (s === 0 && e === 100) ? '🟡 練習模式' : `🟡 練習 ${s}%～${e}%`;
+    } else {
+      modeLabel = '關卡';
+    }
+    ctx.fillText(`⛷️  ${stockData?.symbol || ''}  ${modeLabel}`, 16, 28);
 
     // 分數
     ctx.font = '700 22px JetBrains Mono, monospace';

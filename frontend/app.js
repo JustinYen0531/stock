@@ -565,6 +565,58 @@ function launchSkiGame() {
   }
 }
 
+function launchSkiGamePractice() {
+  if (!window.currentGameData) {
+    alert('請先載入一支股票再開始練習！');
+    return;
+  }
+  const steepness  = parseInt(document.getElementById('steepnessSlider')?.value ?? 40);
+  const hitboxSize = parseInt(document.getElementById('hitboxSlider')?.value ?? 60);
+  let startPct = parseInt(document.getElementById('rangeStart')?.value ?? 0);
+  let endPct   = parseInt(document.getElementById('rangeEnd')?.value ?? 100);
+  // 防呆：確保 start < end 且在 0~100
+  startPct = Math.max(0, Math.min(99, startPct));
+  endPct   = Math.max(startPct + 1, Math.min(100, endPct));
+  if (window.SkiGame) {
+    window.SkiGame.launch(window.currentGameData, { practice: true, steepness, hitboxSize, startPct, endPct });
+  }
+}
+
+// 快速設定練習區間
+function setPracticeRange(start, end) {
+  const s = document.getElementById('rangeStart');
+  const e = document.getElementById('rangeEnd');
+  if (s) s.value = start;
+  if (e) e.value = end;
+}
+
+// 滑桿初始化：讓 CSS --val 變數追蹤滑桿進度（填色效果）
+(function initSliders() {
+  function syncSlider(el) {
+    if (!el) return;
+    el.style.setProperty('--val', el.value);
+    el.addEventListener('input', () => el.style.setProperty('--val', el.value));
+  }
+  // DOM 可能還沒 ready，等一下
+  document.addEventListener('DOMContentLoaded', () => {
+    syncSlider(document.getElementById('steepnessSlider'));
+    syncSlider(document.getElementById('hitboxSlider'));
+  });
+  // 若已 ready 則立即執行
+  if (document.readyState !== 'loading') {
+    syncSlider(document.getElementById('steepnessSlider'));
+    syncSlider(document.getElementById('hitboxSlider'));
+  }
+})();
+
+// 預設：正常難度（陡峭=100, 碰撞=1）
+function setNormalPreset() {
+  const s = document.getElementById('steepnessSlider');
+  const h = document.getElementById('hitboxSlider');
+  if (s) { s.value = 100; s.style.setProperty('--val', 100); document.getElementById('steepnessVal').textContent = 100; }
+  if (h) { h.value = 1;   h.style.setProperty('--val', 1);   document.getElementById('hitboxVal').textContent = 1; }
+}
+
 // ── 分類股票選股器 ─────────────────────────────────
 let _pickerOpen = false;
 
