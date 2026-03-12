@@ -83,6 +83,7 @@
 
   // 速度
   let currentSpeed = SCROLL_SPEED;
+  let playerSpeedMultiplier = 1;
 
   function getDangerLimit() {
     const config = getPeriodConfig();
@@ -242,6 +243,7 @@
     isDangerBelow  = false;
     particles      = [];
     currentSpeed   = SCROLL_SPEED;
+    playerSpeedMultiplier = 1;
     countdownVal   = 3;
     countdownTimer = 0;
     leftKeyDown    = false;
@@ -372,6 +374,16 @@
     // 空氣阻力：緩緩拉回基準速度 (讓速度不會永遠卡在最高或最低)
     const drag = 0.004;
     currentSpeed += (SCROLL_SPEED - currentSpeed) * drag;
+
+    // 玩家自主速度倍率：只受左右鍵影響，與上下坡造成的實際速度分開
+    if (rightKeyDown && !leftKeyDown) {
+      playerSpeedMultiplier = Math.min(SPEED_BOOST_MULT, playerSpeedMultiplier + 0.008);
+    } else if (leftKeyDown && !rightKeyDown) {
+      playerSpeedMultiplier = Math.max(SPEED_BRAKE_MULT, playerSpeedMultiplier - 0.008);
+    } else {
+      const driftBack = playerSpeedMultiplier > 1 ? -0.005 : playerSpeedMultiplier < 1 ? 0.005 : 0;
+      playerSpeedMultiplier = Math.max(SPEED_BRAKE_MULT, Math.min(SPEED_BOOST_MULT, playerSpeedMultiplier + driftBack));
+    }
 
     // 鍵盤速度控制：右 / D 加速，左 / A 減速
     if (rightKeyDown && !leftKeyDown) {
@@ -1215,13 +1227,13 @@
     ctx.fillStyle = '#e8f0fe';
     ctx.textAlign = 'center';
     const kmh = Math.floor(currentSpeed * 15);
-    const speedMult = (currentSpeed / SCROLL_SPEED).toFixed(2);
+    const speedMult = playerSpeedMultiplier.toFixed(2);
     ctx.fillText(`${kmh}`, gx, gy - 18);
     ctx.font = '600 13px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
     ctx.fillText('VELOCITY', gx, gy + 20);
 
-    const speedMultColor = currentSpeed > SCROLL_SPEED ? '#fbbf24' : currentSpeed < SCROLL_SPEED ? '#fca5a5' : '#93c5fd';
+    const speedMultColor = playerSpeedMultiplier > 1 ? '#fbbf24' : playerSpeedMultiplier < 1 ? '#fca5a5' : '#93c5fd';
     ctx.font = '800 54px JetBrains Mono, monospace';
     ctx.fillStyle = speedMultColor;
     ctx.textAlign = 'center';
