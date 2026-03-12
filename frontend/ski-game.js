@@ -63,7 +63,7 @@
   // 角色
   let charY = 200;        // 角色中心 Y
   let charTargetY = 200;  // 滾輪目標 Y（加平滑）
-  let isBoosting = false; // 同時按左右鍵時提升上下移動幅度
+  let isBoosting = false; // 滑鼠中鍵按住時提升上下移動幅度
 
   // 危險計時
   let dangerFrames = 0;
@@ -271,12 +271,18 @@
   /* ── 輸入綁定 ────────────────────────────────────── */
   function bindInput() {
     canvas.addEventListener('wheel', onWheel, { passive: false });
+    canvas.addEventListener('mousedown', onMouseDown);
+    canvas.addEventListener('mouseup', onMouseUp);
+    canvas.addEventListener('mouseleave', onMouseUp);
     document.addEventListener('keydown', onKey);
     document.addEventListener('keyup', onKeyUp);
   }
 
   function unbindInput() {
     canvas?.removeEventListener('wheel', onWheel);
+    canvas?.removeEventListener('mousedown', onMouseDown);
+    canvas?.removeEventListener('mouseup', onMouseUp);
+    canvas?.removeEventListener('mouseleave', onMouseUp);
     document.removeEventListener('keydown', onKey);
     document.removeEventListener('keyup', onKeyUp);
   }
@@ -302,6 +308,19 @@
     charTargetY = Math.max(hh / 2 + 5, Math.min(canvas.height - hh / 2 - 5, charTargetY));
   }
 
+  function onMouseDown(e) {
+    if (e.button === 1) {
+      e.preventDefault();
+      isBoosting = true;
+    }
+  }
+
+  function onMouseUp(e) {
+    if (!e || e.button === 1) {
+      isBoosting = false;
+    }
+  }
+
   function onKey(e) {
     if (e.key === 'Escape') closeGame();
     if ((e.key === 'r' || e.key === 'R') && (gameState === 'dead' || gameState === 'complete')) {
@@ -309,13 +328,11 @@
     }
     if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftKeyDown = true;
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightKeyDown = true;
-    isBoosting = leftKeyDown && rightKeyDown;
   }
 
   function onKeyUp(e) {
     if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftKeyDown = false;
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightKeyDown = false;
-    isBoosting = leftKeyDown && rightKeyDown;
   }
 
   /* ── 主迴圈 ──────────────────────────────────────── */
