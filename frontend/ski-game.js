@@ -13,6 +13,8 @@
   const MAX_SPEED      = 11.0; // 極限最高速
   const SCROLL_SENS    = 18;   // 滾輪靈敏度
   const BOOST_MULTIPLIER = 2.8; // 按住中鍵時的滾輪增幅
+  const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
+  const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
   const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
@@ -61,7 +63,7 @@
   // 角色
   let charY = 200;        // 角色中心 Y
   let charTargetY = 200;  // 滾輪目標 Y（加平滑）
-  let isBoosting = false; // 中鍵按住時提升上下移動幅度
+  let isBoosting = false; // 同時按左右鍵時提升上下移動幅度
 
   // 危險計時
   let dangerFrames = 0;
@@ -371,8 +373,17 @@
     const drag = 0.004;
     currentSpeed += (SCROLL_SPEED - currentSpeed) * drag;
 
+    // 鍵盤速度控制：右 / D 加速，左 / A 減速
+    if (rightKeyDown && !leftKeyDown) {
+      currentSpeed += 0.16;
+    } else if (leftKeyDown && !rightKeyDown) {
+      currentSpeed -= 0.14;
+    }
+
     // 限制極速與最低速
-    currentSpeed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, currentSpeed));
+    const dynamicMinSpeed = Math.max(MIN_SPEED, SCROLL_SPEED * SPEED_BRAKE_MULT);
+    const dynamicMaxSpeed = Math.min(MAX_SPEED, SCROLL_SPEED * SPEED_BOOST_MULT);
+    currentSpeed = Math.max(dynamicMinSpeed, Math.min(dynamicMaxSpeed, currentSpeed));
 
     terrainScrollX += currentSpeed;
 
@@ -1034,10 +1045,14 @@
     ctx.font = '600 10px Inter, sans-serif';
     ctx.fillText('RANK', 105, 38);
 
-    if (isBoosting && gameState === 'playing') {
+    if (rightKeyDown && !leftKeyDown && gameState === 'playing') {
       ctx.font = '700 11px Inter, sans-serif';
       ctx.fillStyle = '#fbbf24';
-      ctx.fillText('BOOST', 150, 54);
+      ctx.fillText('ACCEL', 150, 54);
+    } else if (leftKeyDown && !rightKeyDown && gameState === 'playing') {
+      ctx.font = '700 11px Inter, sans-serif';
+      ctx.fillStyle = '#fca5a5';
+      ctx.fillText('BRAKE', 150, 54);
     }
 
     // 進度條
