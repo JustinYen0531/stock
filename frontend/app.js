@@ -582,12 +582,44 @@ function launchSkiGamePractice() {
   }
 }
 
+function getSkiDifficultyState() {
+  const steepness  = parseInt(document.getElementById('steepnessSlider')?.value ?? 40, 10);
+  const hitboxSize = parseInt(document.getElementById('hitboxSlider')?.value ?? 60, 10);
+  const startPct   = parseInt(document.getElementById('rangeStart')?.value ?? 0, 10);
+  const endPct     = parseInt(document.getElementById('rangeEnd')?.value ?? 100, 10);
+  const isNormal = steepness === 100 && hitboxSize === 1 && startPct === 0 && endPct === 100;
+  return { steepness, hitboxSize, startPct, endPct, isNormal };
+}
+
+function updateSkiLaunchButton() {
+  const button = document.getElementById('skiLaunchButton');
+  const icon = document.getElementById('skiLaunchIcon');
+  const text = document.getElementById('skiLaunchText');
+  if (!button || !icon || !text) return;
+
+  const state = getSkiDifficultyState();
+  button.classList.toggle('ski-launch-practice', !state.isNormal);
+  button.title = state.isNormal ? '把這支股票變成滑雪關卡！' : '使用目前滑桿設定進入練習模式';
+  icon.textContent = state.isNormal ? '🎿' : '🟡';
+  text.textContent = state.isNormal ? '開始！' : '練習模式';
+}
+
+function launchSkiGameAdaptive() {
+  const state = getSkiDifficultyState();
+  if (state.isNormal) {
+    launchSkiGame();
+    return;
+  }
+  launchSkiGamePractice();
+}
+
 // 快速設定練習區間
 function setPracticeRange(start, end) {
   const s = document.getElementById('rangeStart');
   const e = document.getElementById('rangeEnd');
   if (s) s.value = start;
   if (e) e.value = end;
+  updateSkiLaunchButton();
 }
 
 // 滑桿初始化：讓 CSS --val 變數追蹤滑桿進度（填色效果）
@@ -595,17 +627,31 @@ function setPracticeRange(start, end) {
   function syncSlider(el) {
     if (!el) return;
     el.style.setProperty('--val', el.value);
-    el.addEventListener('input', () => el.style.setProperty('--val', el.value));
+    el.addEventListener('input', () => {
+      el.style.setProperty('--val', el.value);
+      updateSkiLaunchButton();
+    });
+  }
+  function bindRange(el) {
+    if (!el) return;
+    el.addEventListener('input', updateSkiLaunchButton);
+    el.addEventListener('change', updateSkiLaunchButton);
   }
   // DOM 可能還沒 ready，等一下
   document.addEventListener('DOMContentLoaded', () => {
     syncSlider(document.getElementById('steepnessSlider'));
     syncSlider(document.getElementById('hitboxSlider'));
+    bindRange(document.getElementById('rangeStart'));
+    bindRange(document.getElementById('rangeEnd'));
+    updateSkiLaunchButton();
   });
   // 若已 ready 則立即執行
   if (document.readyState !== 'loading') {
     syncSlider(document.getElementById('steepnessSlider'));
     syncSlider(document.getElementById('hitboxSlider'));
+    bindRange(document.getElementById('rangeStart'));
+    bindRange(document.getElementById('rangeEnd'));
+    updateSkiLaunchButton();
   }
 })();
 
@@ -615,6 +661,11 @@ function setNormalPreset() {
   const h = document.getElementById('hitboxSlider');
   if (s) { s.value = 100; s.style.setProperty('--val', 100); document.getElementById('steepnessVal').textContent = 100; }
   if (h) { h.value = 1;   h.style.setProperty('--val', 1);   document.getElementById('hitboxVal').textContent = 1; }
+  const rs = document.getElementById('rangeStart');
+  const re = document.getElementById('rangeEnd');
+  if (rs) rs.value = 0;
+  if (re) re.value = 100;
+  updateSkiLaunchButton();
 }
 
 // ── 分類股票選股器 ─────────────────────────────────

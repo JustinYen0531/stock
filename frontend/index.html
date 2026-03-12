@@ -204,13 +204,9 @@
             </div>
           </div>
           <div class="ski-btn-group">
-            <button class="ski-launch-btn ski-practice-btn" onclick="launchSkiGamePractice()" title="練習模式：依滑桿調整難度">
-              <span class="ski-btn-icon">🟡</span>
-              <span class="ski-btn-text">練習模式</span>
-            </button>
-            <button class="ski-launch-btn ski-launch-big" onclick="launchSkiGame()" title="把這支股票變成滑雪關卡！">
-              <span class="ski-btn-icon">🎿</span>
-              <span class="ski-btn-text">開始！</span>
+            <button id="skiLaunchButton" class="ski-launch-btn ski-launch-big" onclick="launchSkiGameAdaptive()" title="把這支股票變成滑雪關卡！">
+              <span id="skiLaunchIcon" class="ski-btn-icon">🎿</span>
+              <span id="skiLaunchText" class="ski-btn-text">開始！</span>
             </button>
           </div>
         </div>
