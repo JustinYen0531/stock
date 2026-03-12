@@ -1195,6 +1195,16 @@
     ctx.fillStyle = heatColor;
     ctx.fillText(`${accuracyPct.toFixed(0)}%`, hbx + hbW, hby - 14);
 
+    if (isBoosting) {
+      ctx.textAlign = 'center';
+      ctx.font = '700 18px Inter, sans-serif';
+      ctx.fillStyle = '#fbbf24';
+      ctx.shadowBlur = 14;
+      ctx.shadowColor = 'rgba(251,191,36,0.85)';
+      ctx.fillText('滾輪靈敏模式', panelCx, gy - gaugeR - 18);
+      ctx.shadowBlur = 0;
+    }
+
     // 外圈半圓 (速度計)
     ctx.beginPath();
     ctx.arc(gx, gy, gaugeR, Math.PI, 0);
