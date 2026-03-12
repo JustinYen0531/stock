@@ -32,6 +32,7 @@
   const PRACTICE_SLOPE_ACCEL_MULT   = 0.50; // 斜率加速只有 50% (更慢)
   const PRACTICE_DANGER_TOL_MULT    = 2.5;  // 容忍時間放大 2.5 倍
   const PRACTICE_HITBOX_H           = 72;   // 練習模式 hitbox 高度 (比一般大很多)
+  const DANGER_LIMIT_MULTIPLIER     = 5.5;  // 累積容錯大幅提高，讓單次失誤不至於直接淘汰
 
   /* ── 狀態 ───────────────────────────────────────── */
   let canvas, ctx;
@@ -85,6 +86,15 @@
 
   // 速度
   let currentSpeed = SCROLL_SPEED;
+
+  function getDangerLimit() {
+    const config = getPeriodConfig();
+    return Math.max(1, config.dangerTolerance * DANGER_LIMIT_MULTIPLIER);
+  }
+
+  function getDangerRatio() {
+    return Math.min(1, dangerFrames / getDangerLimit());
+  }
 
   function getPeriodConfig() {
     const base = PERIOD_TUNING[stockData?.period] || PERIOD_TUNING["6mo"];
@@ -327,7 +337,7 @@
     
     // ── 動態計分系統 ──
     const config = getPeriodConfig();
-    const dangerRatio = dangerFrames / config.dangerTolerance;
+    const dangerRatio = getDangerRatio();
     let multiplier = 10; // 完美狀態 x10
     
     if (dangerRatio > 0.6) {
@@ -383,21 +393,21 @@
     const belowLine = hitTop    > lineY; // hitbox 完全在線下方
 
     if (aboveLine || belowLine) {
-      // 根據偏離距離的核心邏輯：離線越遠，累積越快
+      // 累積值會永久保留；偏得更遠只會增加得稍快，不會一下暴衝。
+      // 這樣單次大失誤仍可挽回，但反覆的小失誤會慢慢把容錯吃光。
       const dist = aboveLine ? (lineY - hitBottom) : (hitTop - lineY);
-      // 基礎增加 1，加上額外的距離加成（每偏離 20px 多增加 1 倍速）
-      const increaseRate = 1 + Math.min(3, dist / 20); 
+      const distRatio = dist / Math.max(1, hh);
+      const increaseRate = 0.12 + Math.pow(Math.max(0, distRatio), 0.85) * 0.55;
       
       dangerFrames += increaseRate;
       isDangerAbove = aboveLine;
       isDangerBelow = belowLine;
       
-      if (dangerFrames >= config.dangerTolerance) {
+      if (dangerFrames >= getDangerLimit()) {
         triggerDeath(lineY);
         return;
       }
     } else {
-      dangerFrames   = Math.max(0, dangerFrames - 1.5); // 稍微放慢恢復速率，讓玩家更有壓力感
       isDangerAbove  = false;
       isDangerBelow  = false;
     }
@@ -531,7 +541,7 @@
 
     // ── 畫面震動計算 ──
     const dangerConfig = getPeriodConfig();
-    const heatRatio = dangerFrames / dangerConfig.dangerTolerance;
+    const heatRatio = getDangerRatio();
     let shakeX = 0, shakeY = 0;
     if (heatRatio > 0.75 && gameState === 'playing') {
       const shakeAmp = (heatRatio - 0.75) * 15; // 震動幅度隨危險度增加
@@ -655,7 +665,7 @@
     }
 
     // 危險狀態下線條閃爍顏色
-    const dangerRatio = dangerFrames / getPeriodConfig().dangerTolerance;
+    const dangerRatio = getDangerRatio();
     let lineColor;
     if (dangerRatio > 0) {
       const r = Math.floor(96  + dangerRatio * 159);
@@ -785,7 +795,7 @@
     const cx      = charX;
     const cy      = charY;
     const lineY   = getLineYAt(terrainScrollX + cx);
-    const DR      = dangerFrames / getPeriodConfig().dangerTolerance; // 0~1 危險程度
+    const DR      = getDangerRatio(); // 0~1 危險程度
     const t       = Date.now() / 1000;
 
     /* ── hitbox 框（不隨姿態旋轉）─────────────────── */
@@ -949,7 +959,7 @@
   }
 
   function drawDangerVignette(W, H) {
-    const ratio = dangerFrames / getPeriodConfig().dangerTolerance;
+    const ratio = getDangerRatio();
     const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 80);
     const alpha = ratio * 0.45 * pulse;
 
@@ -1017,8 +1027,8 @@
     let grade = 'C';
     let gradeCol = '#94a3b8';
     if (dangerFrames === 0) { grade = 'S'; gradeCol = '#fde68a'; }
-    else if (dangerFrames < 10) { grade = 'A'; gradeCol = '#4ade80'; }
-    else if (dangerFrames < 30) { grade = 'B'; gradeCol = '#3b82f6'; }
+    else if (dangerRatio < 0.18) { grade = 'A'; gradeCol = '#4ade80'; }
+    else if (dangerRatio < 0.45) { grade = 'B'; gradeCol = '#3b82f6'; }
 
     ctx.font = '900 18px Inter, sans-serif';
     ctx.fillStyle = gradeCol;
@@ -1062,8 +1072,7 @@
     const gy = H - 25;
 
     // ── 偏離累積條 (Accumulation / Heat Bar) ──
-    const dangerConfig = getPeriodConfig();
-    const heatRatio = Math.min(1, dangerFrames / dangerConfig.dangerTolerance);
+    const heatRatio = getDangerRatio();
     
     // 進度條參數
     const hbW = 120; // 寬度
