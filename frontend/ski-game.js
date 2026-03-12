@@ -1229,29 +1229,19 @@
       ctx.fillText('BRAKE', 150, 54);
     }
 
-    // 進度條
+    // 頂部進度群組
     const charWorldX = terrainScrollX + canvas.width * CHAR_X_RATIO;
     const totalW = terrainPoints[terrainPoints.length - 1]?.x || 1;
     const prog = Math.min(1, charWorldX / totalW);
-    const barW = 160, barH = 6, barX = W - barW - 16, barY = 18;
-
-    ctx.fillStyle = 'rgba(30,45,69,0.8)';
-    ctx.beginPath();
-    ctx.roundRect(barX, barY, barW, barH, 3);
-    ctx.fill();
-
-    const barGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
-    barGrad.addColorStop(0, '#3b82f6');
-    barGrad.addColorStop(1, '#22c55e');
-    ctx.fillStyle = barGrad;
-    ctx.beginPath();
-    ctx.roundRect(barX, barY, barW * prog, barH, 3);
-    ctx.fill();
-
-    ctx.font = '11px Inter, sans-serif';
-    ctx.fillStyle = 'rgba(148,163,184,0.7)';
-    ctx.textAlign = 'right';
-    ctx.fillText(`${Math.floor(prog * 100)}%  完成`, W - 16, barY + barH + 16);
+    const topHudW = 420;
+    const topHudX = W / 2 - topHudW / 2;
+    const routeBarY = 68;
+    const smallBarY = 126;
+    const smallBarGap = 52;
+    const routeBarH = 18;
+    const smallBarW = 260;
+    const smallBarH = 18;
+    const smallBarX = W / 2 - smallBarW / 2;
 
     // ── 底部中央 HUD 群組 ──
     const panelCx = W / 2;
@@ -1266,11 +1256,34 @@
     const accuracyBarRatio = getAccuracyBarRatio();
     
     // 進度條參數
-    const hbW = 240;
-    const hbH = 18;
-    const hbx = panelCx - hbW / 2;
-    const hby = gy - gaugeR - 88;
-    const timeBarY = hby - 56;
+    const hbx = smallBarX;
+    const hbW = smallBarW;
+    const hbH = smallBarH;
+    const timeBarY = smallBarY;
+    const hby = smallBarY + smallBarGap;
+
+    // 路程條
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+    ctx.lineWidth = 2;
+    ctx.fillRect(topHudX, routeBarY, topHudW, routeBarH);
+    ctx.strokeRect(topHudX, routeBarY, topHudW, routeBarH);
+
+    const routeGrad = ctx.createLinearGradient(topHudX, 0, topHudX + topHudW, 0);
+    routeGrad.addColorStop(0, '#38bdf8');
+    routeGrad.addColorStop(1, '#22c55e');
+    ctx.fillStyle = routeGrad;
+    ctx.fillRect(topHudX + 2, routeBarY + 2, (topHudW - 4) * prog, routeBarH - 4);
+
+    ctx.textAlign = 'left';
+    ctx.font = '700 18px Inter, sans-serif';
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillText('路程進度', topHudX, routeBarY - 14);
+
+    ctx.textAlign = 'right';
+    ctx.font = '700 18px JetBrains Mono, monospace';
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText(`${Math.floor(prog * 100)}%`, topHudX + topHudW, routeBarY - 14);
 
     // 時間條底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
@@ -1296,12 +1309,12 @@
     ctx.textAlign = 'left';
     ctx.font = 'bold 20px Inter, sans-serif';
     ctx.fillStyle = timeRatio <= 0.3 ? '#f87171' : '#f8fafc';
-    ctx.fillText('時間值 ⚡', hbx, timeBarY - 14);
+    ctx.fillText('時間值', hbx, timeBarY - 14);
 
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = timeColor;
-    ctx.fillText(`${Math.floor(timeRatio * 100)}%`, hbx + hbW, timeBarY - 14);
+    ctx.fillText(`🕒 ${Math.floor(timeRatio * 100)}%`, hbx + hbW, timeBarY - 14);
 
     // 準確率條底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
@@ -1333,12 +1346,12 @@
     ctx.textAlign = 'left';
     ctx.font = 'bold 20px Inter, sans-serif';
     ctx.fillStyle = accuracyPct <= 78 ? '#f87171' : '#f8fafc';
-    ctx.fillText('準確值 ⚡', hbx, hby - 14);
+    ctx.fillText('準確值', hbx, hby - 14);
     
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = heatColor;
-    ctx.fillText(`${accuracyPct.toFixed(0)}%`, hbx + hbW, hby - 14);
+    ctx.fillText(`⚡ ${accuracyPct.toFixed(0)}%`, hbx + hbW, hby - 14);
 
     if (isBoosting) {
       ctx.textAlign = 'center';
