@@ -77,13 +77,14 @@
   let maxPossibleScore = 0; // 本關理論最高分
   let mouseOnlyRun = true;
   let surviveFrames = 0;
-  let timeLimitFrames = 0;
+  let timeLimitSeconds = 0;
   let countdownVal = 3;
   let countdownTimer = 0;
   let perfectStreakDistance = 0;
   let bestPerfectStreakDistance = 0;
   let streakBonusScore = 0;
-  let elapsedFrames = 0;
+  let elapsedMs = 0;
+  let lastFrameTs = 0;
   let earlyFinishBonus = 0;
   let scoreBandFrames = {
     perfect: 0,
@@ -163,11 +164,11 @@
   }
 
   function getElapsedSeconds() {
-    return elapsedFrames / 60;
+    return elapsedMs / 1000;
   }
 
   function getQualifyingSeconds() {
-    return timeLimitFrames / 60;
+    return timeLimitSeconds;
   }
 
   function getEarnedStars() {
@@ -341,7 +342,8 @@
     perfectStreakDistance = 0;
     bestPerfectStreakDistance = 0;
     streakBonusScore = 0;
-    elapsedFrames = 0;
+    elapsedMs = 0;
+    lastFrameTs = 0;
     earlyFinishBonus = 0;
     scoreBandFrames = {
       perfect: 0,
@@ -358,7 +360,7 @@
     // 我們粗略估計：總距離 / 平均速度 = 總幀數 * 10
     const lastX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     maxPossibleScore = Math.floor((lastX / SCROLL_SPEED) * 10);
-    timeLimitFrames = Math.max(1, Math.floor((lastX / SCROLL_SPEED) * TIME_LIMIT_RATIO));
+    timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO);
 
     // 角色起始 Y 對齊玩家所在 X 位置的地形中心，開場就精準壓在線上
     const charX = canvas.width * CHAR_X_RATIO;
@@ -474,7 +476,14 @@
 
   /* ── 主迴圈 ──────────────────────────────────────── */
   function loop() {
+    const now = performance.now();
+    if (!lastFrameTs) lastFrameTs = now;
+    const deltaMs = Math.min(50, Math.max(0, now - lastFrameTs));
+    lastFrameTs = now;
     update();
+    if (gameState === 'playing') {
+      elapsedMs += deltaMs;
+    }
     render();
     if (gameState !== 'idle') {
       animId = requestAnimationFrame(loop);
@@ -512,7 +521,6 @@
     if (gameState !== 'playing') return;
 
     surviveFrames++;
-    elapsedFrames++;
     const config = getPeriodConfig();
     
     const charX = canvas.width * CHAR_X_RATIO;
@@ -562,7 +570,7 @@
 
     terrainScrollX += currentSpeed;
 
-    if (surviveFrames > timeLimitFrames) {
+    if (getElapsedSeconds() > timeLimitSeconds) {
       triggerDeath(lineY);
       return;
     }
@@ -1315,8 +1323,8 @@
     const gy = H - 122;
 
     // ── 準確率 / 時間條 ──
-    const timeLeftFrames = Math.max(0, timeLimitFrames - surviveFrames);
-    const timeRatio = timeLimitFrames > 0 ? Math.max(0, Math.min(1, timeLeftFrames / timeLimitFrames)) : 0;
+    const elapsedRatio = timeLimitSeconds > 0 ? Math.max(0, Math.min(1, getElapsedSeconds() / timeLimitSeconds)) : 0;
+    const timeRatio = Math.max(0, 1 - elapsedRatio);
     const accuracyPct = getAccuracyPct();
     const accuracyBarRatio = getAccuracyBarRatio();
     
@@ -1640,7 +1648,7 @@
     ctx.fillStyle = '#f87171';
     ctx.shadowColor = '#f87171';
     ctx.shadowBlur  = 20;
-    ctx.fillText(surviveFrames > timeLimitFrames ? '⏰ 超時了！' : '💥 出界了！', W / 2, centerY - 52);
+    ctx.fillText(getElapsedSeconds() > timeLimitSeconds ? '⏰ 超時了！' : '💥 出界了！', W / 2, centerY - 52);
 
     // 分數
     ctx.font = '700 32px JetBrains Mono, monospace';
@@ -1656,7 +1664,7 @@
     const tableBottom = drawResultTable(W, centerY + 82);
 
     // 方向提示
-    const tip = surviveFrames > timeLimitFrames
+    const tip = getElapsedSeconds() > timeLimitSeconds
       ? '速度不夠快——下次多利用加速把通關時間壓進 80% 內'
       : isDangerAbove ? '飛太高了——下次試試往下一點 🖱️↓' : '掉太低了——下次試試往上一點 🖱️↑';
     ctx.font = '400 16px Inter, sans-serif';
