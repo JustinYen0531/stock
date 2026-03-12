@@ -92,6 +92,7 @@
     medium: 0,
     heavy: 0,
   };
+  let resultButtonRects = null;
 
   // 粒子
   let particles = [];
@@ -349,6 +350,7 @@
       medium: 0,
       heavy: 0,
     };
+    resultButtonRects = null;
 
     buildTerrain();
 
@@ -412,6 +414,21 @@
   }
 
   function onMouseDown(e) {
+    if (e.button === 0 && (gameState === 'dead' || gameState === 'complete')) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const retryRect = resultButtonRects?.retry;
+      const exitRect = resultButtonRects?.exit;
+      if (retryRect && x >= retryRect.x && x <= retryRect.x + retryRect.w && y >= retryRect.y && y <= retryRect.y + retryRect.h) {
+        initGame();
+        return;
+      }
+      if (exitRect && x >= exitRect.x && x <= exitRect.x + exitRect.w && y >= exitRect.y && y <= exitRect.y + exitRect.h) {
+        closeGame();
+        return;
+      }
+    }
     if (e.button === 1) {
       e.preventDefault();
       isBoosting = true;
@@ -1235,13 +1252,19 @@
     const prog = Math.min(1, charWorldX / totalW);
     const topHudW = 420;
     const topHudX = W / 2 - topHudW / 2;
-    const routeBarY = 68;
-    const smallBarY = 126;
-    const smallBarGap = 52;
+    const routeBarY = 74;
+    const smallBarY = 112;
+    const smallBarGap = 40;
     const routeBarH = 18;
-    const smallBarW = 260;
+    const smallBarW = 240;
     const smallBarH = 18;
-    const smallBarX = W / 2 - smallBarW / 2;
+    const barLabelGap = 12;
+    const smallLabelW = 110;
+    const smallValueW = 90;
+    const smallRowX = W / 2 - (smallLabelW + barLabelGap + smallBarW + barLabelGap + smallValueW) / 2;
+    const routeLabelW = 120;
+    const routeValueW = 90;
+    const routeRowX = W / 2 - (routeLabelW + barLabelGap + topHudW + barLabelGap + routeValueW) / 2;
 
     // ── 底部中央 HUD 群組 ──
     const panelCx = W / 2;
@@ -1256,7 +1279,7 @@
     const accuracyBarRatio = getAccuracyBarRatio();
     
     // 進度條參數
-    const hbx = smallBarX;
+    const hbx = smallRowX + smallLabelW + barLabelGap;
     const hbW = smallBarW;
     const hbH = smallBarH;
     const timeBarY = smallBarY;
@@ -1266,24 +1289,26 @@
     ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
     ctx.lineWidth = 2;
-    ctx.fillRect(topHudX, routeBarY, topHudW, routeBarH);
-    ctx.strokeRect(topHudX, routeBarY, topHudW, routeBarH);
+    const routeBarX = routeRowX + routeLabelW + barLabelGap;
+    ctx.fillRect(routeBarX, routeBarY, topHudW, routeBarH);
+    ctx.strokeRect(routeBarX, routeBarY, topHudW, routeBarH);
 
-    const routeGrad = ctx.createLinearGradient(topHudX, 0, topHudX + topHudW, 0);
+    const routeGrad = ctx.createLinearGradient(routeBarX, 0, routeBarX + topHudW, 0);
     routeGrad.addColorStop(0, '#38bdf8');
     routeGrad.addColorStop(1, '#22c55e');
     ctx.fillStyle = routeGrad;
-    ctx.fillRect(topHudX + 2, routeBarY + 2, (topHudW - 4) * prog, routeBarH - 4);
+    ctx.fillRect(routeBarX + 2, routeBarY + 2, (topHudW - 4) * prog, routeBarH - 4);
 
     ctx.textAlign = 'left';
     ctx.font = '700 18px Inter, sans-serif';
     ctx.fillStyle = '#f8fafc';
-    ctx.fillText('路程進度', topHudX, routeBarY - 14);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('路程進度', routeRowX, routeBarY + routeBarH / 2);
 
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = '#38bdf8';
-    ctx.fillText(`${Math.floor(prog * 100)}%`, topHudX + topHudW, routeBarY - 14);
+    ctx.fillText(`${Math.floor(prog * 100)}%`, routeBarX + topHudW + barLabelGap + routeValueW, routeBarY + routeBarH / 2);
 
     // 時間條底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
@@ -1309,12 +1334,12 @@
     ctx.textAlign = 'left';
     ctx.font = 'bold 20px Inter, sans-serif';
     ctx.fillStyle = timeRatio <= 0.3 ? '#f87171' : '#f8fafc';
-    ctx.fillText('時間值', hbx, timeBarY - 14);
+    ctx.fillText('時間值', smallRowX, timeBarY + hbH / 2);
 
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = timeColor;
-    ctx.fillText(`🕒 ${Math.floor(timeRatio * 100)}%`, hbx + hbW, timeBarY - 14);
+    ctx.fillText(`🕒 ${Math.floor(timeRatio * 100)}%`, hbx + hbW + barLabelGap + smallValueW, timeBarY + hbH / 2);
 
     // 準確率條底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
@@ -1346,12 +1371,12 @@
     ctx.textAlign = 'left';
     ctx.font = 'bold 20px Inter, sans-serif';
     ctx.fillStyle = accuracyPct <= 78 ? '#f87171' : '#f8fafc';
-    ctx.fillText('準確值', hbx, hby - 14);
+    ctx.fillText('準確值', smallRowX, hby + hbH / 2);
     
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = heatColor;
-    ctx.fillText(`⚡ ${accuracyPct.toFixed(0)}%`, hbx + hbW, hby - 14);
+    ctx.fillText(`⚡ ${accuracyPct.toFixed(0)}%`, hbx + hbW + barLabelGap + smallValueW, hby + hbH / 2);
 
     if (isBoosting) {
       ctx.textAlign = 'center';
@@ -1528,6 +1553,10 @@
       { text: retryLabel, x: startX, colorA: '#1d4ed8', colorB: '#0891b2', border: 'rgba(147,197,253,0.7)' },
       { text: '離開', x: startX + btnW + gap, colorA: '#1e293b', colorB: '#334155', border: 'rgba(148,163,184,0.45)' },
     ];
+    resultButtonRects = {
+      retry: { x: startX, y, w: btnW, h: btnH },
+      exit: { x: startX + btnW + gap, y, w: btnW, h: btnH },
+    };
 
     ctx.save();
     labels.forEach((btn) => {
@@ -1554,6 +1583,7 @@
   }
 
   function drawDeadScreen(W, H) {
+    resultButtonRects = null;
     ctx.save();
     ctx.fillStyle = 'rgba(0,0,0,0.72)';
     ctx.fillRect(0, 0, W, H);
@@ -1594,6 +1624,7 @@
   }
 
   function drawCompleteScreen(W, H) {
+    resultButtonRects = null;
     ctx.save();
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(0, 0, W, H);
