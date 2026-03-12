@@ -1079,10 +1079,11 @@
     ctx.textAlign = 'right';
     ctx.fillText(`${Math.floor(prog * 100)}%  完成`, W - 16, barY + barH + 16);
 
-    // ── 速度儀表 (Speedometer) ──
-    const gaugeR = 45;
-    const gx = gaugeR + 25;
-    const gy = H - 25;
+    // ── 底部中央 HUD 群組 ──
+    const panelCx = W / 2;
+    const gaugeR = 72;
+    const gx = panelCx;
+    const gy = H - 122;
 
     // ── 準確率 / 時間條 ──
     const timeLeftFrames = Math.max(0, timeLimitFrames - surviveFrames);
@@ -1091,16 +1092,16 @@
     const accuracyBarRatio = getAccuracyBarRatio();
     
     // 進度條參數
-    const hbW = 120; // 寬度
-    const hbH = 10;  // 高度
-    const hbx = 20;  // 靠左 20px
-    const hby = H - 140; // 準確率條位置
-    const timeBarY = hby - 34; // 放在準確率上方
+    const hbW = 240;
+    const hbH = 18;
+    const hbx = panelCx - hbW / 2;
+    const hby = gy - gaugeR - 88;
+    const timeBarY = hby - 56;
 
     // 時間條底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 2;
     ctx.fillRect(hbx, timeBarY, hbW, hbH);
     ctx.strokeRect(hbx, timeBarY, hbW, hbH);
 
@@ -1111,7 +1112,7 @@
     if (timeRatio > 0.01) {
       ctx.fillStyle = timeColor;
       if (timeRatio <= 0.35) {
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 18;
         ctx.shadowColor = timeColor;
       }
       ctx.fillRect(hbx + 2, timeBarY + 2, (hbW - 4) * timeRatio, hbH - 4);
@@ -1119,19 +1120,19 @@
     }
 
     ctx.textAlign = 'left';
-    ctx.font = 'bold 12px Inter, sans-serif';
+    ctx.font = 'bold 20px Inter, sans-serif';
     ctx.fillStyle = timeRatio <= 0.3 ? '#f87171' : '#f8fafc';
-    ctx.fillText('時間值 ⚡', hbx, timeBarY - 10);
+    ctx.fillText('時間值 ⚡', hbx, timeBarY - 14);
 
     ctx.textAlign = 'right';
-    ctx.font = '700 11px JetBrains Mono, monospace';
+    ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = timeColor;
-    ctx.fillText(`${Math.floor(timeRatio * 100)}%`, hbx + hbW, timeBarY - 10);
+    ctx.fillText(`${Math.floor(timeRatio * 100)}%`, hbx + hbW, timeBarY - 14);
 
     // 準確率條底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 2;
     ctx.fillRect(hbx, hby, hbW, hbH);
     ctx.strokeRect(hbx, hby, hbW, hbH);
 
@@ -1146,7 +1147,7 @@
       
       // 危險時增加外發光特效 (WOW effect)
       if (accuracyPct <= 82) {
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 18;
         ctx.shadowColor = heatColor;
       }
       
@@ -1156,19 +1157,19 @@
 
     // 準確率文字與百分比
     ctx.textAlign = 'left';
-    ctx.font = 'bold 12px Inter, sans-serif';
+    ctx.font = 'bold 20px Inter, sans-serif';
     ctx.fillStyle = accuracyPct <= 78 ? '#f87171' : '#f8fafc';
-    ctx.fillText('準確值 ⚡', hbx, hby - 10);
+    ctx.fillText('準確值 ⚡', hbx, hby - 14);
     
     ctx.textAlign = 'right';
-    ctx.font = '700 11px JetBrains Mono, monospace';
+    ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = heatColor;
-    ctx.fillText(`${accuracyPct.toFixed(0)}%`, hbx + hbW, hby - 10);
+    ctx.fillText(`${accuracyPct.toFixed(0)}%`, hbx + hbW, hby - 14);
 
     // 外圈半圓 (速度計)
     ctx.beginPath();
     ctx.arc(gx, gy, gaugeR, Math.PI, 0);
-    ctx.lineWidth = 8;
+    ctx.lineWidth = 12;
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)'; // 弱化未使用的底圈
     ctx.stroke();
 
@@ -1177,7 +1178,7 @@
       ctx.beginPath();
       ctx.arc(gx, gy, gaugeR, Math.PI + start, Math.PI + end);
       ctx.strokeStyle = color;
-      ctx.lineWidth = 8;
+      ctx.lineWidth = 12;
       ctx.stroke();
     };
     drawArcZone(0, Math.PI * 0.35, '#4ade80');     // 減速區
@@ -1194,39 +1195,39 @@
     ctx.rotate(needleAngle);
     ctx.beginPath();
     ctx.moveTo(-gaugeR + 10, 0);
-    ctx.lineTo(0, -2);
-    ctx.lineTo(0, 2);
+    ctx.lineTo(0, -4);
+    ctx.lineTo(0, 4);
     ctx.closePath();
     ctx.fillStyle = '#fff';
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 14;
     ctx.shadowColor = '#fff';
     ctx.fill();
     ctx.restore();
 
     // 中央小點
     ctx.beginPath();
-    ctx.arc(gx, gy, 4, 0, Math.PI * 2);
+    ctx.arc(gx, gy, 6, 0, Math.PI * 2);
     ctx.fillStyle = '#94a3b8';
     ctx.fill();
 
     // 速度文字
-    ctx.font = '700 12px JetBrains Mono, monospace';
+    ctx.font = '700 20px JetBrains Mono, monospace';
     ctx.fillStyle = '#e8f0fe';
     ctx.textAlign = 'center';
     const kmh = Math.floor(currentSpeed * 15);
     const speedMult = (currentSpeed / SCROLL_SPEED).toFixed(2);
-    ctx.fillText(`${kmh}`, gx, gy - 12);
-    ctx.font = '600 9px Inter, sans-serif';
+    ctx.fillText(`${kmh}`, gx, gy - 18);
+    ctx.font = '600 13px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
-    ctx.fillText('VELOCITY', gx, gy + 14);
+    ctx.fillText('VELOCITY', gx, gy + 20);
 
     const speedMultColor = currentSpeed > SCROLL_SPEED ? '#fbbf24' : currentSpeed < SCROLL_SPEED ? '#fca5a5' : '#93c5fd';
-    ctx.font = '800 48px JetBrains Mono, monospace';
+    ctx.font = '800 54px JetBrains Mono, monospace';
     ctx.fillStyle = speedMultColor;
     ctx.textAlign = 'center';
-    ctx.shadowBlur = 16;
+    ctx.shadowBlur = 20;
     ctx.shadowColor = speedMultColor;
-    ctx.fillText(`${speedMult}x`, W / 2, H - 26);
+    ctx.fillText(`${speedMult}x`, panelCx, H - 22);
     ctx.shadowBlur = 0;
 
     ctx.restore();
