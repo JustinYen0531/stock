@@ -639,6 +639,7 @@ function setPracticeRange(start, end) {
   }
   // DOM 可能還沒 ready，等一下
   document.addEventListener('DOMContentLoaded', () => {
+    setNormalPreset();
     syncSlider(document.getElementById('steepnessSlider'));
     syncSlider(document.getElementById('hitboxSlider'));
     bindRange(document.getElementById('rangeStart'));
@@ -647,6 +648,7 @@ function setPracticeRange(start, end) {
   });
   // 若已 ready 則立即執行
   if (document.readyState !== 'loading') {
+    setNormalPreset();
     syncSlider(document.getElementById('steepnessSlider'));
     syncSlider(document.getElementById('hitboxSlider'));
     bindRange(document.getElementById('rangeStart'));
