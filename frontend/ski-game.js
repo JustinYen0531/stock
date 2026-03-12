@@ -59,6 +59,8 @@
   let terrainYMax = 1;
   let leftKeyDown = false;
   let rightKeyDown = false;
+  let leftMouseDown = false;
+  let rightMouseDown = false;
 
   // 角色
   let charY = 200;        // 角色中心 Y
@@ -73,6 +75,7 @@
   // HUD
   let score = 0;
   let maxPossibleScore = 0; // 本關理論最高分
+  let mouseOnlyRun = true;
   let surviveFrames = 0;
   let timeLimitFrames = 0;
   let countdownVal = 3;
@@ -100,6 +103,14 @@
 
   function getAccuracyBarRatio() {
     return Math.max(0, Math.min(1, (getAccuracyPct() - 70) / 30));
+  }
+
+  function getScoreMultiplier() {
+    return mouseOnlyRun ? 1.3 : 1;
+  }
+
+  function getFinalScore() {
+    return Math.round(score * getScoreMultiplier());
   }
 
   function getPeriodConfig() {
@@ -248,6 +259,9 @@
     countdownTimer = 0;
     leftKeyDown    = false;
     rightKeyDown   = false;
+    leftMouseDown  = false;
+    rightMouseDown = false;
+    mouseOnlyRun   = true;
 
     buildTerrain();
 
@@ -274,6 +288,7 @@
     canvas.addEventListener('mousedown', onMouseDown);
     canvas.addEventListener('mouseup', onMouseUp);
     canvas.addEventListener('mouseleave', onMouseUp);
+    canvas.addEventListener('contextmenu', onContextMenu);
     document.addEventListener('keydown', onKey);
     document.addEventListener('keyup', onKeyUp);
   }
@@ -283,6 +298,7 @@
     canvas?.removeEventListener('mousedown', onMouseDown);
     canvas?.removeEventListener('mouseup', onMouseUp);
     canvas?.removeEventListener('mouseleave', onMouseUp);
+    canvas?.removeEventListener('contextmenu', onContextMenu);
     document.removeEventListener('keydown', onKey);
     document.removeEventListener('keyup', onKeyUp);
   }
@@ -312,6 +328,11 @@
     if (e.button === 1) {
       e.preventDefault();
       isBoosting = true;
+    } else if (e.button === 0) {
+      leftMouseDown = true;
+    } else if (e.button === 2) {
+      e.preventDefault();
+      rightMouseDown = true;
     }
   }
 
@@ -319,6 +340,12 @@
     if (!e || e.button === 1) {
       isBoosting = false;
     }
+    if (!e || e.button === 0) leftMouseDown = false;
+    if (!e || e.button === 2) rightMouseDown = false;
+  }
+
+  function onContextMenu(e) {
+    e.preventDefault();
   }
 
   function onKey(e) {
@@ -326,8 +353,14 @@
     if ((e.key === 'r' || e.key === 'R') && (gameState === 'dead' || gameState === 'complete')) {
       initGame();
     }
-    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') leftKeyDown = true;
-    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') rightKeyDown = true;
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+      leftKeyDown = true;
+      mouseOnlyRun = false;
+    }
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+      rightKeyDown = true;
+      mouseOnlyRun = false;
+    }
   }
 
   function onKeyUp(e) {
@@ -393,19 +426,22 @@
     currentSpeed += (SCROLL_SPEED - currentSpeed) * drag;
 
     // 玩家自主速度倍率：只受左右鍵影響，與上下坡造成的實際速度分開
-    if (rightKeyDown && !leftKeyDown) {
+    const accelActive = (rightKeyDown || rightMouseDown) && !(leftKeyDown || leftMouseDown);
+    const brakeActive = (leftKeyDown || leftMouseDown) && !(rightKeyDown || rightMouseDown);
+
+    if (accelActive) {
       playerSpeedMultiplier = Math.min(SPEED_BOOST_MULT, playerSpeedMultiplier + 0.008);
-    } else if (leftKeyDown && !rightKeyDown) {
+    } else if (brakeActive) {
       playerSpeedMultiplier = Math.max(SPEED_BRAKE_MULT, playerSpeedMultiplier - 0.008);
     } else {
       const driftBack = playerSpeedMultiplier > 1 ? -0.005 : playerSpeedMultiplier < 1 ? 0.005 : 0;
       playerSpeedMultiplier = Math.max(SPEED_BRAKE_MULT, Math.min(SPEED_BOOST_MULT, playerSpeedMultiplier + driftBack));
     }
 
-    // 鍵盤速度控制：右 / D 加速，左 / A 減速
-    if (rightKeyDown && !leftKeyDown) {
+    // 玩家控制速度：右側輸入加速，左側輸入減速
+    if (accelActive) {
       currentSpeed += 0.16;
-    } else if (leftKeyDown && !rightKeyDown) {
+    } else if (brakeActive) {
       currentSpeed -= 0.14;
     }
 
@@ -1074,11 +1110,14 @@
     ctx.font = '600 10px Inter, sans-serif';
     ctx.fillText('RANK', 105, 38);
 
-    if (rightKeyDown && !leftKeyDown && gameState === 'playing') {
+    const accelActive = (rightKeyDown || rightMouseDown) && !(leftKeyDown || leftMouseDown);
+    const brakeActive = (leftKeyDown || leftMouseDown) && !(rightKeyDown || rightMouseDown);
+
+    if (accelActive && gameState === 'playing') {
       ctx.font = '700 11px Inter, sans-serif';
       ctx.fillStyle = '#fbbf24';
       ctx.fillText('ACCEL', 150, 54);
-    } else if (leftKeyDown && !rightKeyDown && gameState === 'playing') {
+    } else if (brakeActive && gameState === 'playing') {
       ctx.font = '700 11px Inter, sans-serif';
       ctx.fillStyle = '#fca5a5';
       ctx.fillText('BRAKE', 150, 54);
@@ -1313,7 +1352,13 @@
     ctx.font = '700 32px JetBrains Mono, monospace';
     ctx.fillStyle = '#e8f0fe';
     ctx.shadowBlur = 0;
-    ctx.fillText(`得分：${score}`, W / 2, H / 2 + 10);
+    ctx.fillText(`得分：${getFinalScore()}`, W / 2, H / 2 + 10);
+
+    if (mouseOnlyRun) {
+      ctx.font = '700 16px Inter, sans-serif';
+      ctx.fillStyle = '#4ade80';
+      ctx.fillText('純滑鼠操作獎勵 1.3x', W / 2, H / 2 + 42);
+    }
 
     // 方向提示
     const tip = surviveFrames > timeLimitFrames
@@ -1348,10 +1393,16 @@
     ctx.font = '700 32px JetBrains Mono, monospace';
     ctx.fillStyle = '#fde68a';
     ctx.shadowBlur = 0;
-    ctx.fillText(`最終得分：${score}`, W / 2, H / 2 + 10);
+    ctx.fillText(`最終得分：${getFinalScore()}`, W / 2, H / 2 + 10);
+
+    if (mouseOnlyRun) {
+      ctx.font = '700 16px Inter, sans-serif';
+      ctx.fillStyle = '#4ade80';
+      ctx.fillText('純滑鼠操作獎勵 1.3x', W / 2, H / 2 + 44);
+    }
 
     // 星星系統
-    const starRatio = score / maxPossibleScore;
+    const starRatio = getFinalScore() / Math.max(1, maxPossibleScore);
     let stars = 0;
     if (starRatio > 0.85) stars = 3;
     else if (starRatio > 0.55) stars = 2;
