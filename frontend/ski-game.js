@@ -113,6 +113,25 @@
     return Math.round(score * getScoreMultiplier());
   }
 
+  function getEarnedStars() {
+    const starRatio = getFinalScore() / Math.max(1, maxPossibleScore);
+    if (starRatio > 0.85) return 3;
+    if (starRatio > 0.55) return 2;
+    if (starRatio > 0.25) return 1;
+    return 0;
+  }
+
+  function unlockMedal(key) {
+    try {
+      const medals = JSON.parse(localStorage.getItem('skiMedals') || '{}');
+      medals[key] = true;
+      localStorage.setItem('skiMedals', JSON.stringify(medals));
+      window.updateSkiMedals?.();
+    } catch {
+      // Ignore storage errors and keep gameplay uninterrupted.
+    }
+  }
+
   function getPeriodConfig() {
     const base = PERIOD_TUNING[stockData?.period] || PERIOD_TUNING["6mo"];
     if (!practiceMode) return base;
@@ -490,6 +509,8 @@
       gameState = 'complete';
       disableWheelInput();
       updateCursorVisibility();
+      unlockMedal(practiceMode ? 'practiceComplete' : 'normalComplete');
+      if (getEarnedStars() >= 3) unlockMedal('threeStars');
       spawnPartyParticles();
     }
 
@@ -1402,11 +1423,7 @@
     }
 
     // 星星系統
-    const starRatio = getFinalScore() / Math.max(1, maxPossibleScore);
-    let stars = 0;
-    if (starRatio > 0.85) stars = 3;
-    else if (starRatio > 0.55) stars = 2;
-    else if (starRatio > 0.25) stars = 1;
+    const stars = getEarnedStars();
 
     ctx.font = '40px Inter, sans-serif';
     let starStr = '';

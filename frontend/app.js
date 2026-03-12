@@ -604,6 +604,21 @@ function updateSkiLaunchButton() {
   text.textContent = state.isNormal ? '開始！' : '練習模式';
 }
 
+function getSkiMedalState() {
+  try {
+    return JSON.parse(localStorage.getItem('skiMedals') || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function updateSkiMedals() {
+  const medals = getSkiMedalState();
+  document.getElementById('medalPractice')?.classList.toggle('is-earned', !!medals.practiceComplete);
+  document.getElementById('medalNormal')?.classList.toggle('is-earned', !!medals.normalComplete);
+  document.getElementById('medalStars')?.classList.toggle('is-earned', !!medals.threeStars);
+}
+
 function launchSkiGameAdaptive() {
   const state = getSkiDifficultyState();
   if (state.isNormal) {
@@ -645,6 +660,7 @@ function setPracticeRange(start, end) {
     bindRange(document.getElementById('rangeStart'));
     bindRange(document.getElementById('rangeEnd'));
     updateSkiLaunchButton();
+    updateSkiMedals();
   });
   // 若已 ready 則立即執行
   if (document.readyState !== 'loading') {
@@ -654,6 +670,7 @@ function setPracticeRange(start, end) {
     bindRange(document.getElementById('rangeStart'));
     bindRange(document.getElementById('rangeEnd'));
     updateSkiLaunchButton();
+    updateSkiMedals();
   }
 })();
 
