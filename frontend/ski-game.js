@@ -489,6 +489,23 @@
         countdownVal--;
         if (countdownVal <= 0) gameState = 'playing';
       }
+      updateParticles();
+      if (Math.random() < 0.3) {
+        spawnSnowflake();
+      }
+      return;
+    }
+
+    if (gameState === 'complete') {
+      updateParticles();
+      if (Math.random() < 0.45) {
+        spawnFallingConfetti();
+      }
+      return;
+    }
+
+    if (gameState === 'dead') {
+      updateParticles();
       return;
     }
 
@@ -609,14 +626,7 @@
     }
 
     // 粒子更新
-    particles = particles.filter(p => p.life > 0);
-    particles.forEach(p => {
-      p.x  += p.vx;
-      p.y  += p.vy;
-      p.vy += 0.15;
-      p.life--;
-      p.alpha = p.life / p.maxLife;
-    });
+    updateParticles();
 
     // 持續雪花
     if (Math.random() < 0.3) {
@@ -709,14 +719,44 @@
     for (let i = 0; i < 80; i++) {
       particles.push({
         x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height * 0.5,
-        vx: (Math.random() - 0.5) * 5,
-        vy: Math.random() * 3 + 1,
+        y: -Math.random() * canvas.height * 0.35,
+        vx: (Math.random() - 0.5) * 2.2,
+        vy: Math.random() * 2.8 + 1.8,
         color: `hsl(${Math.random() * 360},80%,60%)`,
         size: Math.random() * 6 + 2,
-        life: 120, maxLife: 120, alpha: 1
+        life: 140, maxLife: 140, alpha: 1,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.35
       });
     }
+  }
+
+  function spawnFallingConfetti() {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: -12,
+      vx: (Math.random() - 0.5) * 1.4,
+      vy: Math.random() * 2.2 + 1.6,
+      color: `hsl(${Math.random() * 360},85%,62%)`,
+      size: Math.random() * 7 + 3,
+      life: 150, maxLife: 150, alpha: 1,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.4
+    });
+  }
+
+  function updateParticles() {
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.isSnow ? 0 : 0.04;
+      p.life--;
+      p.alpha = p.life / p.maxLife;
+      if (!p.isSnow) {
+        p.angle = (p.angle || 0) + (p.spin || 0);
+      }
+    });
   }
 
   /* ══════════════════════════════════════════════════
@@ -1178,13 +1218,15 @@
       ctx.save();
       ctx.globalAlpha = p.alpha;
       ctx.fillStyle   = p.color;
-      ctx.beginPath();
       if (p.isSnow) {
+        ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
       } else {
-        ctx.rect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle || 0);
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
       }
-      ctx.fill();
       ctx.restore();
     });
   }
@@ -1591,25 +1633,27 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
+    const centerY = H / 2 - 36;
+
     // 標題
     ctx.font      = '900 56px Inter, sans-serif';
     ctx.fillStyle = '#f87171';
     ctx.shadowColor = '#f87171';
     ctx.shadowBlur  = 20;
-    ctx.fillText(surviveFrames > timeLimitFrames ? '⏰ 超時了！' : '💥 出界了！', W / 2, H / 2 - 60);
+    ctx.fillText(surviveFrames > timeLimitFrames ? '⏰ 超時了！' : '💥 出界了！', W / 2, centerY - 52);
 
     // 分數
     ctx.font = '700 32px JetBrains Mono, monospace';
     ctx.fillStyle = '#e8f0fe';
     ctx.shadowBlur = 0;
-    ctx.fillText(`得分：${getFinalScore()}`, W / 2, H / 2 + 10);
+    ctx.fillText(`得分：${getFinalScore()}`, W / 2, centerY + 18);
 
     if (mouseOnlyRun) {
       ctx.font = '700 16px Inter, sans-serif';
       ctx.fillStyle = '#4ade80';
-      ctx.fillText('純滑鼠操作獎勵 1.3x', W / 2, H / 2 + 42);
+      ctx.fillText('純滑鼠操作獎勵 1.3x', W / 2, centerY + 50);
     }
-    const tableBottom = drawResultTable(W, H / 2 + 70);
+    const tableBottom = drawResultTable(W, centerY + 82);
 
     // 方向提示
     const tip = surviveFrames > timeLimitFrames
@@ -1632,21 +1676,23 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
+    const centerY = H / 2 - 52;
+
     ctx.font      = '900 52px Inter, sans-serif';
     ctx.fillStyle = '#4ade80';
     ctx.shadowColor = '#4ade80';
     ctx.shadowBlur  = 25;
-    ctx.fillText('🏆 關卡完成！', W / 2, H / 2 - 60);
+    ctx.fillText('🏆 關卡完成！', W / 2, centerY - 34);
 
     ctx.font = '700 32px JetBrains Mono, monospace';
     ctx.fillStyle = '#fde68a';
     ctx.shadowBlur = 0;
-    ctx.fillText(`最終得分：${getFinalScore()}`, W / 2, H / 2 + 10);
+    ctx.fillText(`最終得分：${getFinalScore()}`, W / 2, centerY + 34);
 
     if (mouseOnlyRun) {
       ctx.font = '700 16px Inter, sans-serif';
       ctx.fillStyle = '#4ade80';
-      ctx.fillText('純滑鼠操作獎勵 1.3x', W / 2, H / 2 + 44);
+      ctx.fillText('純滑鼠操作獎勵 1.3x', W / 2, centerY + 66);
     }
 
     // 星星系統
@@ -1655,12 +1701,12 @@
     ctx.font = '40px Inter, sans-serif';
     let starStr = '';
     for(let i=0; i<3; i++) starStr += (i < stars ? '⭐' : '☆');
-    ctx.fillText(starStr, W / 2, H / 2 + 65);
+    ctx.fillText(starStr, W / 2, centerY + 102);
 
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
-    ctx.fillText(`評價：${stars === 3 ? '完美滑行！' : stars === 2 ? '技術湛！' : '還有進步空間'}`, W / 2, H / 2 + 110);
-    const tableBottom = drawResultTable(W, H / 2 + 136);
+    ctx.fillText(`評價：${stars === 3 ? '完美滑行！' : stars === 2 ? '技術湛！' : '還有進步空間'}`, W / 2, centerY + 146);
+    const tableBottom = drawResultTable(W, centerY + 178);
     drawResultButtons(W, tableBottom + 26, '再玩一次');
 
     ctx.restore();
