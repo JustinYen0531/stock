@@ -150,7 +150,7 @@
   align-items: center;
   gap: 0;
   flex-shrink: 0;
-  margin-left: -0.28rem;
+  margin-left: -0.42rem;
 }
 
 /* ── 練習模式滑桿面板 ─────────────────────────── */
@@ -164,15 +164,16 @@
   border-radius: 10px;
   flex-shrink: 0;
   min-width: 220px;
-  margin-right: -0.28rem;
+  margin-right: -0.42rem;
 }
 
 .ski-medal-group {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.28rem;
-  margin: 0 0.12rem 0 0.02rem;
-  flex-shrink: 0;
+  margin: 0 auto;
+  flex: 1;
 }
 
 .ski-medal {

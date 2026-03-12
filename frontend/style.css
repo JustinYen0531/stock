@@ -703,7 +703,7 @@ body::before {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 1rem;
+  gap: 0.6rem;
 }
 .ski-action-info {
   display: flex;
@@ -733,9 +733,8 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.04rem;
-  margin-left: auto;
-  flex: 1;
+  gap: 0;
+  flex-shrink: 0;
 }
 .stock-price-area {
   display: flex;
