@@ -1064,20 +1064,14 @@
     ctx.textAlign = 'right';
     ctx.fillText(`${Math.floor(prog * 100)}%  完成`, W - 16, barY + barH + 16);
 
-    const timeLeftFrames = Math.max(0, timeLimitFrames - surviveFrames);
-    const timeLeftSec = (timeLeftFrames / 60).toFixed(1);
-    ctx.textAlign = 'left';
-    ctx.font = '600 11px Inter, sans-serif';
-    ctx.fillStyle = timeLeftFrames < 180 ? '#f87171' : 'rgba(148,163,184,0.82)';
-    ctx.fillText(`TIME ${timeLeftSec}s`, 16, 74);
-
     // ── 速度儀表 (Speedometer) ──
     const gaugeR = 45;
     const gx = gaugeR + 25;
     const gy = H - 25;
 
-    // ── 偏離累積條 (Accumulation / Heat Bar) ──
-    const heatRatio = getDangerRatio();
+    // ── 準確率 / 時間條 ──
+    const timeLeftFrames = Math.max(0, timeLimitFrames - surviveFrames);
+    const timeRatio = timeLimitFrames > 0 ? Math.max(0, Math.min(1, timeLeftFrames / timeLimitFrames)) : 0;
     const accuracyPct = getAccuracyPct();
     const accuracyBarRatio = getAccuracyBarRatio();
     
@@ -1085,21 +1079,53 @@
     const hbW = 120; // 寬度
     const hbH = 10;  // 高度
     const hbx = 20;  // 靠左 20px
-    const hby = H - 140; // 距離底部 140px，確保在速度計之上
+    const hby = H - 140; // 準確率條位置
+    const timeBarY = hby - 34; // 放在準確率上方
 
-    // 1. 背景底框
+    // 時間條底框
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.fillRect(hbx, timeBarY, hbW, hbH);
+    ctx.strokeRect(hbx, timeBarY, hbW, hbH);
+
+    let timeColor = '#4ade80';
+    if (timeRatio <= 0.3) timeColor = '#f87171';
+    else if (timeRatio <= 0.6) timeColor = '#fbbf24';
+
+    if (timeRatio > 0.01) {
+      ctx.fillStyle = timeColor;
+      if (timeRatio <= 0.35) {
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = timeColor;
+      }
+      ctx.fillRect(hbx + 2, timeBarY + 2, (hbW - 4) * timeRatio, hbH - 4);
+      ctx.shadowBlur = 0;
+    }
+
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 12px Inter, sans-serif';
+    ctx.fillStyle = timeRatio <= 0.3 ? '#f87171' : '#f8fafc';
+    ctx.fillText('時間值 ⚡', hbx, timeBarY - 10);
+
+    ctx.textAlign = 'right';
+    ctx.font = '700 11px JetBrains Mono, monospace';
+    ctx.fillStyle = timeColor;
+    ctx.fillText(`${Math.floor(timeRatio * 100)}%`, hbx + hbW, timeBarY - 10);
+
+    // 準確率條底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
     ctx.lineWidth = 1;
     ctx.fillRect(hbx, hby, hbW, hbH);
     ctx.strokeRect(hbx, hby, hbW, hbH);
 
-    // 2. 顏色判定 (綠 -> 黃 -> 紅)
+    // 準確率顏色判定 (綠 -> 黃 -> 紅)
     let heatColor = '#4ade80'; // 安全綠
     if (accuracyPct <= 78) heatColor = '#f87171';      // 紅
     else if (accuracyPct <= 88) heatColor = '#fbbf24'; // 黃
 
-    // 3. 填充進度
+    // 準確率填充進度
     if (accuracyBarRatio > 0.01) {
       ctx.fillStyle = heatColor;
       
@@ -1113,7 +1139,7 @@
       ctx.shadowBlur = 0; // 重置發光防止污染
     }
 
-    // 4. 文字與百分比
+    // 準確率文字與百分比
     ctx.textAlign = 'left';
     ctx.font = 'bold 12px Inter, sans-serif';
     ctx.fillStyle = accuracyPct <= 78 ? '#f87171' : '#f8fafc';
