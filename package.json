@@ -5,5 +5,8 @@
     "dev": "npm --prefix backend run dev",
     "start": "npm --prefix backend run start",
     "install:backend": "npm --prefix backend install"
+  },
+  "dependencies": {
+    "playwright": "^1.58.2"
   }
 }
