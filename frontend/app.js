@@ -583,8 +583,8 @@ function launchSkiGamePractice() {
 }
 
 function getSkiDifficultyState() {
-  const steepness  = parseInt(document.getElementById('steepnessSlider')?.value ?? 40, 10);
-  const hitboxSize = parseInt(document.getElementById('hitboxSlider')?.value ?? 60, 10);
+  const steepness  = parseInt(document.getElementById('steepnessSlider')?.value ?? 100, 10);
+  const hitboxSize = parseInt(document.getElementById('hitboxSlider')?.value ?? 1, 10);
   const startPct   = parseInt(document.getElementById('rangeStart')?.value ?? 0, 10);
   const endPct     = parseInt(document.getElementById('rangeEnd')?.value ?? 100, 10);
   const isNormal = steepness === 100 && hitboxSize === 1 && startPct === 0 && endPct === 100;
