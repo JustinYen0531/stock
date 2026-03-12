@@ -11,6 +11,100 @@ let priceChart = null;
 let volumeChart = null;
 let rsiChart = null;
 let macdChart = null;
+const HOMEPAGE_WATCHLIST_KEY = "homepageWatchlist";
+const HOMEPAGE_RECOMMENDATIONS = {
+  featured: {
+    symbol: "NVDA",
+    name: "NVIDIA",
+    exchange: "NASDAQ",
+    summary: "算力主線還在延續，價格結構與題材熱度仍是目前首頁最值得先看的代表股。",
+    detail: "這張主卡刻意選一檔最適合直接點進分析的股票。NVIDIA 同時兼具 AI 題材、伺服器鏈熱度與高辨識度，能讓第一次進首頁的使用者快速理解這個推薦區的價值。",
+    chips: [
+      { label: "AI 推薦", tone: "primary" },
+      { label: "半導體", tone: "warning" },
+      { label: "量能放大", tone: "success" },
+    ],
+    reasons: ["RSI 回穩", "量價結構完整", "市場關注度高"],
+    series: [22, 26, 25, 31, 35, 34, 38, 46, 44, 49, 54, 58],
+  },
+  hot: [
+    {
+      symbol: "AMD",
+      name: "Advanced Micro Devices",
+      blurb: "AI PC 與資料中心題材一起發酵，是首頁最容易被點進去的熱門股之一。",
+      change: "+1.8%",
+      trend: "up",
+      reasons: ["伺服器鏈補漲", "熱門搜尋高", "價格結構轉強"],
+      series: [16, 18, 19, 17, 21, 24, 23, 27, 26],
+    },
+    {
+      symbol: "2330.TW",
+      name: "台積電",
+      blurb: "台灣龍頭代表股，穩定度高，也很適合當成題材與大盤情緒的觀察基準。",
+      change: "+0.9%",
+      trend: "up",
+      reasons: ["台灣龍頭", "權值帶動", "基本面能見度高"],
+      series: [24, 23, 25, 26, 28, 29, 28, 31, 33],
+    },
+    {
+      symbol: "TSLA",
+      name: "Tesla",
+      blurb: "波動大、討論度高，適合放在熱門排行做快速掃描與題材判斷。",
+      change: "-1.2%",
+      trend: "down",
+      reasons: ["討論熱度高", "波動擴大", "情緒指標股"],
+      series: [31, 29, 28, 27, 25, 24, 23, 22, 20],
+    },
+  ],
+  themes: [
+    {
+      id: "ai-chip",
+      icon: "🧠",
+      title: "AI 晶片",
+      desc: "聚焦算力、伺服器與 GPU 主線。",
+      picks: [
+        { symbol: "NVDA", name: "NVIDIA" },
+        { symbol: "AMD", name: "AMD" },
+      ],
+    },
+    {
+      id: "taiwan-core",
+      icon: "🇹🇼",
+      title: "台灣龍頭",
+      desc: "優先看對指數影響力最高的核心權值。",
+      picks: [
+        { symbol: "2330.TW", name: "台積電" },
+        { symbol: "2317.TW", name: "鴻海" },
+      ],
+    },
+    {
+      id: "steady-income",
+      icon: "💸",
+      title: "高股息",
+      desc: "用 ETF 角度先建立防守型觀察名單。",
+      picks: [
+        { symbol: "0056.TW", name: "元大高股息" },
+        { symbol: "00878.TW", name: "國泰永續高股息" },
+      ],
+    },
+    {
+      id: "future-motion",
+      icon: "⚡",
+      title: "電動車",
+      desc: "適合觀察題材情緒與高波動反應。",
+      picks: [
+        { symbol: "TSLA", name: "Tesla" },
+        { symbol: "RIVN", name: "Rivian" },
+      ],
+    },
+  ],
+};
+const homepageRecommendationState = {
+  featuredExpanded: false,
+  hotExpanded: null,
+  openThemes: new Set(),
+};
+let homepageRecommendationsInitialized = false;
 
 // ── 工具函數 ─────────────────────────────────────
 function $(id) { return document.getElementById(id); }
@@ -29,6 +123,227 @@ function lastVal(arr) {
     if (arr[i] !== null && arr[i] !== undefined) return arr[i];
   }
   return null;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getHomepageWatchlist() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(HOMEPAGE_WATCHLIST_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function isHomepageWatched(symbol) {
+  return getHomepageWatchlist().includes(symbol);
+}
+
+function toggleHomepageWatch(symbol) {
+  const watchlist = new Set(getHomepageWatchlist());
+  if (watchlist.has(symbol)) watchlist.delete(symbol);
+  else watchlist.add(symbol);
+  localStorage.setItem(HOMEPAGE_WATCHLIST_KEY, JSON.stringify(Array.from(watchlist)));
+  renderHomepageRecommendations();
+}
+
+function buildSparklineSvg(series, color) {
+  const width = 420;
+  const height = 110;
+  const fillId = `sparkFill-${color.replace(/[^a-zA-Z0-9]/g, "")}`;
+  const min = Math.min(...series);
+  const max = Math.max(...series);
+  const range = Math.max(1, max - min);
+  const points = series
+    .map((value, index) => {
+      const x = (index / Math.max(1, series.length - 1)) * width;
+      const y = height - 18 - ((value - min) / range) * (height - 34);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+  const areaPoints = `0,${height} ${points} ${width},${height}`;
+  return `
+    <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="${fillId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.32"></stop>
+          <stop offset="100%" stop-color="${color}" stop-opacity="0"></stop>
+        </linearGradient>
+      </defs>
+      <polyline fill="url(#${fillId})" stroke="none" points="${areaPoints}"></polyline>
+      <polyline fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="${points}"></polyline>
+    </svg>
+  `;
+}
+
+function buildHomepageFeaturedCard() {
+  const featured = HOMEPAGE_RECOMMENDATIONS.featured;
+  const watched = isHomepageWatched(featured.symbol);
+  return `
+    <div class="welcome-rec-featured-shell">
+      <div class="welcome-rec-featured-top">
+        <div class="welcome-rec-symbol-group">
+          <div class="welcome-rec-chip-row">
+            ${featured.chips.map((chip) => `<span class="welcome-rec-chip${chip.tone === "warning" ? " is-warning" : chip.tone === "success" ? " is-success" : ""}">${escapeHtml(chip.label)}</span>`).join("")}
+          </div>
+          <div class="welcome-rec-symbol-row">
+            <span class="welcome-rec-symbol">${escapeHtml(featured.symbol)}</span>
+            <span class="welcome-rec-exchange">${escapeHtml(featured.exchange)}</span>
+          </div>
+          <div class="welcome-rec-name">${escapeHtml(featured.name)}</div>
+        </div>
+      </div>
+      <div class="welcome-rec-headline">${escapeHtml(featured.summary)}</div>
+      <div class="welcome-rec-reason-row">
+        ${featured.reasons.map((reason) => `<span class="welcome-rec-reason">${escapeHtml(reason)}</span>`).join("")}
+      </div>
+      <div class="welcome-rec-sparkline">${buildSparklineSvg(featured.series, "#38BDF8")}</div>
+      <div class="welcome-rec-featured-actions">
+        <button class="welcome-rec-button is-primary" data-action="analyze" data-symbol="${escapeHtml(featured.symbol)}">立即分析</button>
+        <button class="welcome-rec-button is-secondary" data-action="toggle-featured-detail">${homepageRecommendationState.featuredExpanded ? "收起理由" : "看理由"}</button>
+        <button class="welcome-rec-button ${watched ? "is-watched" : "is-ghost"}" data-action="watch" data-symbol="${escapeHtml(featured.symbol)}">${watched ? "已加入觀察" : "加入觀察"}</button>
+      </div>
+      <div class="welcome-rec-featured-detail" ${homepageRecommendationState.featuredExpanded ? "" : "hidden"}>
+        <p class="welcome-rec-detail-copy">${escapeHtml(featured.detail)}</p>
+      </div>
+    </div>
+  `;
+}
+
+function buildHomepageHotRows() {
+  return HOMEPAGE_RECOMMENDATIONS.hot
+    .map((item, index) => {
+      const watched = isHomepageWatched(item.symbol);
+      const expanded = homepageRecommendationState.hotExpanded === index;
+      return `
+        <article class="welcome-rec-hot-row" data-action="analyze" data-symbol="${escapeHtml(item.symbol)}">
+          <div class="welcome-rec-hot-top">
+            <div class="welcome-rec-hot-main">
+              <div class="welcome-rec-hot-meta">
+                <span class="welcome-rec-rank">${index + 1}</span>
+                <div>
+                  <div class="welcome-rec-hot-symbol">${escapeHtml(item.symbol)}</div>
+                  <div class="welcome-rec-hot-name">${escapeHtml(item.name)}</div>
+                </div>
+              </div>
+              <p class="welcome-rec-hot-blurb">${escapeHtml(item.blurb)}</p>
+            </div>
+            <div class="welcome-rec-hot-change${item.trend === "down" ? " is-down" : ""}">${escapeHtml(item.change)}</div>
+          </div>
+          <div class="welcome-rec-row-actions">
+            <button class="welcome-rec-inline-button" data-action="toggle-hot-detail" data-hot-index="${index}">${expanded ? "收起理由" : "看理由"}</button>
+            <button class="welcome-rec-inline-button ${watched ? "is-watch-active" : ""}" data-action="watch" data-symbol="${escapeHtml(item.symbol)}">${watched ? "已觀察" : "加入觀察"}</button>
+          </div>
+          <div class="welcome-rec-hot-reasons" ${expanded ? "" : "hidden"}>
+            <div class="welcome-rec-reason-row">
+              ${item.reasons.map((reason) => `<span class="welcome-rec-reason">${escapeHtml(reason)}</span>`).join("")}
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function buildHomepageThemeCards() {
+  return HOMEPAGE_RECOMMENDATIONS.themes
+    .map((theme) => {
+      const expanded = homepageRecommendationState.openThemes.has(theme.id);
+      return `
+        <article class="welcome-rec-theme-card">
+          <div class="welcome-rec-theme-top" data-action="toggle-theme-detail" data-theme-id="${escapeHtml(theme.id)}">
+            <span class="welcome-rec-theme-icon">${escapeHtml(theme.icon)}</span>
+            <div class="welcome-rec-theme-main">
+              <div class="welcome-rec-theme-title">${escapeHtml(theme.title)}</div>
+              <p class="welcome-rec-theme-desc">${escapeHtml(theme.desc)}</p>
+            </div>
+          </div>
+          <div class="welcome-rec-theme-detail" ${expanded ? "" : "hidden"}>
+            <div class="welcome-rec-theme-picks">
+              ${theme.picks.map((pick) => {
+                const watched = isHomepageWatched(pick.symbol);
+                return `
+                  <div class="welcome-rec-pick-chip">
+                    <div>
+                      <div class="welcome-rec-pick-symbol">${escapeHtml(pick.symbol)}</div>
+                      <div class="welcome-rec-pick-name">${escapeHtml(pick.name)}</div>
+                    </div>
+                    <div class="welcome-rec-pick-actions">
+                      <button class="welcome-rec-inline-button" data-action="analyze" data-symbol="${escapeHtml(pick.symbol)}">分析</button>
+                      <button class="welcome-rec-inline-button ${watched ? "is-watch-active" : ""}" data-action="watch" data-symbol="${escapeHtml(pick.symbol)}">${watched ? "已觀察" : "加入觀察"}</button>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function renderHomepageRecommendations() {
+  $("homepageFeaturedRecommendation").innerHTML = buildHomepageFeaturedCard();
+  $("homepageHotRecommendations").innerHTML = buildHomepageHotRows();
+  $("homepageThemeRecommendations").innerHTML = buildHomepageThemeCards();
+  $("homepageWatchCount").textContent = String(getHomepageWatchlist().length);
+}
+
+function initHomepageRecommendations() {
+  if (homepageRecommendationsInitialized) return;
+  homepageRecommendationsInitialized = true;
+  const container = $("welcomeRecommendations");
+  if (!container) return;
+
+  container.addEventListener("click", (event) => {
+    const actionEl = event.target.closest("[data-action]");
+    if (!actionEl) return;
+    const action = actionEl.dataset.action;
+    const symbol = actionEl.dataset.symbol;
+    const themeId = actionEl.dataset.themeId;
+    const hotIndex = actionEl.dataset.hotIndex;
+
+    if (action !== "analyze") {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    if (action === "analyze" && symbol) {
+      quickSearch(symbol);
+      return;
+    }
+    if (action === "watch" && symbol) {
+      toggleHomepageWatch(symbol);
+      return;
+    }
+    if (action === "toggle-featured-detail") {
+      homepageRecommendationState.featuredExpanded = !homepageRecommendationState.featuredExpanded;
+      renderHomepageRecommendations();
+      return;
+    }
+    if (action === "toggle-hot-detail" && hotIndex !== undefined) {
+      const index = Number(hotIndex);
+      homepageRecommendationState.hotExpanded = homepageRecommendationState.hotExpanded === index ? null : index;
+      renderHomepageRecommendations();
+      return;
+    }
+    if (action === "toggle-theme-detail" && themeId) {
+      if (homepageRecommendationState.openThemes.has(themeId)) homepageRecommendationState.openThemes.delete(themeId);
+      else homepageRecommendationState.openThemes.add(themeId);
+      renderHomepageRecommendations();
+    }
+  });
+
+  renderHomepageRecommendations();
 }
 
 // ── 快捷搜尋 ─────────────────────────────────────
@@ -671,6 +986,13 @@ function setPracticeRange(start, end) {
     bindRange(document.getElementById('rangeEnd'));
     updateSkiLaunchButton();
     updateSkiMedals();
+  }
+})();
+
+(function initHomepageRecommendationSurface() {
+  document.addEventListener("DOMContentLoaded", initHomepageRecommendations);
+  if (document.readyState !== "loading") {
+    initHomepageRecommendations();
   }
 })();
 

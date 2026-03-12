@@ -57,6 +57,45 @@
       <div class="welcome-icon">📊</div>
       <h1 class="welcome-title">AI 股市分析儀表板</h1>
       <p class="welcome-sub">輸入股票代碼，即時計算 MA、RSI、MACD 技術指標<br />並由 AI Agent 生成多空建議</p>
+      <section id="welcomeRecommendations" class="welcome-recommendations" aria-label="首頁股票推薦">
+        <div class="welcome-rec-header">
+          <div class="welcome-rec-copy">
+            <span class="welcome-rec-kicker">MARKET BRIEFING</span>
+            <h2 class="welcome-rec-title">今天先看這些股票</h2>
+            <p class="welcome-rec-sub">AI 幫你整理出現在最值得追蹤的標的，先看理由，再一鍵分析。</p>
+          </div>
+          <div class="welcome-rec-watch-pill">
+            <span class="welcome-rec-watch-label">已加入觀察</span>
+            <span id="homepageWatchCount" class="welcome-rec-watch-count">0</span>
+            <span class="welcome-rec-watch-unit">檔</span>
+          </div>
+        </div>
+        <div class="welcome-rec-layout">
+          <section id="homepageFeaturedRecommendation" class="welcome-rec-featured" aria-live="polite"></section>
+          <div class="welcome-rec-side">
+            <section class="welcome-rec-panel">
+              <div class="welcome-rec-panel-head">
+                <div>
+                  <span class="welcome-rec-panel-kicker">Hot Radar</span>
+                  <h3 class="welcome-rec-panel-title">熱門排行</h3>
+                </div>
+                <span class="welcome-rec-panel-note">掃描全場熱度</span>
+              </div>
+              <div id="homepageHotRecommendations" class="welcome-rec-hot-list" aria-live="polite"></div>
+            </section>
+            <section class="welcome-rec-panel">
+              <div class="welcome-rec-panel-head">
+                <div>
+                  <span class="welcome-rec-panel-kicker">Theme Desk</span>
+                  <h3 class="welcome-rec-panel-title">主題精選</h3>
+                </div>
+                <span class="welcome-rec-panel-note">從題材切入</span>
+              </div>
+              <div id="homepageThemeRecommendations" class="welcome-rec-theme-grid" aria-live="polite"></div>
+            </section>
+          </div>
+        </div>
+      </section>
       <div class="welcome-features">
         <div class="feature-card" title="查看 K 線與均線" onclick="expandKnowledge(0)">
           <span class="feat-icon">🕯️</span>
