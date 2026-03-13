@@ -103,6 +103,18 @@ const ENVIRONMENTS = {
       shadow: "#060b11",
     },
   },
+  "green-range": {
+    label: "綠能山脈",
+    palette: {
+      top: "#071b12",
+      mid: "#134e38",
+      bottom: "#08120d",
+      accent: "#4ADE80",
+      glow: "#BBF7D0",
+      surface: "#DCFCE7",
+      shadow: "#04110a",
+    },
+  },
 };
 
 const STOCKS = [
@@ -200,6 +212,7 @@ const STOCKS = [
     symbol: "2330.TW",
     name: "TSMC",
     industryClass: "Tech",
+    aliases: ["2330"],
     environment: "digital-icefield",
     companyProps: ["wafer", "chip", "cleanroom-tower", "signal-beam"],
     mixerLogic: "地形以穩定主升結構為主，局部加入晶圓光脈衝與權值龍頭的厚重慣性。",
@@ -209,6 +222,7 @@ const STOCKS = [
     symbol: "2454.TW",
     name: "MediaTek",
     industryClass: "Tech",
+    aliases: ["2454"],
     environment: "cloud-summit",
     companyProps: ["mobile-chip", "signal-beam", "orbit-ring", "data-prism"],
     mixerLogic: "讓坡道在平穩推進中穿插通訊訊號脈衝，形成晶片平台節奏。",
@@ -218,6 +232,7 @@ const STOCKS = [
     symbol: "2317.TW",
     name: "Hon Hai",
     industryClass: "Industrial",
+    aliases: ["2317"],
     environment: "steel-canyon",
     companyProps: ["factory", "connector", "container", "beam-frame"],
     mixerLogic: "把大型製造鏈的重量感做成低頻大坡與金屬平台，節奏偏穩但慣性很強。",
@@ -227,6 +242,7 @@ const STOCKS = [
     symbol: "2382.TW",
     name: "Quanta",
     industryClass: "Tech",
+    aliases: ["2382"],
     environment: "cloud-summit",
     companyProps: ["server-rack", "data-cube", "cloud-block", "window-panel"],
     mixerLogic: "用伺服器矩陣排列與順滑長坡，表現 AI 伺服器供應鏈的延展感。",
@@ -236,6 +252,7 @@ const STOCKS = [
     symbol: "0050.TW",
     name: "元大台灣50",
     industryClass: "Finance",
+    aliases: ["0050"],
     environment: "dividend-vault",
     companyProps: ["coin", "column", "shield", "ribbon"],
     mixerLogic: "地形以穩定長弧為主，波動收斂，突出大型 ETF 的防守與基準感。",
@@ -245,6 +262,7 @@ const STOCKS = [
     symbol: "0056.TW",
     name: "元大高股息",
     industryClass: "Finance",
+    aliases: ["0056"],
     environment: "dividend-vault",
     companyProps: ["coin", "coupon", "vault", "cash-badge"],
     mixerLogic: "把現金流階梯感轉成連續緩坡與規律平台，節奏偏穩、落點偏準。",
@@ -254,6 +272,7 @@ const STOCKS = [
     symbol: "00878.TW",
     name: "國泰永續高股息",
     industryClass: "Finance",
+    aliases: ["00878"],
     environment: "dividend-vault",
     companyProps: ["coin", "leaf-grid", "coupon", "shield"],
     mixerLogic: "維持高股息的平穩主調，再加入永續感的網格與綠色點光。",
@@ -263,6 +282,7 @@ const STOCKS = [
     symbol: "00919.TW",
     name: "群益台灣精選高息",
     industryClass: "Finance",
+    aliases: ["00919"],
     environment: "dividend-vault",
     companyProps: ["coin", "medal", "cash-badge", "column"],
     mixerLogic: "讓地形呈現規律級距與中低震盪，像穩定配息被切成一階一階的平台。",
@@ -272,6 +292,7 @@ const STOCKS = [
     symbol: "BABA",
     name: "Alibaba",
     industryClass: "Consumer",
+    aliases: ["9988.HK"],
     environment: "consumer-arcade",
     companyProps: ["parcel", "market-arch", "lantern", "data-prism"],
     mixerLogic: "把大型電商的市集感與全球流通節奏揉進長坡與促銷跳點。",
@@ -294,6 +315,291 @@ const STOCKS = [
     companyProps: ["chat-bubble", "game-pad", "portal-ring", "neon-tower"],
     mixerLogic: "用社交訊號和遊戲傳送門做層層疊加，地形保持波浪推進與情緒噪點。",
     terrainMood: "social-arcade",
+  },
+  {
+    symbol: "AAPL",
+    name: "Apple",
+    industryClass: "Tech",
+    environment: "cloud-summit",
+    companyProps: ["visor", "orbit-ring", "window-panel", "cloud-block"],
+    mixerLogic: "維持乾淨、精準的長弧地形，用少量高亮介面感符號去表現高辨識度硬體品牌。",
+    terrainMood: "steady-climb",
+  },
+  {
+    symbol: "NFLX",
+    name: "Netflix",
+    industryClass: "Media",
+    environment: "neon-media",
+    companyProps: ["portal-ring", "pixel-stack", "visor", "chat-bubble"],
+    mixerLogic: "用劇場式霓虹與連續波面表現內容平台的追劇節奏與情緒起伏。",
+    terrainMood: "sentiment-wave",
+  },
+  {
+    symbol: "CRM",
+    name: "Salesforce",
+    industryClass: "Tech",
+    environment: "cloud-summit",
+    companyProps: ["cloud-block", "data-cube", "orbit-ring", "copilot-orb"],
+    mixerLogic: "地形以穩定雲層曲線為主，只在節點處加入 CRM 類平台的資料躍遷。",
+    terrainMood: "steady-climb",
+  },
+  {
+    symbol: "ORCL",
+    name: "Oracle",
+    industryClass: "Tech",
+    environment: "cloud-summit",
+    companyProps: ["server-rack", "data-prism", "data-bridge", "orbit-ring"],
+    mixerLogic: "把資料庫和雲端基礎設施做成厚重但平順的地形，節奏穩定、轉折清楚。",
+    terrainMood: "server-glide",
+  },
+  {
+    symbol: "QCOM",
+    name: "Qualcomm",
+    industryClass: "Tech",
+    environment: "digital-icefield",
+    companyProps: ["mobile-chip", "signal-beam", "chip", "orbit-ring"],
+    mixerLogic: "讓地形成為訊號波段般的推進節奏，保留通訊晶片的高速與脈衝感。",
+    terrainMood: "signal-step",
+  },
+  {
+    symbol: "INTC",
+    name: "Intel",
+    industryClass: "Tech",
+    environment: "digital-icefield",
+    companyProps: ["chip", "cleanroom-tower", "server", "signal-beam"],
+    mixerLogic: "用厚重冰原與設備塔身體現大型晶片廠的基礎設施感與主升段慣性。",
+    terrainMood: "bluechip-climb",
+  },
+  {
+    symbol: "MU",
+    name: "Micron",
+    industryClass: "Tech",
+    environment: "digital-icefield",
+    companyProps: ["chip", "data-cube", "signal-beam", "server"],
+    mixerLogic: "以記憶體堆疊感為主，地形用層層加速的短坡與平台交替表現週期波動。",
+    terrainMood: "step-rally",
+  },
+  {
+    symbol: "AMAT",
+    name: "Applied Materials",
+    industryClass: "Industrial",
+    environment: "steel-canyon",
+    companyProps: ["beam-frame", "chip", "factory", "cleanroom-tower"],
+    mixerLogic: "把半導體設備感做成鋼架平台與緩重慣性，讓節奏偏硬派工業。",
+    terrainMood: "heavy-inertia",
+  },
+  {
+    symbol: "LRCX",
+    name: "Lam Research",
+    industryClass: "Industrial",
+    environment: "steel-canyon",
+    companyProps: ["beam-frame", "chip", "factory", "signal-beam"],
+    mixerLogic: "沿用設備股的工業模板，保留精密束流與產線坡面的反覆推進。",
+    terrainMood: "heavy-inertia",
+  },
+  {
+    symbol: "LCID",
+    name: "Lucid Motors",
+    industryClass: "Auto",
+    environment: "future-transit",
+    companyProps: ["headlamp", "hover-engine", "tire", "speed-fin"],
+    mixerLogic: "以更流線的長坡和更乾淨的光束表現高端電車品牌的夢幻速度感。",
+    terrainMood: "glide-curve",
+  },
+  {
+    symbol: "ENPH",
+    name: "Enphase",
+    industryClass: "Energy",
+    environment: "green-range",
+    companyProps: ["solar-panel", "battery-pack", "turbine", "signal-beam"],
+    mixerLogic: "把能源模組與山脈風場接在一起，地形偏上坡阻力與節點增益並存。",
+    terrainMood: "steady-climb",
+  },
+  {
+    symbol: "PLUG",
+    name: "Plug Power",
+    industryClass: "Energy",
+    environment: "green-range",
+    companyProps: ["battery-pack", "charge-pillar", "turbine", "signal-beam"],
+    mixerLogic: "沿用新能源模板，讓坡面偏碎、推進感偏脈衝，對應氫能題材波動。",
+    terrainMood: "pulse-wave",
+  },
+  {
+    symbol: "JPM",
+    name: "JPMorgan",
+    industryClass: "Finance",
+    environment: "metro-snow-city",
+    companyProps: ["coin", "column", "vault", "shield"],
+    mixerLogic: "採用大行金融模板，地形穩、結構大、重心感強。",
+    terrainMood: "stable-arc",
+  },
+  {
+    symbol: "BAC",
+    name: "Bank of America",
+    industryClass: "Finance",
+    environment: "metro-snow-city",
+    companyProps: ["coin", "column", "shield", "ribbon"],
+    mixerLogic: "用大行模板做更平順的雪都坡面，維持金融權值股的穩定視覺語氣。",
+    terrainMood: "stable-arc",
+  },
+  {
+    symbol: "GS",
+    name: "Goldman Sachs",
+    industryClass: "Finance",
+    environment: "metro-snow-city",
+    companyProps: ["coin", "column", "medal", "vault"],
+    mixerLogic: "地形略帶攻擊性但仍以秩序為主，讓投行感落在金庫與雪都之間。",
+    terrainMood: "steady-climb",
+  },
+  {
+    symbol: "V",
+    name: "Visa",
+    industryClass: "Finance",
+    environment: "metro-snow-city",
+    companyProps: ["coin", "signal-beam", "shield", "orbit-ring"],
+    mixerLogic: "用支付網路感帶出更流暢的連續曲線，讓金融模板更像高速金流。",
+    terrainMood: "glide-curve",
+  },
+  {
+    symbol: "MA",
+    name: "Mastercard",
+    industryClass: "Finance",
+    environment: "metro-snow-city",
+    companyProps: ["coin", "signal-beam", "shield", "ribbon"],
+    mixerLogic: "維持支付網路模板，用穩定長弧與少量節點脈衝表現卡網雙核心。",
+    terrainMood: "glide-curve",
+  },
+  {
+    symbol: "BRK-B",
+    name: "Berkshire Hathaway B",
+    industryClass: "Finance",
+    environment: "dividend-vault",
+    companyProps: ["coin", "column", "shield", "medal"],
+    mixerLogic: "用厚重穩收模板做長坡與低波動區段，表現控股型資本配置的穩健感。",
+    terrainMood: "stable-arc",
+  },
+  {
+    symbol: "2303.TW",
+    name: "聯電",
+    industryClass: "Tech",
+    aliases: ["2303"],
+    environment: "digital-icefield",
+    companyProps: ["wafer", "chip", "cleanroom-tower", "signal-beam"],
+    mixerLogic: "沿用晶圓代工模板，地形偏平穩推進，強調製程光脈衝與穩定節奏。",
+    terrainMood: "bluechip-climb",
+  },
+  {
+    symbol: "2308.TW",
+    name: "台達電",
+    industryClass: "Energy",
+    aliases: ["2308"],
+    environment: "green-range",
+    companyProps: ["turbine", "battery-pack", "solar-panel", "signal-beam"],
+    mixerLogic: "把電源管理與能源基建做成高效率山脊地形，坡面穩中帶推進。",
+    terrainMood: "steady-climb",
+  },
+  {
+    symbol: "3711.TW",
+    name: "日月光",
+    industryClass: "Tech",
+    aliases: ["3711"],
+    environment: "digital-icefield",
+    companyProps: ["wafer", "chip", "cleanroom-tower", "server"],
+    mixerLogic: "沿用封裝測試模板，地形節點更細，像晶片堆疊後的連續坡段。",
+    terrainMood: "signal-step",
+  },
+  {
+    symbol: "2395.TW",
+    name: "研華",
+    industryClass: "Industrial",
+    aliases: ["2395"],
+    environment: "steel-canyon",
+    companyProps: ["factory", "connector", "signal-beam", "data-cube"],
+    mixerLogic: "把工業電腦與智慧製造做成工業模板的輕量版，鋼架中保留資料節點。",
+    terrainMood: "heavy-inertia",
+  },
+  {
+    symbol: "006208.TW",
+    name: "富邦台50",
+    industryClass: "Finance",
+    aliases: ["006208"],
+    environment: "dividend-vault",
+    companyProps: ["coin", "column", "shield", "ribbon"],
+    mixerLogic: "沿用大型 ETF 模板，保持長弧、低噪、基準盤感。",
+    terrainMood: "stable-arc",
+  },
+  {
+    symbol: "00929.TW",
+    name: "復華科技優息",
+    industryClass: "Finance",
+    aliases: ["00929"],
+    environment: "dividend-vault",
+    companyProps: ["coin", "coupon", "shield", "ribbon"],
+    mixerLogic: "沿用高股息模板，地形規律分層，讓科技收益主題看起來更穩定。",
+    terrainMood: "income-ladder",
+  },
+  {
+    symbol: "XOM",
+    name: "ExxonMobil",
+    industryClass: "Energy",
+    environment: "green-range",
+    companyProps: ["oil-rig", "turbine", "signal-beam", "metal-bar"],
+    mixerLogic: "用能源模板的逆風與工業節點去表達大型油氣權值股的厚重動能。",
+    terrainMood: "heavy-inertia",
+  },
+  {
+    symbol: "CVX",
+    name: "Chevron",
+    industryClass: "Energy",
+    environment: "green-range",
+    companyProps: ["oil-rig", "turbine", "signal-beam", "metal-bar"],
+    mixerLogic: "沿用能源巨頭模板，用穩定長坡和阻力感做出原物料權值的重量。",
+    terrainMood: "stable-climb",
+  },
+  {
+    symbol: "COP",
+    name: "ConocoPhillips",
+    industryClass: "Energy",
+    environment: "green-range",
+    companyProps: ["oil-rig", "signal-beam", "turbine", "metal-bar"],
+    mixerLogic: "用較碎的能源坡段與鑽井符號，表現上游能源題材的波動感。",
+    terrainMood: "pulse-wave",
+  },
+  {
+    symbol: "GLD",
+    name: "Gold ETF",
+    industryClass: "Materials",
+    environment: "dividend-vault",
+    companyProps: ["coin", "metal-bar", "shield", "ribbon"],
+    mixerLogic: "以金屬避險模板表現穩定避風港，地形平順、節奏偏防守。",
+    terrainMood: "stable-arc",
+  },
+  {
+    symbol: "SLV",
+    name: "Silver ETF",
+    industryClass: "Materials",
+    environment: "dividend-vault",
+    companyProps: ["coin", "metal-bar", "shield", "signal-beam"],
+    mixerLogic: "延用金屬 ETF 模板，但讓地形比黃金多一點脈衝與波動。",
+    terrainMood: "pulse-wave",
+  },
+  {
+    symbol: "JD",
+    name: "JD.com",
+    industryClass: "Consumer",
+    environment: "consumer-arcade",
+    companyProps: ["parcel", "cart", "market-arch", "data-prism"],
+    mixerLogic: "沿用電商模板，以倉配效率感和長坡運輸節奏來區分平台特性。",
+    terrainMood: "distribution-run",
+  },
+  {
+    symbol: "BIDU",
+    name: "Baidu",
+    industryClass: "Tech",
+    environment: "cloud-summit",
+    companyProps: ["search-beam", "orbit-ring", "data-prism", "cloud-block"],
+    mixerLogic: "把搜尋與 AI 節點壓進雲端模板，讓地形在穩定中帶少量脈衝搜尋波。",
+    terrainMood: "pulse-wave",
   },
 ];
 
@@ -378,6 +684,28 @@ function buildAtmosphere(envId, palette, rng, width, height) {
             const y = rng() * height;
             const r = 1 + rng() * 2.4;
             return `<circle cx="${x}" cy="${y}" r="${r}" fill="${alpha("#FFFFFF", 0.55 + rng() * 0.25)}"/>`;
+          }).join("")}
+        </g>
+      `;
+    case "green-range":
+      return `
+        <g>
+          ${Array.from({ length: 6 }, (_, index) => {
+            const baseX = index * 280 + rng() * 40;
+            const peak = 240 + rng() * 120;
+            const shoulder = 420 + rng() * 90;
+            return `<path d="M${baseX - 120} 900 L${baseX + 40} ${peak} L${baseX + 180} ${shoulder} L${baseX + 320} 900 Z" fill="${alpha(
+              palette.surface,
+              0.12 + rng() * 0.08
+            )}"/>`;
+          }).join("")}
+          ${Array.from({ length: 7 }, () => {
+            const x = 90 + rng() * 1420;
+            const y = 180 + rng() * 300;
+            return `<path d="M${x} ${y + 90} V${y - 26} M${x} ${y - 26} L${x - 38} ${y + 10} M${x} ${y - 26} L${x + 38} ${y + 10}" stroke="${alpha(
+              palette.accent,
+              0.26
+            )}" stroke-width="4" stroke-linecap="round"/>`;
           }).join("")}
         </g>
       `;
@@ -806,6 +1134,35 @@ function buildPropIcon(kind, x, y, size, palette) {
           <path d="M0 -${size * 0.42} V-${size * 0.3} M0 ${size * 0.3} V${size * 0.42}" stroke="${stroke}" stroke-width="3" stroke-linecap="round"/>
         </g>
       `;
+    case "turbine":
+      return `
+        <g transform="translate(${x}, ${y})">
+          <path d="M0 ${size * 0.46} V-${size * 0.04}" stroke="${stroke}" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="0" cy="-${size * 0.08}" r="${size * 0.08}" fill="${fill}"/>
+          <path d="M0 -${size * 0.08} L-${size * 0.34} -${size * 0.22} M0 -${size * 0.08} L${size * 0.24} -${size * 0.34} M0 -${size * 0.08} L${size * 0.12} ${size * 0.22}" stroke="${fill}" stroke-width="4" stroke-linecap="round"/>
+        </g>
+      `;
+    case "solar-panel":
+      return `
+        <g transform="translate(${x}, ${y})">
+          <rect x="${-size * 0.34}" y="${-size * 0.2}" width="${size * 0.68}" height="${size * 0.4}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
+          <path d="M-${size * 0.18} ${size * 0.24} L0 ${size * 0.44} L${size * 0.18} ${size * 0.24}" stroke="${stroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M-${size * 0.22} -${size * 0.02} H${size * 0.22} M-${size * 0.1} -${size * 0.2} V${size * 0.2} M${size * 0.1} -${size * 0.2} V${size * 0.2}" stroke="${dark}" stroke-width="2"/>
+        </g>
+      `;
+    case "oil-rig":
+      return `
+        <g transform="translate(${x}, ${y})">
+          <path d="M0 -${size * 0.42} L-${size * 0.28} ${size * 0.38} H${size * 0.28} Z" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
+          <path d="M-${size * 0.18} ${size * 0.04} H${size * 0.18} M-${size * 0.1} -${size * 0.14} H${size * 0.1}" stroke="${dark}" stroke-width="3"/>
+        </g>
+      `;
+    case "metal-bar":
+      return `
+        <g transform="translate(${x}, ${y})">
+          <path d="M-${size * 0.38} ${size * 0.12} L-${size * 0.2} -${size * 0.18} H${size * 0.22} L${size * 0.38} ${size * 0.12} Z" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
+        </g>
+      `;
     case "visor":
       return `
         <g transform="translate(${x}, ${y})">
@@ -919,6 +1276,22 @@ async function main() {
       mixerLogic: stock.mixerLogic,
       implementationPlan: "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
     });
+
+    for (const alias of stock.aliases || []) {
+      const aliasFile = `${slugifySymbol(alias)}.svg`;
+      await fs.writeFile(path.join(outputDir, aliasFile), svg, "utf8");
+      manifest.push({
+        symbol: alias,
+        name: stock.name,
+        file: `./${aliasFile}`,
+        industryClass: stock.industryClass,
+        environmentBiome: ENVIRONMENTS[stock.environment].label,
+        companyProps: stock.companyProps,
+        mixerLogic: `${stock.mixerLogic}（沿用 ${stock.symbol} 主題模板）`,
+        implementationPlan: "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
+        sourceSymbol: stock.symbol,
+      });
+    }
   }
 
   await fs.writeFile(

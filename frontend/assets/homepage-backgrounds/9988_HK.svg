@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2d1208"/>
+      <stop offset="48%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#1c0c08"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="25%" r="65%">
+      <stop offset="0%" stop-color="#FED7AA47"/>
+      <stop offset="100%" stop-color="#FED7AA00"/>
+    </radialGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FB923C2e"/>
+      <stop offset="100%" stop-color="#FDE68A08"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <rect width="1600" height="900" fill="url(#fade)"/>
+
+  
+        <g>
+          
+              <rect x="3.573336990084499" y="371.80676063522696" width="102" height="238.19323936477304" rx="10" fill="#FDE68A1f"/>
+              <rect x="17.5733369900845" y="391.80676063522696" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="129.6768430871889" y="462.02337672933936" width="102" height="147.97662327066064" rx="10" fill="#FDE68A1f"/>
+              <rect x="143.6768430871889" y="482.02337672933936" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="265.8239317443222" y="411.15096007473767" width="102" height="198.84903992526233" rx="10" fill="#FDE68A1f"/>
+              <rect x="279.8239317443222" y="431.15096007473767" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="385.8424138263799" y="428.3404191583395" width="102" height="181.6595808416605" rx="10" fill="#FDE68A1f"/>
+              <rect x="399.8424138263799" y="448.3404191583395" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="521.2115397984162" y="449.4431493617594" width="102" height="160.55685063824058" rx="10" fill="#FDE68A1f"/>
+              <rect x="535.2115397984162" y="469.4431493617594" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="640.6698891171254" y="444.9417917896062" width="102" height="165.0582082103938" rx="10" fill="#FDE68A1f"/>
+              <rect x="654.6698891171254" y="464.9417917896062" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="769.8577121035196" y="479.3714263662696" width="102" height="130.6285736337304" rx="10" fill="#FDE68A1f"/>
+              <rect x="783.8577121035196" y="499.3714263662696" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="905.6688194083981" y="479.84743629582226" width="102" height="130.15256370417774" rx="10" fill="#FDE68A1f"/>
+              <rect x="919.6688194083981" y="499.84743629582226" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="1031.648807875812" y="412.4602641444653" width="102" height="197.53973585553467" rx="10" fill="#FDE68A1f"/>
+              <rect x="1045.648807875812" y="432.4602641444653" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="1159.0507039269432" y="459.53847251832485" width="102" height="150.46152748167515" rx="10" fill="#FDE68A1f"/>
+              <rect x="1173.0507039269432" y="479.53847251832485" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="1281.5493527450599" y="469.61225868202746" width="102" height="140.38774131797254" rx="10" fill="#FDE68A1f"/>
+              <rect x="1295.5493527450599" y="489.61225868202746" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+              <rect x="1414.735560731031" y="482.4930402543396" width="102" height="127.50695974566042" rx="10" fill="#FDE68A1f"/>
+              <rect x="1428.735560731031" y="502.4930402543396" width="72" height="20" rx="6" fill="#FB923C38"/>
+            
+          <rect x="261.256618052721" y="382.9260580148548" width="88.22221735911444" height="10" rx="4" fill="#FFFFFF14"/><rect x="391.7706660926342" y="276.2958679627627" width="33.47338002361357" height="10" rx="4" fill="#FFFFFF14"/><rect x="87.45371513068676" y="197.3774620797485" width="37.128038545139134" height="10" rx="4" fill="#FFFFFF14"/><rect x="766.6156407445669" y="658.7055360339582" width="49.578485331032425" height="10" rx="4" fill="#FFFFFF14"/><rect x="666.7208630591631" y="278.6448796093464" width="42.36724672652781" height="10" rx="4" fill="#FFFFFF14"/><rect x="891.9777788221836" y="197.58860959671438" width="82.3824628177099" height="10" rx="4" fill="#FFFFFF14"/><rect x="1571.80817425251" y="482.5887237302959" width="42.84680099133402" height="10" rx="4" fill="#FFFFFF14"/><rect x="1123.0089478194714" y="316.9914866797626" width="42.390289422124624" height="10" rx="4" fill="#FFFFFF14"/><rect x="744.0378561615944" y="515.0059543550014" width="45.27684267330915" height="10" rx="4" fill="#FFFFFF14"/><rect x="1429.9841601401567" y="598.5020116344094" width="70.11884434241802" height="10" rx="4" fill="#FFFFFF14"/><rect x="1057.5542110949755" y="577.6296022441238" width="54.00944561418146" height="10" rx="4" fill="#FFFFFF14"/><rect x="1583.1949047744274" y="486.1756557133049" width="67.27178133558482" height="10" rx="4" fill="#FFFFFF14"/><rect x="768.3775011450052" y="515.3324391134083" width="59.226252931170166" height="10" rx="4" fill="#FFFFFF14"/><rect x="1213.0424953997135" y="347.8663038369268" width="83.64547394402325" height="10" rx="4" fill="#FFFFFF14"/><rect x="448.26273024082184" y="215.96571248956025" width="38.74521856987849" height="10" rx="4" fill="#FFFFFF14"/><rect x="1406.9661155343056" y="343.18812169134617" width="86.50705353496596" height="10" rx="4" fill="#FFFFFF14"/><rect x="428.5322990268469" y="471.16053314879537" width="47.45303408289328" height="10" rx="4" fill="#FFFFFF14"/><rect x="707.4304211884737" y="665.0473506841809" width="55.68772908905521" height="10" rx="4" fill="#FFFFFF14"/>
+        </g>
+      
+
+  <g opacity="0.92">
+    
+        <g transform="translate(295.5610579578206, 441.39856214169413)">
+          <rect x="-39.084143987111744" y="-30.8559031477198" width="78.16828797422349" height="61.7118062954396" rx="8.228240839391948" fill="#FB923Cc7" stroke="#FED7AA99" stroke-width="3"/>
+          <path d="M-39.084143987111744 0 H39.084143987111744 M0 -30.8559031477198 V30.8559031477198" stroke="#120805e6" stroke-width="3"/>
+        </g>
+      
+        <g transform="translate(636.8861087644473, 639.3754618382081)">
+          <path d="M-40.283147899657486 19.18245138078928 Q0 -32.61016734734178 40.283147899657486 19.18245138078928" stroke="#FED7AA99" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M-28.77367707118392 19.18245138078928 V40.283147899657486 M28.77367707118392 19.18245138078928 V40.283147899657486" stroke="#FB923Cc7" stroke-width="6" stroke-linecap="round"/>
+        </g>
+      
+        <g transform="translate(903.9089909382164, 421.75604759249836)">
+          <ellipse rx="23.345794199444352" ry="29.18224274930544" fill="#FB923Cc7" stroke="#FED7AA99" stroke-width="3"/>
+          <path d="M0 -40.855139849027616 V-29.18224274930544 M0 29.18224274930544 V40.855139849027616" stroke="#FED7AA99" stroke-width="3" stroke-linecap="round"/>
+        </g>
+      
+        <g transform="translate(1257.3131074337289, 630.9000938665122)">
+          <rect x="-34.08314025154338" y="-34.08314025154338" width="68.16628050308675" height="68.16628050308675" rx="10.024453015159816" fill="#FB923Cc7" stroke="#FED7AA99" stroke-width="3"/>
+          <path d="M-18.04401542728767 0 H18.04401542728767 M0 -18.04401542728767 V18.04401542728767" stroke="#120805e6" stroke-width="3"/>
+        </g>
+      
+  </g>
+
+  
+    <g>
+      <polyline points="0.0,601.9 160.0,584.9 320.0,551.4 480.0,516.0 640.0,498.2 800.0,478.5 960.0,458.9 1120.0,440.8 1280.0,428.6 1440.0,415.1 1600.0,391.3" fill="none" stroke="#FED7AAe0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <polygon points="0,900 0.0,601.9 160.0,584.9 320.0,551.4 480.0,516.0 640.0,498.2 800.0,478.5 960.0,458.9 1120.0,440.8 1280.0,428.6 1440.0,415.1 1600.0,391.3 1600,900" fill="#FB923C1f"/>
+    </g>
+  
+
+  <g opacity="0.09">
+    <text x="70" y="784" font-family="Segoe UI, Arial, sans-serif" font-size="180" font-weight="700" fill="#FED7AA">
+      BABA
+    </text>
+  </g>
+  <g opacity="0.95">
+    <text x="82" y="96" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#FED7AA">
+      BABA
+    </text>
+    <text x="82" y="132" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="500" fill="#FDE68Ae6">
+      Alibaba · 零售超市
+    </text>
+  </g>
+</svg>
