@@ -16,9 +16,8 @@
   const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
   const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
   const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
-  const CHAR_VISUAL_LIFT_FACTOR = 0.24; // 只影響角色視覺，不改 hitbox 邏輯
-  const CHAR_VISUAL_MOTION_FACTOR = 0.58;
-  const CHAR_VISUAL_LIFT_MAX = 34;
+  const TERRAIN_CAMERA_SHIFT_FACTOR = 0.58; // 山體相對橘線的垂直位移強度
+  const TERRAIN_CAMERA_SHIFT_MAX = 48;
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
@@ -48,6 +47,24 @@
     "鋼鐵峽谷": { base: '#3a424d', mid: '#5b6470', glow: '#fdba74', accent: '#f97316', shadow: '#12161b', snow: '#f3f4f6', pattern: 'industrial', edge: 'hard' },
     "霓虹傳媒": { base: '#34184e', mid: '#6b21a8', glow: '#f0abfc', accent: '#e879f9', shadow: '#130817', snow: '#faf5ff', pattern: 'neon', edge: 'glitch' },
     "default": { base: '#20405f', mid: '#305d85', glow: '#93c5fd', accent: '#60a5fa', shadow: '#08111b', snow: '#eff6ff', pattern: 'ice', edge: 'ice' },
+  };
+  const STOCK_HERO_PACKS = {
+    META: [
+      { prop: 'meta-social-window', band: 0.18, depthRatio: 0.16, size: 184, anchor: 'hero' },
+      { prop: 'meta-creator-portal', band: 0.74, depthRatio: 0.44, size: 168, anchor: 'hero' },
+    ],
+    AMZN: [
+      { prop: 'amzn-box-wall', band: 0.34, depthRatio: 0.18, size: 182, anchor: 'hero' },
+      { prop: 'amzn-fulfillment-hub', band: 0.82, depthRatio: 0.52, size: 178, anchor: 'hero' },
+    ],
+    NVDA: [
+      { prop: 'nvda-chip-monolith', band: 0.22, depthRatio: 0.14, size: 188, anchor: 'hero' },
+      { prop: 'nvda-neural-core', band: 0.72, depthRatio: 0.40, size: 172, anchor: 'hero' },
+    ],
+    TSLA: [
+      { prop: 'tsla-cyber-body', band: 0.30, depthRatio: 0.20, size: 176, anchor: 'hero' },
+      { prop: 'tsla-supercharger-bay', band: 0.76, depthRatio: 0.50, size: 186, anchor: 'hero' },
+    ],
   };
   const PROP_SPRITE_ALIASES = {
     gpu: 'chip-core',
@@ -110,6 +127,14 @@
     'solar-panel': 'solar-panel',
     'oil-rig': 'oil-rig',
     container: 'container-stack',
+    'meta-social-window': 'meta-social-window',
+    'meta-creator-portal': 'meta-creator-portal',
+    'amzn-box-wall': 'amzn-box-wall',
+    'amzn-fulfillment-hub': 'amzn-fulfillment-hub',
+    'nvda-chip-monolith': 'nvda-chip-monolith',
+    'nvda-neural-core': 'nvda-neural-core',
+    'tsla-cyber-body': 'tsla-cyber-body',
+    'tsla-supercharger-bay': 'tsla-supercharger-bay',
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
@@ -144,6 +169,10 @@
     return terrainScrollX + getCharX();
   }
 
+  function getScreenLineYAt(worldX) {
+    return getLineYAt(worldX) + terrainCameraOffsetY;
+  }
+
   // 地形
   let terrainPoints = []; // [{x, y}] 已映射到畫面座標
   let terrainScrollX = 0; // 目前已捲過多少 px
@@ -161,7 +190,8 @@
   // 角色
   let charY = 200;        // 角色中心 Y
   let charTargetY = 200;  // 滾輪目標 Y（加平滑）
-  let charVisualOffsetY = 0; // 純視覺位移，讓滑雪者看起來會上下騎坡
+  let charVisualOffsetY = 0; // 保留角色視覺偏移欄位，預設收斂回 0
+  let terrainCameraOffsetY = 0;
   let isBoosting = false; // 滑鼠中鍵按住時提升上下移動幅度
   let spaceBoostDown = false;
 
@@ -386,8 +416,8 @@
     return themeManifestMap?.get(normalizeThemeSymbol(symbol)) || null;
   }
 
-  function getStockHeroPack() {
-    return [];
+  function getStockHeroPack(symbol) {
+    return STOCK_HERO_PACKS[normalizeThemeSymbol(symbol)] || [];
   }
 
   function analyzeMarketShape(closes) {
@@ -453,7 +483,7 @@
     return picked.sort((a, b) => a.worldX - b.worldX);
   }
 
-  function buildPropPlacements(symbol, props, stats) {
+  function buildPropPlacements(symbol, props, stats, heroSpecs = []) {
     if (!terrainPoints.length) return [];
     const rng = createRng(`${symbol}:${terrainPoints.length}:${stats.trend.toFixed(3)}:${stats.volatility.toFixed(3)}`);
     const totalX = terrainPoints[terrainPoints.length - 1]?.x || 1;
@@ -477,7 +507,7 @@
         depth: isHero ? availableDepth * (0.14 + rng() * 0.14) : 0,
         size: isHero ? 128 + rng() * 54 : 70 + rng() * 30,
         anchor: isHero ? 'hero' : 'ridge',
-        alpha: isHero ? 0.28 + rng() * 0.1 : 0.94,
+        alpha: isHero ? 0.46 + rng() * 0.12 : 0.96,
       });
 
       const flankCount = isHero ? 3 : 2;
@@ -495,7 +525,7 @@
           depth: flankAvailableDepth * depthRatio,
           size: j === 0 ? 56 + rng() * 28 : 50 + rng() * 26,
           anchor: j === 0 ? 'interior' : 'deep',
-          alpha: j === 0 ? 0.72 + rng() * 0.14 : 0.44 + rng() * 0.14,
+          alpha: j === 0 ? 0.84 + rng() * 0.12 : 0.58 + rng() * 0.16,
         });
       }
     }
@@ -530,8 +560,8 @@
         anchor: layerType,
         alpha:
           layerType === 'ridge' ? 0.88 + rng() * 0.08
-          : layerType === 'deep' ? 0.38 + rng() * 0.14
-          : 0.56 + rng() * 0.2,
+          : layerType === 'deep' ? 0.56 + rng() * 0.16
+          : 0.72 + rng() * 0.16,
       });
     }
 
@@ -552,7 +582,23 @@
         depth: availableDepth * lowerRatio,
         size: 42 + rng() * 24,
         anchor: 'lower-band',
-        alpha: 0.36 + rng() * 0.12,
+        alpha: 0.54 + rng() * 0.16,
+      });
+    }
+
+    for (let i = 0; i < heroSpecs.length; i++) {
+      const spec = heroSpecs[i];
+      const worldX = totalX * clamp(spec.band + (rng() - 0.5) * 0.04, 0.08, 0.92);
+      const ridgeY = getLineYAt(worldX);
+      const availableDepth = Math.max(96, mountainFloorY - ridgeY - 20);
+      placements.push({
+        prop: spec.prop,
+        worldX,
+        ridgeY,
+        depth: availableDepth * spec.depthRatio,
+        size: spec.size * (0.92 + rng() * 0.12),
+        anchor: spec.anchor || 'hero',
+        alpha: 0.5 + rng() * 0.12,
       });
     }
 
@@ -571,7 +617,7 @@
         depth: Math.max(72, mountainFloorY - ridgeY - 36) * (0.22 + rng() * 0.16),
         size: 138 + rng() * 56,
         anchor: 'hero',
-        alpha: 0.24 + rng() * 0.08,
+        alpha: 0.4 + rng() * 0.12,
       });
     }
     return placements;
@@ -684,7 +730,7 @@
   window.render_game_to_text = function renderGameToText() {
     const playerX = getCharX();
     const worldX = getCharWorldX();
-    const lineY = canvas && terrainPoints.length ? getLineYAt(worldX) : null;
+    const lineY = canvas && terrainPoints.length ? getScreenLineYAt(worldX) : null;
     return JSON.stringify({
       coordinateSystem: { origin: 'top-left', x: 'right', y: 'down' },
       mode: gameState,
@@ -698,6 +744,7 @@
       terrain: {
         scrollX: Number(terrainScrollX.toFixed(1)),
         lineY: lineY == null ? null : Number(lineY.toFixed(1)),
+        cameraOffsetY: Number(terrainCameraOffsetY.toFixed(1)),
         points: terrainPoints.length,
       },
       theme: activeTerrainTheme ? {
@@ -854,6 +901,7 @@
     };
     resultButtonRects = null;
     charVisualOffsetY = 0;
+    terrainCameraOffsetY = 0;
 
     refreshThemeAssets();
     buildTerrain();
@@ -868,7 +916,8 @@
     const charX = getCharX();
     charY       = getLineYAt(charX);
     charTargetY = charY;
-    updateCharacterVisualOffset(charY, 0);
+    updateTerrainCameraOffset(charY);
+    updateCharacterVisualOffset();
 
     gameState = 'countdown';
     bindInput();
@@ -1011,7 +1060,8 @@
         countdownVal--;
         if (countdownVal <= 0) gameState = 'playing';
       }
-      updateCharacterVisualOffset(getLineYAt(getCharWorldX()), 0);
+      updateTerrainCameraOffset(getLineYAt(getCharWorldX()));
+      updateCharacterVisualOffset();
       updateParticles();
       if (Math.random() < 0.3) {
         spawnSnowflake();
@@ -1020,7 +1070,8 @@
     }
 
     if (gameState === 'complete') {
-      updateCharacterVisualOffset(getLineYAt(getCharWorldX()), 0);
+      updateTerrainCameraOffset(getLineYAt(getCharWorldX()));
+      updateCharacterVisualOffset();
       updateParticles();
       if (Math.random() < 0.45) {
         spawnFallingConfetti();
@@ -1029,7 +1080,8 @@
     }
 
     if (gameState === 'dead') {
-      updateCharacterVisualOffset(getLineYAt(getCharWorldX()), 0);
+      updateTerrainCameraOffset(getLineYAt(getCharWorldX()));
+      updateCharacterVisualOffset();
       updateParticles();
       return;
     }
@@ -1084,8 +1136,10 @@
     currentSpeed = Math.max(dynamicMinSpeed, Math.min(dynamicMaxSpeed, currentSpeed));
 
     terrainScrollX += currentSpeed;
-    const lineY = getLineYAt(terrainScrollX + charX);
-    updateCharacterVisualOffset(lineY, lineY - lineYBeforeScroll);
+    const rawLineY = getLineYAt(terrainScrollX + charX);
+    updateTerrainCameraOffset(rawLineY);
+    updateCharacterVisualOffset();
+    const lineY = rawLineY + terrainCameraOffsetY;
 
     if (getElapsedSeconds() > timeLimitSeconds) {
       triggerDeath(lineY);
@@ -1197,7 +1251,7 @@
   }
 
   function getCloseAtScreenY(screenY) {
-    const clampedY = Math.max(terrainYMin, Math.min(terrainYMax, screenY));
+    const clampedY = Math.max(terrainYMin, Math.min(terrainYMax, screenY - terrainCameraOffsetY));
     const ratio = (terrainYMax - clampedY) / Math.max(1, terrainYMax - terrainYMin);
     return priceMin + ratio * (priceMax - priceMin);
   }
@@ -1205,16 +1259,22 @@
   function getScreenYForClose(close) {
     if (priceMax === priceMin) return (terrainYMin + terrainYMax) / 2;
     const ratio = (close - priceMin) / (priceMax - priceMin);
-    return terrainYMax - ratio * (terrainYMax - terrainYMin);
+    return terrainYMax - ratio * (terrainYMax - terrainYMin) + terrainCameraOffsetY;
   }
 
-  function updateCharacterVisualOffset(lineY, lineYDelta = 0) {
+  function updateTerrainCameraOffset(lineY) {
     if (!canvas) return;
     const terrainMidY = (terrainYMin + terrainYMax) / 2 || canvas.height * LINE_Y_MID;
-    const liftFromElevation = clamp((lineY - terrainMidY) * CHAR_VISUAL_LIFT_FACTOR, -CHAR_VISUAL_LIFT_MAX, CHAR_VISUAL_LIFT_MAX);
-    const liftFromMotion = clamp(lineYDelta * CHAR_VISUAL_MOTION_FACTOR, -12, 12);
-    const targetOffset = clamp(liftFromElevation + liftFromMotion, -CHAR_VISUAL_LIFT_MAX, CHAR_VISUAL_LIFT_MAX);
-    charVisualOffsetY += (targetOffset - charVisualOffsetY) * 0.22;
+    const targetOffset = clamp(
+      (lineY - terrainMidY) * TERRAIN_CAMERA_SHIFT_FACTOR,
+      -TERRAIN_CAMERA_SHIFT_MAX,
+      TERRAIN_CAMERA_SHIFT_MAX
+    );
+    terrainCameraOffsetY += (targetOffset - terrainCameraOffsetY) * 0.16;
+  }
+
+  function updateCharacterVisualOffset() {
+    charVisualOffsetY += (0 - charVisualOffsetY) * 0.25;
   }
 
   /* ── 死亡 ────────────────────────────────────────── */
@@ -1448,7 +1508,7 @@
       if (!started && screenX < -80) continue;
       if (screenX > W + 80 && started) break;
       started = true;
-      points.push({ x: screenX, y: terrainPoints[i].y });
+      points.push({ x: screenX, y: terrainPoints[i].y + terrainCameraOffsetY });
     }
     return points;
   }
@@ -1928,19 +1988,19 @@
       ctx.save();
       const wobble = ((x * 0.013 + y * 0.007) % 0.18) - 0.09;
       ctx.rotate(wobble);
-      ctx.globalAlpha = clamp(alphaScale * 1.25, 0.28, 1);
+      ctx.globalAlpha = clamp(alphaScale * 1.65, 0.46, 1);
       const pad = size * 0.58;
-      ctx.fillStyle = withAlpha(theme.palette.shadow, 0.14 + alphaScale * 0.18);
+      ctx.fillStyle = withAlpha(theme.palette.shadow, 0.22 + alphaScale * 0.18);
       ctx.beginPath();
       ctx.roundRect(-pad * 0.72, -pad * 0.72, pad * 1.44, pad * 1.44, Math.max(10, size * 0.08));
       ctx.fill();
       ctx.drawImage(spriteEntry.img, -pad, -pad, pad * 2, pad * 2);
       ctx.globalCompositeOperation = 'source-atop';
-      ctx.fillStyle = withAlpha(theme.palette.accent, 0.18 + alphaScale * 0.1);
+      ctx.fillStyle = withAlpha(theme.palette.accent, 0.24 + alphaScale * 0.12);
       ctx.fillRect(-pad, -pad, pad * 2, pad * 2);
       ctx.globalCompositeOperation = 'lighter';
-      ctx.strokeStyle = withAlpha(theme.palette.glow, 0.24 + alphaScale * 0.1);
-      ctx.lineWidth = Math.max(2, size * 0.03);
+      ctx.strokeStyle = withAlpha(theme.palette.glow, 0.34 + alphaScale * 0.12);
+      ctx.lineWidth = Math.max(2.5, size * 0.034);
       ctx.strokeRect(-pad * 0.82, -pad * 0.82, pad * 1.64, pad * 1.64);
       ctx.restore();
       ctx.restore();
@@ -2430,7 +2490,7 @@
     for (let i = 0; i < N; i += step) {
       const screenX = terrainPoints[i].x - terrainScrollX;
       if (screenX < 0 || screenX > W) continue;
-      const sy = terrainPoints[i].y;
+      const sy = terrainPoints[i].y + terrainCameraOffsetY;
       ctx.beginPath();
       ctx.arc(screenX, sy, 3, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(100,180,255,0.6)';
@@ -2517,7 +2577,7 @@
     const cx      = getCharX();
     const cy      = charY;
     const visualCy = cy + charVisualOffsetY;
-    const lineY   = getLineYAt(terrainScrollX + cx);
+    const lineY   = getScreenLineYAt(terrainScrollX + cx);
     const DR      = getDangerRatio(); // 0~1 危險程度
     const isOffTrack = isDangerAbove || isDangerBelow;
     const t       = Date.now() / 1000;
