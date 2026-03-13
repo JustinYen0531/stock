@@ -16,6 +16,9 @@
   const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
   const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
   const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
+  const CHAR_VISUAL_LIFT_FACTOR = 0.18; // 只影響角色視覺，不改 hitbox 邏輯
+  const CHAR_VISUAL_MOTION_FACTOR = 0.42;
+  const CHAR_VISUAL_LIFT_MAX = 26;
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
@@ -158,6 +161,7 @@
   // 角色
   let charY = 200;        // 角色中心 Y
   let charTargetY = 200;  // 滾輪目標 Y（加平滑）
+  let charVisualOffsetY = 0; // 純視覺位移，讓滑雪者看起來會上下騎坡
   let isBoosting = false; // 滑鼠中鍵按住時提升上下移動幅度
   let spaceBoostDown = false;
 
@@ -576,6 +580,7 @@
     const variant = getThemeVariant(stats);
     const glowBase = stats.trend >= 0 ? mixHex(preset.glow, '#facc15', 0.32) : mixHex(preset.glow, '#fb7185', 0.75);
     const textureDensity = clamp(0.75 + stats.volatility * 12 + Math.abs(stats.trend) * 1.4, 0.7, 1.85);
+    const heroProps = getStockHeroPack(symbol);
     return {
       key: normalizeThemeSymbol(symbol),
       symbol: symbol || '',
@@ -583,6 +588,7 @@
       industryClass: entry?.industryClass || 'Theme',
       environmentBiome: entry?.environmentBiome || '滑雪山體',
       props: entry?.companyProps || [],
+      heroProps,
       mixerLogic: entry?.mixerLogic || '',
       palette: preset,
       pattern: preset.pattern,
@@ -592,7 +598,7 @@
       glowColor: glowBase,
       textureDensity,
       spriteDensity: clamp(0.8 + stats.volatility * 11, 0.8, 1.8),
-      placements: buildPropPlacements(symbol, entry?.companyProps || [], stats),
+      placements: buildPropPlacements(symbol, entry?.companyProps || [], stats, heroProps),
     };
   }
 
@@ -601,6 +607,7 @@
     ensureThemeManifest();
     activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
     for (const prop of activeTerrainTheme?.props || []) ensurePropSprite(prop);
+    for (const hero of activeTerrainTheme?.heroProps || []) ensurePropSprite(hero.prop);
     for (const placement of activeTerrainTheme?.placements || []) ensurePropSprite(placement.prop);
   }
 
@@ -678,7 +685,12 @@
       coordinateSystem: { origin: 'top-left', x: 'right', y: 'down' },
       mode: gameState,
       symbol: stockData?.symbol || null,
-      player: { x: Number(playerX.toFixed(1)), y: Number(charY.toFixed(1)) },
+      player: {
+        x: Number(playerX.toFixed(1)),
+        y: Number(charY.toFixed(1)),
+        spriteY: Number((charY + charVisualOffsetY).toFixed(1)),
+        visualOffsetY: Number(charVisualOffsetY.toFixed(1)),
+      },
       terrain: {
         scrollX: Number(terrainScrollX.toFixed(1)),
         lineY: lineY == null ? null : Number(lineY.toFixed(1)),
@@ -837,6 +849,7 @@
       heavy: 0,
     };
     resultButtonRects = null;
+    charVisualOffsetY = 0;
 
     refreshThemeAssets();
     buildTerrain();
@@ -851,6 +864,7 @@
     const charX = getCharX();
     charY       = getLineYAt(charX);
     charTargetY = charY;
+    updateCharacterVisualOffset(charY, 0);
 
     gameState = 'countdown';
     bindInput();
@@ -993,6 +1007,7 @@
         countdownVal--;
         if (countdownVal <= 0) gameState = 'playing';
       }
+      updateCharacterVisualOffset(getLineYAt(getCharWorldX()), 0);
       updateParticles();
       if (Math.random() < 0.3) {
         spawnSnowflake();
@@ -1001,6 +1016,7 @@
     }
 
     if (gameState === 'complete') {
+      updateCharacterVisualOffset(getLineYAt(getCharWorldX()), 0);
       updateParticles();
       if (Math.random() < 0.45) {
         spawnFallingConfetti();
@@ -1009,6 +1025,7 @@
     }
 
     if (gameState === 'dead') {
+      updateCharacterVisualOffset(getLineYAt(getCharWorldX()), 0);
       updateParticles();
       return;
     }
@@ -1063,17 +1080,8 @@
     currentSpeed = Math.max(dynamicMinSpeed, Math.min(dynamicMaxSpeed, currentSpeed));
 
     terrainScrollX += currentSpeed;
-    let lineY = getLineYAt(terrainScrollX + charX);
-    const terrainLift = lineY - lineYBeforeScroll;
-    charY += terrainLift;
-    charTargetY += terrainLift;
-
-    const hh = getHitboxH();
-    const minY = hh / 2 + 5;
-    const maxY = canvas.height - hh / 2 - 5;
-    charY = Math.max(minY, Math.min(maxY, charY));
-    charTargetY = Math.max(minY, Math.min(maxY, charTargetY));
-    lineY = getLineYAt(terrainScrollX + charX);
+    const lineY = getLineYAt(terrainScrollX + charX);
+    updateCharacterVisualOffset(lineY, lineY - lineYBeforeScroll);
 
     if (getElapsedSeconds() > timeLimitSeconds) {
       triggerDeath(lineY);
@@ -1081,6 +1089,7 @@
     }
 
     // 判定：角色 hitbox 是否包住線
+    const hh        = getHitboxH();
     const hitTop    = charY - hh / 2;
     const hitBottom = charY + hh / 2;
     const aboveLine = hitBottom < lineY; // hitbox 完全在線上方
@@ -1195,6 +1204,15 @@
     return terrainYMax - ratio * (terrainYMax - terrainYMin);
   }
 
+  function updateCharacterVisualOffset(lineY, lineYDelta = 0) {
+    if (!canvas) return;
+    const terrainMidY = (terrainYMin + terrainYMax) / 2 || canvas.height * LINE_Y_MID;
+    const liftFromElevation = clamp((lineY - terrainMidY) * CHAR_VISUAL_LIFT_FACTOR, -CHAR_VISUAL_LIFT_MAX, CHAR_VISUAL_LIFT_MAX);
+    const liftFromMotion = clamp(lineYDelta * CHAR_VISUAL_MOTION_FACTOR, -12, 12);
+    const targetOffset = clamp(liftFromElevation + liftFromMotion, -CHAR_VISUAL_LIFT_MAX, CHAR_VISUAL_LIFT_MAX);
+    charVisualOffsetY += (targetOffset - charVisualOffsetY) * 0.18;
+  }
+
   /* ── 死亡 ────────────────────────────────────────── */
   function triggerDeath(lineY) {
     gameState = 'dead';
@@ -1203,7 +1221,7 @@
     for (let i = 0; i < 40; i++) {
       particles.push({
         x: getCharX(),
-        y: charY,
+        y: charY + charVisualOffsetY,
         vx: (Math.random() - 0.5) * 6,
         vy: (Math.random() - 0.8) * 5,
         color: `hsl(${Math.random() * 30 + 0},80%,60%)`,
@@ -2494,6 +2512,7 @@
   function drawCharacter(W) {
     const cx      = getCharX();
     const cy      = charY;
+    const visualCy = cy + charVisualOffsetY;
     const lineY   = getLineYAt(terrainScrollX + cx);
     const DR      = getDangerRatio(); // 0~1 危險程度
     const isOffTrack = isDangerAbove || isDangerBelow;
@@ -2577,7 +2596,7 @@
 
     /* ── 繪製右向滑雪者 ────────────────────────────── */
     ctx.save();
-    ctx.translate(cx, cy + bounceY);
+    ctx.translate(cx, visualCy + bounceY);
     ctx.rotate(bodyAngle);
 
     // 相對座標（以原點為角色腰部中心）
