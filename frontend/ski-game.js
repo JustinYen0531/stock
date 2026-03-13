@@ -75,6 +75,22 @@
       { prop: 'jpm-vault-facade', band: 0.24, depthRatio: 0.18, size: 186, anchor: 'hero' },
       { prop: 'jpm-column-crown', band: 0.72, depthRatio: 0.44, size: 170, anchor: 'hero' },
     ],
+    AAPL: [
+      { prop: 'aapl-vision-dome', band: 0.24, depthRatio: 0.18, size: 182, anchor: 'hero' },
+      { prop: 'aapl-device-arch', band: 0.76, depthRatio: 0.44, size: 170, anchor: 'hero' },
+    ],
+    AMD: [
+      { prop: 'amd-core-fabric', band: 0.22, depthRatio: 0.16, size: 180, anchor: 'hero' },
+      { prop: 'amd-radeon-array', band: 0.72, depthRatio: 0.42, size: 174, anchor: 'hero' },
+    ],
+    AVGO: [
+      { prop: 'avgo-signal-backbone', band: 0.24, depthRatio: 0.18, size: 184, anchor: 'hero' },
+      { prop: 'avgo-switch-matrix', band: 0.76, depthRatio: 0.46, size: 176, anchor: 'hero' },
+    ],
+    BAC: [
+      { prop: 'bac-ledger-tower', band: 0.22, depthRatio: 0.18, size: 180, anchor: 'hero' },
+      { prop: 'bac-civic-shield', band: 0.72, depthRatio: 0.44, size: 172, anchor: 'hero' },
+    ],
   };
   const PROP_SPRITE_ALIASES = {
     gpu: 'chip-core',
@@ -151,6 +167,14 @@
     'googl-data-orbit': 'googl-data-orbit',
     'jpm-vault-facade': 'jpm-vault-facade',
     'jpm-column-crown': 'jpm-column-crown',
+    'aapl-vision-dome': 'aapl-vision-dome',
+    'aapl-device-arch': 'aapl-device-arch',
+    'amd-core-fabric': 'amd-core-fabric',
+    'amd-radeon-array': 'amd-radeon-array',
+    'avgo-signal-backbone': 'avgo-signal-backbone',
+    'avgo-switch-matrix': 'avgo-switch-matrix',
+    'bac-ledger-tower': 'bac-ledger-tower',
+    'bac-civic-shield': 'bac-civic-shield',
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
