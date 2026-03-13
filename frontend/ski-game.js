@@ -16,6 +16,7 @@
   const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
   const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
   const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
+  const CHAR_Y_RATIO   = 0.7; // 角色/橘線固定在畫面較下方的位置
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
@@ -262,6 +263,10 @@
 
   function getCharX() {
     return canvas ? canvas.width * CHAR_X_RATIO : 0;
+  }
+
+  function getCharAnchorY() {
+    return canvas ? canvas.height * CHAR_Y_RATIO : 200;
   }
 
   function getCharWorldX() {
@@ -925,9 +930,18 @@
 
   function resizeCanvas() {
     if (!canvas) return;
+    const previousAnchorY = charY;
     canvas.width  = canvas.parentElement.clientWidth  || window.innerWidth;
     canvas.height = canvas.parentElement.clientHeight || window.innerHeight;
     buildTerrain(); // 重新映射地形
+    if (gameState === 'countdown' || gameState === 'playing' || gameState === 'dead') {
+      const nextAnchorY = getCharAnchorY();
+      const anchorDelta = nextAnchorY - previousAnchorY;
+      charY = nextAnchorY;
+      charTargetY = nextAnchorY;
+      terrainCameraOffsetY += anchorDelta;
+      terrainCameraTargetOffsetY += anchorDelta;
+    }
   }
 
   /* ── 地形建構 ────────────────────────────────────── */
@@ -1027,10 +1041,12 @@
     maxPossibleScore = Math.floor((lastX / SCROLL_SPEED) * 10);
     timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO);
 
-    // 角色起始 Y 對齊玩家所在 X 位置的地形中心，開場就精準壓在線上
+    // 角色與橘線固定在較低的畫面錨點，山體則對齊到這條線
     const charX = getCharX();
-    charY       = getLineYAt(charX);
+    charY       = getCharAnchorY();
     charTargetY = charY;
+    terrainCameraOffsetY = charY - getLineYAt(charX);
+    terrainCameraTargetOffsetY = terrainCameraOffsetY;
     updateTerrainCameraOffset();
     updateCharacterVisualOffset();
 
