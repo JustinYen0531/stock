@@ -9,6 +9,7 @@ node_modules/
 # 快取與日誌
 *.log
 npm-debug.log*
+output/
 
 # Python 產生的暫存檔
 __pycache__/

@@ -32,6 +32,19 @@
   const PRACTICE_DANGER_TOL_MULT    = 2.5;  // 容忍時間放大 2.5 倍
   const PRACTICE_HITBOX_H           = 72;   // 練習模式 hitbox 高度 (比一般大很多)
   const DANGER_LIMIT_MULTIPLIER     = 5.5;  // 累積容錯大幅提高，讓單次失誤不至於直接淘汰
+  const THEME_MANIFEST_URL = `${THEME_BACKGROUND_BASE}/manifest.json`;
+  const TERRAIN_THEME_PRESETS = {
+    "數位冰原": { base: '#0d3455', mid: '#0b5876', glow: '#67e8f9', accent: '#22d3ee', shadow: '#06101a', snow: '#e0f2fe', pattern: 'circuit', edge: 'ice' },
+    "雲端之巔": { base: '#16345c', mid: '#225b87', glow: '#bae6fd', accent: '#7dd3fc', shadow: '#081323', snow: '#f0f9ff', pattern: 'cloud', edge: 'soft' },
+    "零售超市": { base: '#6a2a12', mid: '#b45309', glow: '#fdba74', accent: '#fb923c', shadow: '#1b0e0a', snow: '#fff7ed', pattern: 'retail', edge: 'tape' },
+    "未來交通": { base: '#1f3348', mid: '#4b6b8f', glow: '#dbeafe', accent: '#93c5fd', shadow: '#091018', snow: '#f8fafc', pattern: 'transit', edge: 'sleek' },
+    "摩天雪都": { base: '#28374d', mid: '#52647d', glow: '#fde68a', accent: '#facc15', shadow: '#0f1722', snow: '#f8fafc', pattern: 'finance', edge: 'temple' },
+    "穩收金庫": { base: '#2c4058', mid: '#556f8d', glow: '#fde68a', accent: '#facc15', shadow: '#0d1521', snow: '#f8fafc', pattern: 'marble', edge: 'temple' },
+    "綠能山脈": { base: '#164e3d', mid: '#1f7a59', glow: '#86efac', accent: '#4ade80', shadow: '#07110d', snow: '#ecfdf5', pattern: 'energy', edge: 'charged' },
+    "鋼鐵峽谷": { base: '#3a424d', mid: '#5b6470', glow: '#fdba74', accent: '#f97316', shadow: '#12161b', snow: '#f3f4f6', pattern: 'industrial', edge: 'hard' },
+    "霓虹傳媒": { base: '#34184e', mid: '#6b21a8', glow: '#f0abfc', accent: '#e879f9', shadow: '#130817', snow: '#faf5ff', pattern: 'neon', edge: 'glitch' },
+    "default": { base: '#20405f', mid: '#305d85', glow: '#93c5fd', accent: '#60a5fa', shadow: '#08111b', snow: '#eff6ff', pattern: 'ice', edge: 'ice' },
+  };
 
   /* ── 狀態 ───────────────────────────────────────── */
   let canvas, ctx;
@@ -39,9 +52,13 @@
   let gameState = 'idle'; // idle | countdown | playing | dead | complete
   let stockData = null;   // { symbol, closes, dates, period }
   let activeThemeBackground = null;
+  let activeTerrainTheme = null;
   let practiceMode = false; // 練習模式開關
   let practiceOpts = { steepness: 40, hitboxSize: 60, startPct: 0, endPct: 100 }; // 從滑框傳入
   const themeBackgroundCache = new Map();
+  const terrainPatternCache = new Map();
+  let themeManifestMap = null;
+  let themeManifestPromise = null;
 
   // 動態取得當前 hitbox 高度
   // hitboxSize 1√100 → 映射到 40√100px
@@ -179,6 +196,53 @@
     return String(symbol || '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_');
   }
 
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function hashString(input) {
+    let h = 2166136261;
+    for (const ch of String(input || '')) {
+      h ^= ch.charCodeAt(0);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function createRng(seed) {
+    let state = hashString(seed) || 1;
+    return function rng() {
+      state = (1664525 * state + 1013904223) >>> 0;
+      return state / 0x100000000;
+    };
+  }
+
+  function hexToRgb(hex) {
+    const clean = String(hex || '').replace('#', '');
+    if (clean.length !== 6) return { r: 255, g: 255, b: 255 };
+    return {
+      r: parseInt(clean.slice(0, 2), 16),
+      g: parseInt(clean.slice(2, 4), 16),
+      b: parseInt(clean.slice(4, 6), 16),
+    };
+  }
+
+  function withAlpha(hex, alpha) {
+    const { r, g, b } = hexToRgb(hex);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function mixHex(hexA, hexB, t) {
+    const a = hexToRgb(hexA);
+    const b = hexToRgb(hexB);
+    const f = clamp(t, 0, 1);
+    return `rgb(${Math.round(lerp(a.r, b.r, f))},${Math.round(lerp(a.g, b.g, f))},${Math.round(lerp(a.b, b.b, f))})`;
+  }
+
   function ensureThemeBackground(symbol) {
     const key = normalizeThemeSymbol(symbol);
     if (!key) return null;
@@ -200,8 +264,111 @@
     return entry;
   }
 
-  function refreshThemeBackground() {
+  function ensureThemeManifest() {
+    if (themeManifestMap || themeManifestPromise || typeof fetch !== 'function') return themeManifestPromise;
+    themeManifestPromise = fetch(THEME_MANIFEST_URL, { cache: 'force-cache' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload) => {
+        themeManifestMap = new Map();
+        for (const item of payload?.stocks || []) {
+          themeManifestMap.set(normalizeThemeSymbol(item.symbol), item);
+        }
+        activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
+        return themeManifestMap;
+      })
+      .catch(() => null);
+    return themeManifestPromise;
+  }
+
+  function getThemeManifestEntry(symbol) {
+    return themeManifestMap?.get(normalizeThemeSymbol(symbol)) || null;
+  }
+
+  function analyzeMarketShape(closes) {
+    if (!Array.isArray(closes) || closes.length < 2) {
+      return { trend: 0, volatility: 0.01, maxSwing: 0.015 };
+    }
+    let volatilitySum = 0;
+    let maxSwing = 0;
+    for (let i = 1; i < closes.length; i++) {
+      const prev = Math.max(0.0001, Math.abs(closes[i - 1]));
+      const move = (closes[i] - closes[i - 1]) / prev;
+      const absMove = Math.abs(move);
+      volatilitySum += absMove;
+      maxSwing = Math.max(maxSwing, absMove);
+    }
+    const first = Math.max(0.0001, Math.abs(closes[0]));
+    const trend = (closes[closes.length - 1] - closes[0]) / first;
+    return {
+      trend,
+      volatility: volatilitySum / Math.max(1, closes.length - 1),
+      maxSwing,
+    };
+  }
+
+  function getThemeVariant(stats) {
+    if (stats.trend <= -0.12) return 'crash';
+    if (stats.trend <= -0.035) return 'bearish';
+    if (stats.volatility >= 0.035 || stats.maxSwing >= 0.07) return 'volatile';
+    if (stats.trend >= 0.1) return 'bullish';
+    return 'normal';
+  }
+
+  function buildPropPlacements(symbol, props, stats) {
+    if (!terrainPoints.length) return [];
+    const rng = createRng(`${symbol}:${terrainPoints.length}:${stats.trend.toFixed(3)}:${stats.volatility.toFixed(3)}`);
+    const totalX = terrainPoints[terrainPoints.length - 1]?.x || 1;
+    const count = clamp(Math.round((props.length || 3) * (0.85 + stats.volatility * 10)), 4, 9);
+    const baseProps = props.length ? props : ['signal-beam', 'chip', 'coin', 'parcel'];
+    const placements = [];
+    for (let i = 0; i < count; i++) {
+      const band = (i + 1) / (count + 1);
+      const worldX = totalX * clamp(band + (rng() - 0.5) * 0.07, 0.08, 0.95);
+      const ridgeY = getLineYAt(worldX);
+      placements.push({
+        prop: baseProps[i % baseProps.length],
+        worldX,
+        ridgeY,
+        depth: 34 + rng() * 110,
+        size: 28 + rng() * 26,
+        anchor: i % 3 === 0 ? 'ridge' : 'interior',
+        alpha: 0.3 + rng() * 0.35,
+      });
+    }
+    return placements;
+  }
+
+  function buildActiveTerrainTheme(symbol) {
+    const entry = getThemeManifestEntry(symbol);
+    const preset = TERRAIN_THEME_PRESETS[entry?.environmentBiome] || TERRAIN_THEME_PRESETS.default;
+    const stats = analyzeMarketShape(activeCloses);
+    const variant = getThemeVariant(stats);
+    const glowBase = stats.trend >= 0 ? mixHex(preset.glow, '#facc15', 0.32) : mixHex(preset.glow, '#fb7185', 0.75);
+    const textureDensity = clamp(0.75 + stats.volatility * 12 + Math.abs(stats.trend) * 1.4, 0.7, 1.85);
+    return {
+      key: normalizeThemeSymbol(symbol),
+      symbol: symbol || '',
+      name: entry?.name || symbol || '',
+      industryClass: entry?.industryClass || 'Theme',
+      environmentBiome: entry?.environmentBiome || '滑雪山體',
+      props: entry?.companyProps || [],
+      mixerLogic: entry?.mixerLogic || '',
+      palette: preset,
+      pattern: preset.pattern,
+      edgeStyle: preset.edge,
+      variant,
+      stats,
+      glowColor: glowBase,
+      textureDensity,
+      spriteDensity: clamp(0.8 + stats.volatility * 11, 0.8, 1.8),
+      placements: buildPropPlacements(symbol, entry?.companyProps || [], stats),
+    };
+  }
+
+  function refreshThemeAssets() {
     activeThemeBackground = ensureThemeBackground(stockData?.symbol);
+    ensureThemeManifest();
+    activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
   }
 
   function getEarnedStars() {
@@ -244,7 +411,7 @@
   window.SkiGame = {
     launch(data, options = {}) {
       stockData    = data; // { symbol, closes: [], dates: [], period }
-      refreshThemeBackground();
+      refreshThemeAssets();
       practiceMode = !!options.practice;
       if (practiceMode) {
         practiceOpts = {
@@ -261,6 +428,46 @@
     },
     close: closeGame
   };
+
+  window.render_game_to_text = function renderGameToText() {
+    const playerX = canvas ? canvas.width * CHAR_X_RATIO : 0;
+    const worldX = terrainScrollX + playerX;
+    const lineY = canvas && terrainPoints.length ? getLineYAt(worldX) : null;
+    return JSON.stringify({
+      coordinateSystem: { origin: 'top-left', x: 'right', y: 'down' },
+      mode: gameState,
+      symbol: stockData?.symbol || null,
+      player: { x: Number(playerX.toFixed(1)), y: Number(charY.toFixed(1)) },
+      terrain: {
+        scrollX: Number(terrainScrollX.toFixed(1)),
+        lineY: lineY == null ? null : Number(lineY.toFixed(1)),
+        points: terrainPoints.length,
+      },
+      theme: activeTerrainTheme ? {
+        biome: activeTerrainTheme.environmentBiome,
+        industry: activeTerrainTheme.industryClass,
+        variant: activeTerrainTheme.variant,
+        props: activeTerrainTheme.props.slice(0, 4),
+      } : null,
+      hud: {
+        score: getFinalScore(),
+        elapsedSeconds: Number(getElapsedSeconds().toFixed(2)),
+        dangerRatio: Number(getDangerRatio().toFixed(3)),
+      },
+    });
+  };
+
+  window.advanceTime = function advanceTime(ms) {
+    if (!canvas || !ctx) return;
+    const steps = Math.max(1, Math.round(ms / (1000 / 60)));
+    for (let i = 0; i < steps; i++) {
+      update();
+      if (gameState === 'playing') elapsedMs += 1000 / 60;
+    }
+    render();
+  };
+
+  ensureThemeManifest();
 
   /* ── Modal 開關 ─────────────────────────────────── */
   function openModal() {
@@ -351,6 +558,7 @@
       x: i * segW,
       y: yMax - ((c - minP) / range) * (yMax - yMin),
     }));
+    activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
   }
 
   /* ── 初始化遊戲 ──────────────────────────────────── */
@@ -389,7 +597,7 @@
     };
     resultButtonRects = null;
 
-    refreshThemeBackground();
+    refreshThemeAssets();
     buildTerrain();
 
     // 計算理論最高分 (假設每幀都是完美狀態 x10)
@@ -960,60 +1168,744 @@
     return true;
   }
 
+  function getVisibleTerrainPoints(W) {
+    const points = [];
+    let started = false;
+    for (let i = 0; i < terrainPoints.length; i++) {
+      const screenX = terrainPoints[i].x - terrainScrollX;
+      if (!started && screenX < -80) continue;
+      if (screenX > W + 80 && started) break;
+      started = true;
+      points.push({ x: screenX, y: terrainPoints[i].y });
+    }
+    return points;
+  }
+
+  function buildTerrainPaths(points, H) {
+    if (points.length < 2) return null;
+    const ridgePath = new Path2D();
+    ridgePath.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      ridgePath.lineTo(points[i].x, points[i].y);
+    }
+
+    const fillPath = new Path2D(ridgePath);
+    fillPath.lineTo(points[points.length - 1].x, H + 24);
+    fillPath.lineTo(points[0].x, H + 24);
+    fillPath.closePath();
+    return {
+      ridgePath,
+      fillPath,
+      firstX: points[0].x,
+      lastX: points[points.length - 1].x,
+    };
+  }
+
+  function getTerrainPatternTile(theme) {
+    const palette = theme.palette;
+    const cacheKey = [
+      theme.pattern,
+      palette.base,
+      palette.mid,
+      palette.accent,
+      theme.variant,
+    ].join(':');
+    const cached = terrainPatternCache.get(cacheKey);
+    if (cached) return cached;
+
+    const tile = document.createElement('canvas');
+    tile.width = 256;
+    tile.height = 256;
+    const g = tile.getContext('2d');
+    g.clearRect(0, 0, tile.width, tile.height);
+
+    const faint = (hex, alpha) => withAlpha(hex, alpha);
+    switch (theme.pattern) {
+      case 'circuit':
+        g.strokeStyle = faint(palette.glow, 0.24);
+        g.lineWidth = 3;
+        for (let i = 24; i < 240; i += 48) {
+          g.beginPath();
+          g.moveTo(i, 0);
+          g.lineTo(i, 256);
+          g.stroke();
+          g.beginPath();
+          g.moveTo(0, i);
+          g.lineTo(256, i);
+          g.stroke();
+        }
+        g.fillStyle = faint(palette.accent, 0.28);
+        for (let i = 20; i < 220; i += 48) {
+          g.fillRect(i, 20, 14, 14);
+          g.fillRect(i + 18, 110, 10, 10);
+          g.fillRect(i - 10, 194, 16, 16);
+        }
+        break;
+      case 'cloud':
+        g.strokeStyle = faint(palette.glow, 0.18);
+        g.lineWidth = 2;
+        for (let y = 28; y < 228; y += 44) {
+          g.beginPath();
+          g.roundRect(24, y, 208, 24, 10);
+          g.stroke();
+        }
+        g.fillStyle = faint(palette.accent, 0.16);
+        for (let i = 0; i < 10; i++) {
+          g.beginPath();
+          g.arc(24 + i * 24, 38 + (i % 3) * 60, 8 + (i % 2) * 4, 0, Math.PI * 2);
+          g.fill();
+        }
+        break;
+      case 'retail':
+        g.strokeStyle = faint(palette.glow, 0.18);
+        g.lineWidth = 6;
+        for (let x = -40; x < 280; x += 42) {
+          g.beginPath();
+          g.moveTo(x, 0);
+          g.lineTo(x + 92, 256);
+          g.stroke();
+        }
+        g.fillStyle = faint(palette.accent, 0.14);
+        for (let x = 28; x < 228; x += 34) {
+          const h = 20 + ((x / 34) % 4) * 12;
+          g.fillRect(x, 158, 4, h);
+          g.fillRect(x + 8, 164, 2, h - 6);
+        }
+        break;
+      case 'finance':
+      case 'marble':
+        g.strokeStyle = faint(palette.snow, 0.12);
+        g.lineWidth = 2;
+        for (let i = -20; i < 260; i += 36) {
+          g.beginPath();
+          g.moveTo(i, 0);
+          g.bezierCurveTo(i + 18, 60, i - 24, 140, i + 30, 256);
+          g.stroke();
+        }
+        g.strokeStyle = faint(palette.glow, 0.14);
+        for (let y = 24; y < 232; y += 28) {
+          g.beginPath();
+          g.moveTo(18, y);
+          g.lineTo(238, y + ((y / 28) % 2 ? 4 : -4));
+          g.stroke();
+        }
+        break;
+      case 'energy':
+        g.strokeStyle = faint(palette.glow, 0.2);
+        g.lineWidth = 3;
+        for (let i = 18; i < 240; i += 46) {
+          g.beginPath();
+          g.moveTo(i, 256);
+          g.quadraticCurveTo(i + 26, 190, i + 14, 92);
+          g.stroke();
+        }
+        g.fillStyle = faint(palette.accent, 0.16);
+        for (let i = 0; i < 7; i++) {
+          g.beginPath();
+          g.ellipse(28 + i * 34, 70 + (i % 2) * 18, 9, 18, i * 0.2, 0, Math.PI * 2);
+          g.fill();
+        }
+        break;
+      case 'industrial':
+        g.strokeStyle = faint(palette.glow, 0.18);
+        g.lineWidth = 4;
+        for (let x = 20; x < 240; x += 48) {
+          g.beginPath();
+          g.moveTo(x, 0);
+          g.lineTo(x, 256);
+          g.stroke();
+          g.beginPath();
+          g.moveTo(x - 16, 0);
+          g.lineTo(x + 16, 32);
+          g.moveTo(x + 16, 32);
+          g.lineTo(x - 16, 64);
+          g.stroke();
+        }
+        g.fillStyle = faint(palette.accent, 0.22);
+        for (let y = 28; y < 228; y += 48) {
+          g.beginPath();
+          g.arc(42 + (y % 2) * 90, y, 5, 0, Math.PI * 2);
+          g.arc(154 + (y % 2) * 30, y + 12, 5, 0, Math.PI * 2);
+          g.fill();
+        }
+        break;
+      case 'transit':
+        g.strokeStyle = faint(palette.glow, 0.18);
+        g.lineWidth = 3;
+        for (let y = 30; y < 230; y += 34) {
+          g.beginPath();
+          g.moveTo(0, y);
+          g.lineTo(256, y - 20);
+          g.stroke();
+        }
+        g.fillStyle = faint(palette.accent, 0.12);
+        for (let i = 0; i < 7; i++) {
+          g.beginPath();
+          g.ellipse(24 + i * 36, 170 - (i % 2) * 22, 16, 6, -0.3, 0, Math.PI * 2);
+          g.fill();
+        }
+        break;
+      case 'neon':
+        g.fillStyle = faint(palette.accent, 0.15);
+        for (let i = 0; i < 32; i++) {
+          const x = (i * 37) % 240;
+          const y = (i * 61) % 220;
+          g.fillRect(x, y, 12 + (i % 3) * 6, 12 + (i % 4) * 4);
+        }
+        g.strokeStyle = faint(palette.glow, 0.16);
+        g.lineWidth = 2;
+        for (let y = 12; y < 256; y += 22) {
+          g.beginPath();
+          g.moveTo(0, y);
+          g.lineTo(256, y);
+          g.stroke();
+        }
+        break;
+      default:
+        g.strokeStyle = faint(palette.glow, 0.16);
+        g.lineWidth = 3;
+        for (let i = -20; i < 260; i += 44) {
+          g.beginPath();
+          g.moveTo(i, 0);
+          g.lineTo(i + 38, 74);
+          g.lineTo(i - 20, 148);
+          g.lineTo(i + 20, 256);
+          g.stroke();
+        }
+        break;
+    }
+
+    terrainPatternCache.set(cacheKey, tile);
+    return tile;
+  }
+
+  function drawTerrainBackdrop(theme, fillPath, W, H) {
+    ctx.save();
+    ctx.translate(-W * 0.035, 28);
+    ctx.scale(1, 0.96);
+    const backdrop = ctx.createLinearGradient(0, terrainYMin - 40, 0, H);
+    backdrop.addColorStop(0, withAlpha(theme.palette.shadow, 0.18));
+    backdrop.addColorStop(1, withAlpha(theme.palette.shadow, 0.62));
+    ctx.fillStyle = backdrop;
+    ctx.fill(fillPath);
+    ctx.restore();
+  }
+
+  function drawTerrainFill(theme, fillPath, W, H) {
+    ctx.save();
+    ctx.clip(fillPath);
+
+    const baseGrad = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
+    baseGrad.addColorStop(0, withAlpha(theme.palette.base, 0.94));
+    baseGrad.addColorStop(0.58, withAlpha(theme.palette.mid, 0.82));
+    baseGrad.addColorStop(1, withAlpha(theme.palette.shadow, 0.92));
+    ctx.fillStyle = baseGrad;
+    ctx.fillRect(-60, terrainYMin - 80, W + 120, H - terrainYMin + 140);
+
+    const pattern = ctx.createPattern(getTerrainPatternTile(theme), 'repeat');
+    if (pattern) {
+      ctx.save();
+      ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
+      ctx.globalAlpha = clamp(0.17 + (theme.textureDensity - 0.7) * 0.15, 0.17, 0.34);
+      ctx.fillStyle = pattern;
+      ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 240);
+      ctx.restore();
+    }
+
+    if (theme.variant === 'volatile' || theme.variant === 'crash') {
+      ctx.save();
+      ctx.strokeStyle = withAlpha(theme.glowColor, theme.variant === 'crash' ? 0.16 : 0.1);
+      ctx.lineWidth = theme.variant === 'crash' ? 3 : 2;
+      for (let i = -80; i < W + 120; i += 42) {
+        const jitter = Math.sin((i + terrainScrollX) * 0.06) * 16;
+        ctx.beginPath();
+        ctx.moveTo(i, terrainYMin + 40 + jitter);
+        ctx.lineTo(i + 30, H - 30);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    const depthMask = ctx.createLinearGradient(0, terrainYMin - 10, 0, H);
+    depthMask.addColorStop(0, 'rgba(0,0,0,0)');
+    depthMask.addColorStop(1, withAlpha(theme.palette.shadow, 0.6));
+    ctx.fillStyle = depthMask;
+    ctx.fillRect(-20, terrainYMin - 10, W + 40, H - terrainYMin + 40);
+
+    ctx.restore();
+  }
+
+  function drawTerrainPropSprite(kind, x, y, size, theme, alphaScale = 1) {
+    const fill = withAlpha(theme.palette.accent, 0.72 * alphaScale);
+    const stroke = withAlpha(theme.palette.glow, 0.66 * alphaScale);
+    const dark = withAlpha(theme.palette.shadow, 0.92 * alphaScale);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    switch (kind) {
+      case 'gpu':
+      case 'chip':
+      case 'network-chip':
+      case 'mobile-chip':
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.roundRect(-size * 0.36, -size * 0.36, size * 0.72, size * 0.72, size * 0.08);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = dark;
+        ctx.fillRect(-size * 0.15, -size * 0.15, size * 0.3, size * 0.3);
+        for (let i = -2; i <= 2; i += 2) {
+          ctx.fillRect(i * size * 0.08, -size * 0.5, size * 0.04, size * 0.1);
+          ctx.fillRect(i * size * 0.08, size * 0.4, size * 0.04, size * 0.1);
+        }
+        break;
+      case 'wafer':
+      case 'leaf-grid':
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.34, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = dark;
+        ctx.lineWidth = 1.3;
+        for (let i = -2; i <= 2; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * size * 0.1, -size * 0.26);
+          ctx.lineTo(i * size * 0.1, size * 0.26);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(-size * 0.26, i * size * 0.1);
+          ctx.lineTo(size * 0.26, i * size * 0.1);
+          ctx.stroke();
+        }
+        break;
+      case 'ai-core':
+      case 'copilot-orb':
+      case 'orbit-ring':
+      case 'wave-ring':
+      case 'portal-ring':
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, size * 0.34, size * 0.2, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.16, 0, Math.PI * 2);
+        ctx.fillStyle = fill;
+        ctx.fill();
+        break;
+      case 'server':
+      case 'server-rack':
+      case 'cleanroom-tower':
+      case 'neon-tower':
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-size * 0.18, -size * 0.42, size * 0.36, size * 0.84, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = dark;
+        ctx.fillRect(-size * 0.11, -size * 0.24, size * 0.22, size * 0.08);
+        ctx.fillRect(-size * 0.11, -size * 0.04, size * 0.22, size * 0.08);
+        ctx.fillRect(-size * 0.11, size * 0.16, size * 0.22, size * 0.08);
+        break;
+      case 'cloud-block':
+      case 'window-panel':
+      case 'data-cube':
+      case 'data-prism':
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-size * 0.28, -size * 0.28, size * 0.56, size * 0.56, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = dark;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.12, 0);
+        ctx.lineTo(size * 0.12, 0);
+        ctx.moveTo(0, -size * 0.12);
+        ctx.lineTo(0, size * 0.12);
+        ctx.stroke();
+        break;
+      case 'data-bridge':
+      case 'market-arch':
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.34, size * 0.14);
+        ctx.quadraticCurveTo(0, -size * 0.28, size * 0.34, size * 0.14);
+        ctx.stroke();
+        ctx.strokeStyle = fill;
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.22, size * 0.14);
+        ctx.lineTo(-size * 0.22, size * 0.38);
+        ctx.moveTo(size * 0.22, size * 0.14);
+        ctx.lineTo(size * 0.22, size * 0.38);
+        ctx.stroke();
+        break;
+      case 'signal-beam':
+      case 'search-beam':
+      case 'megaphone':
+      case 'fiber-tree':
+      case 'fiber-node':
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, size * 0.38);
+        ctx.lineTo(0, -size * 0.1);
+        ctx.stroke();
+        ctx.fillStyle = fill;
+        ctx.beginPath();
+        ctx.arc(0, -size * 0.16, size * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, -size * 0.16, size * 0.3, -0.55, 0.55);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, -size * 0.16, size * 0.42, -0.5, 0.5);
+        ctx.stroke();
+        break;
+      case 'coin':
+      case 'cash-badge':
+      case 'medal':
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = dark;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.16, 0, Math.PI * 2);
+        ctx.stroke();
+        break;
+      case 'column':
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-size * 0.12, -size * 0.38, size * 0.24, size * 0.76, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = dark;
+        ctx.fillRect(-size * 0.22, -size * 0.46, size * 0.44, size * 0.08);
+        ctx.fillRect(-size * 0.22, size * 0.38, size * 0.44, size * 0.08);
+        break;
+      case 'vault':
+      case 'shield':
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        if (kind === 'vault') {
+          ctx.beginPath();
+          ctx.arc(0, 0, size * 0.34, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.strokeStyle = dark;
+          ctx.beginPath();
+          ctx.moveTo(-size * 0.14, 0);
+          ctx.lineTo(size * 0.14, 0);
+          ctx.moveTo(0, -size * 0.14);
+          ctx.lineTo(0, size * 0.14);
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(0, -size * 0.34);
+          ctx.lineTo(size * 0.24, -size * 0.18);
+          ctx.lineTo(size * 0.18, size * 0.18);
+          ctx.quadraticCurveTo(0, size * 0.38, -size * 0.18, size * 0.18);
+          ctx.lineTo(-size * 0.24, -size * 0.18);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
+        break;
+      case 'parcel':
+      case 'coupon':
+      case 'price-tag':
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-size * 0.3, -size * 0.22, size * 0.6, size * 0.44, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = dark;
+        ctx.beginPath();
+        ctx.moveTo(0, -size * 0.22);
+        ctx.lineTo(0, size * 0.22);
+        ctx.stroke();
+        break;
+      case 'cart':
+      case 'ribbon':
+      case 'arrow-arc':
+      case 'lantern':
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.34, 0);
+        ctx.quadraticCurveTo(-size * 0.06, -size * 0.26, size * 0.3, -size * 0.06);
+        ctx.stroke();
+        ctx.fillStyle = fill;
+        if (kind === 'cart') {
+          ctx.beginPath();
+          ctx.roundRect(-size * 0.28, -size * 0.1, size * 0.42, size * 0.2, 6);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(-size * 0.1, size * 0.2, size * 0.06, 0, Math.PI * 2);
+          ctx.arc(size * 0.14, size * 0.2, size * 0.06, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (kind === 'lantern') {
+          ctx.beginPath();
+          ctx.ellipse(0, 0, size * 0.16, size * 0.22, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(size * 0.18, -size * 0.1);
+          ctx.lineTo(size * 0.34, -size * 0.02);
+          ctx.lineTo(size * 0.2, size * 0.1);
+          ctx.closePath();
+          ctx.fill();
+        }
+        break;
+      case 'battery-pack':
+      case 'charge-pillar':
+      case 'swap-station':
+      case 'solar-panel':
+      case 'turbine':
+      case 'oil-rig':
+      case 'metal-bar':
+        ctx.strokeStyle = stroke;
+        ctx.fillStyle = fill;
+        ctx.lineWidth = 2;
+        if (kind === 'turbine') {
+          ctx.beginPath();
+          ctx.moveTo(0, size * 0.36);
+          ctx.lineTo(0, -size * 0.06);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(0, -size * 0.1, size * 0.06, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(0, -size * 0.1);
+          ctx.lineTo(-size * 0.24, -size * 0.18);
+          ctx.moveTo(0, -size * 0.1);
+          ctx.lineTo(size * 0.18, -size * 0.26);
+          ctx.moveTo(0, -size * 0.1);
+          ctx.lineTo(size * 0.08, size * 0.18);
+          ctx.stroke();
+        } else if (kind === 'solar-panel') {
+          ctx.beginPath();
+          ctx.roundRect(-size * 0.28, -size * 0.16, size * 0.56, size * 0.32, 6);
+          ctx.fill();
+          ctx.stroke();
+          ctx.strokeStyle = dark;
+          ctx.beginPath();
+          ctx.moveTo(-size * 0.16, size * 0.2);
+          ctx.lineTo(0, size * 0.36);
+          ctx.lineTo(size * 0.16, size * 0.2);
+          ctx.stroke();
+        } else if (kind === 'oil-rig') {
+          ctx.beginPath();
+          ctx.moveTo(0, -size * 0.34);
+          ctx.lineTo(-size * 0.22, size * 0.28);
+          ctx.lineTo(size * 0.22, size * 0.28);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        } else if (kind === 'metal-bar') {
+          ctx.beginPath();
+          ctx.moveTo(-size * 0.28, size * 0.08);
+          ctx.lineTo(-size * 0.14, -size * 0.18);
+          ctx.lineTo(size * 0.18, -size * 0.18);
+          ctx.lineTo(size * 0.3, size * 0.08);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.roundRect(-size * 0.18, -size * 0.34, size * 0.36, size * 0.68, 8);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = dark;
+          ctx.fillRect(-size * 0.08, -size * 0.16, size * 0.16, size * 0.24);
+        }
+        break;
+      case 'factory':
+      case 'beam-frame':
+      case 'connector':
+      case 'container':
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.34, size * 0.24);
+        ctx.lineTo(-size * 0.34, -size * 0.06);
+        ctx.lineTo(-size * 0.06, size * 0.08);
+        ctx.lineTo(-size * 0.06, -size * 0.06);
+        ctx.lineTo(size * 0.2, size * 0.08);
+        ctx.lineTo(size * 0.2, -size * 0.22);
+        ctx.lineTo(size * 0.34, -size * 0.22);
+        ctx.lineTo(size * 0.34, size * 0.24);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        break;
+      case 'tire':
+      case 'headlamp':
+      case 'wing-light':
+      case 'hover-engine':
+      case 'trail-rack':
+      case 'speed-fin':
+        ctx.strokeStyle = stroke;
+        ctx.fillStyle = fill;
+        ctx.lineWidth = 2.2;
+        if (kind === 'tire') {
+          ctx.beginPath();
+          ctx.arc(0, 0, size * 0.26, 0, Math.PI * 2);
+          ctx.fillStyle = dark;
+          ctx.fill();
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(0, 0, size * 0.11, 0, Math.PI * 2);
+          ctx.fillStyle = fill;
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.ellipse(0, 0, size * 0.3, size * 0.14, -0.16, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+        break;
+      case 'chat-bubble':
+      case 'game-pad':
+      case 'visor':
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-size * 0.32, -size * 0.18, size * 0.64, size * 0.36, 10);
+        ctx.fill();
+        ctx.stroke();
+        if (kind === 'chat-bubble') {
+          ctx.beginPath();
+          ctx.moveTo(-size * 0.06, size * 0.18);
+          ctx.lineTo(-size * 0.16, size * 0.34);
+          ctx.lineTo(size * 0.04, size * 0.22);
+          ctx.closePath();
+          ctx.fill();
+        }
+        break;
+      default:
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        break;
+    }
+
+    if (theme.variant === 'bearish' || theme.variant === 'crash') {
+      ctx.strokeStyle = withAlpha(theme.palette.snow, theme.variant === 'crash' ? 0.45 : 0.24);
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.18, -size * 0.16);
+      ctx.lineTo(-size * 0.02, size * 0.04);
+      ctx.lineTo(size * 0.16, -size * 0.12);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function drawTerrainProps(theme, fillPath, W, H) {
+    if (!theme?.placements?.length) return;
+    ctx.save();
+    ctx.clip(fillPath);
+    for (const placement of theme.placements) {
+      if (placement.anchor === 'ridge') continue;
+      const screenX = placement.worldX - terrainScrollX;
+      if (screenX < -40 || screenX > W + 40) continue;
+      const y = placement.ridgeY + placement.depth;
+      if (y > H + 40) continue;
+      drawTerrainPropSprite(placement.prop, screenX, y, placement.size * 0.82, theme, placement.alpha);
+    }
+    ctx.restore();
+
+    for (const placement of theme.placements) {
+      if (placement.anchor !== 'ridge') continue;
+      const screenX = placement.worldX - terrainScrollX;
+      if (screenX < -40 || screenX > W + 40) continue;
+      const y = placement.ridgeY - placement.size * 0.34;
+      drawTerrainPropSprite(placement.prop, screenX, y, placement.size, theme, 0.95);
+    }
+  }
+
+  function drawTerrainEdge(theme, ridgePath) {
+    const dangerRatio = getDangerRatio();
+    const warningColor = dangerRatio > 0
+      ? `rgb(${Math.floor(96 + dangerRatio * 159)},${Math.floor(165 - dangerRatio * 165)},${Math.floor(250 - dangerRatio * 200)})`
+      : theme.glowColor;
+
+    ctx.save();
+    ctx.lineJoin = (theme.edgeStyle === 'temple' || theme.edgeStyle === 'hard') ? 'miter' : 'round';
+    ctx.lineCap = 'round';
+
+    ctx.strokeStyle = withAlpha(theme.palette.snow, 0.55);
+    ctx.lineWidth = 13;
+    ctx.shadowBlur = 0;
+    ctx.stroke(ridgePath);
+
+    if (theme.edgeStyle === 'tape') {
+      ctx.setLineDash([14, 9]);
+      ctx.strokeStyle = withAlpha(theme.palette.accent, 0.45);
+      ctx.lineWidth = 5;
+      ctx.stroke(ridgePath);
+      ctx.setLineDash([]);
+    } else if (theme.edgeStyle === 'glitch') {
+      ctx.translate(0, -2);
+      ctx.strokeStyle = withAlpha('#22d3ee', 0.38);
+      ctx.lineWidth = 2;
+      ctx.stroke(ridgePath);
+      ctx.translate(0, 4);
+      ctx.strokeStyle = withAlpha('#f472b6', 0.42);
+      ctx.stroke(ridgePath);
+      ctx.translate(0, -2);
+    }
+
+    ctx.strokeStyle = warningColor;
+    ctx.lineWidth = 3.1;
+    ctx.shadowColor = warningColor;
+    ctx.shadowBlur = 16 + dangerRatio * 12;
+    ctx.stroke(ridgePath);
+    ctx.restore();
+  }
+
   function drawTerrain(W, H) {
     if (!terrainPoints.length) return;
 
-    const charWorldX = terrainScrollX + canvas.width * CHAR_X_RATIO;
-    const lineY = getLineYAt(charWorldX);
+    const theme = activeTerrainTheme || buildActiveTerrainTheme(stockData?.symbol);
+    const points = getVisibleTerrainPoints(W);
+    const paths = buildTerrainPaths(points, H);
+    if (!paths) return;
     drawReferenceGrid(W);
-
-    // 畫地形線
-    ctx.save();
-    ctx.beginPath();
-    let started = false;
-    let firstVisibleX = Infinity;
-
-    for (let i = 0; i < terrainPoints.length; i++) {
-      const screenX = terrainPoints[i].x - terrainScrollX;
-      if (screenX < -50 || screenX > W + 50) continue;
-      if (!started) {
-        ctx.moveTo(screenX, terrainPoints[i].y);
-        firstVisibleX = screenX;
-        started = true;
-      } else {
-        ctx.lineTo(screenX, terrainPoints[i].y);
-      }
-    }
-
-    // 危險狀態下線條閃爍顏色
-    const dangerRatio = getDangerRatio();
-    let lineColor;
-    if (dangerRatio > 0) {
-      const r = Math.floor(96  + dangerRatio * 159);
-      const g = Math.floor(165 - dangerRatio * 165);
-      const b = Math.floor(250 - dangerRatio * 200);
-      lineColor = `rgb(${r},${g},${b})`;
-    } else {
-      lineColor = '#60a5fa';
-    }
-
-    ctx.strokeStyle = lineColor;
-    ctx.lineWidth   = 2.5;
-    ctx.shadowColor = lineColor;
-    ctx.shadowBlur  = 10;
-    ctx.stroke();
-
-    // 線以下填色（海洋/深淵感）
-    ctx.lineTo(W + 50, H + 10);
-    ctx.lineTo(firstVisibleX - 50, H + 10);
-    ctx.closePath();
-    const grad = ctx.createLinearGradient(0, lineY, 0, H);
-    const fillA = dangerRatio > 0.3 ? 0.35 + dangerRatio * 0.2 : 0.18;
-    grad.addColorStop(0, `rgba(96,165,250,${fillA})`);
-    grad.addColorStop(1, 'rgba(10,20,50,0.05)');
-    ctx.fillStyle = grad;
-    ctx.fill();
-    ctx.restore();
+    drawTerrainBackdrop(theme, paths.fillPath, W, H);
+    drawTerrainFill(theme, paths.fillPath, W, H);
+    drawTerrainProps(theme, paths.fillPath, W, H);
+    drawTerrainEdge(theme, paths.ridgePath);
 
     // 進度標記點（日期 dots）
     drawProgressDots(W, H);
