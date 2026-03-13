@@ -104,22 +104,6 @@
     { prop: 'esg878-leaf-shield', band: 0.24, depthRatio: 0.18, size: 178, anchor: 'hero' },
     { prop: 'esg878-sustain-column', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
   ];
-  const DIVIDEND919_HERO_PACK = [
-    { prop: 'div919-medal-vault', band: 0.24, depthRatio: 0.18, size: 180, anchor: 'hero' },
-    { prop: 'div919-income-column', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
-  ];
-  const NFLX_HERO_PACK = [
-    { prop: 'nflx-screen-portal', band: 0.22, depthRatio: 0.16, size: 184, anchor: 'hero' },
-    { prop: 'nflx-marquee-stack', band: 0.76, depthRatio: 0.46, size: 174, anchor: 'hero' },
-  ];
-  const CRM_HERO_PACK = [
-    { prop: 'crm-cloud-campus', band: 0.24, depthRatio: 0.18, size: 182, anchor: 'hero' },
-    { prop: 'crm-data-loop', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
-  ];
-  const ORCL_HERO_PACK = [
-    { prop: 'orcl-red-vault', band: 0.22, depthRatio: 0.16, size: 182, anchor: 'hero' },
-    { prop: 'orcl-database-bridge', band: 0.76, depthRatio: 0.46, size: 174, anchor: 'hero' },
-  ];
   const STOCK_HERO_PACKS = {
     META: [
       { prop: 'meta-social-window', band: 0.18, depthRatio: 0.16, size: 184, anchor: 'hero' },
@@ -184,12 +168,6 @@
     '0056': DIVIDEND56_HERO_PACK,
     '00878_TW': ESG878_HERO_PACK,
     '00878': ESG878_HERO_PACK,
-    '00919_TW': DIVIDEND919_HERO_PACK,
-    '00919': DIVIDEND919_HERO_PACK,
-    '9988_HK': BABA_HERO_PACK,
-    NFLX: NFLX_HERO_PACK,
-    CRM: CRM_HERO_PACK,
-    ORCL: ORCL_HERO_PACK,
   };
   const PROP_SPRITE_ALIASES = {
     gpu: 'chip-core',
@@ -298,14 +276,6 @@
     'div56-cash-ribbon': 'div56-cash-ribbon',
     'esg878-leaf-shield': 'esg878-leaf-shield',
     'esg878-sustain-column': 'esg878-sustain-column',
-    'div919-medal-vault': 'div919-medal-vault',
-    'div919-income-column': 'div919-income-column',
-    'nflx-screen-portal': 'nflx-screen-portal',
-    'nflx-marquee-stack': 'nflx-marquee-stack',
-    'crm-cloud-campus': 'crm-cloud-campus',
-    'crm-data-loop': 'crm-data-loop',
-    'orcl-red-vault': 'orcl-red-vault',
-    'orcl-database-bridge': 'orcl-database-bridge',
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
@@ -960,16 +930,6 @@
         cameraTargetOffsetY: Number(terrainCameraTargetOffsetY.toFixed(1)),
         points: terrainPoints.length,
       },
-      camera: {
-        x: Number(cameraX.toFixed(1)),
-        targetX: Number(cameraTargetX.toFixed(1)),
-        lerpFactor: Number(cameraLerpFactor.toFixed(3)),
-        zoom: Number(cameraZoom.toFixed(3)),
-        targetZoom: Number(cameraTargetZoom.toFixed(3)),
-        state: cameraState,
-        focusStrength: Number(cameraFocusStrength.toFixed(3)),
-        focusWorldX: cameraFocusWorldX == null ? null : Number(cameraFocusWorldX.toFixed(1)),
-      },
       theme: activeTerrainTheme ? {
         biome: activeTerrainTheme.environmentBiome,
         industry: activeTerrainTheme.industryClass,
@@ -1035,22 +995,16 @@
   function resizeCanvas() {
     if (!canvas) return;
     const previousAnchorY = charY;
-    const previousWorldX = terrainPoints.length ? getCharWorldX() : null;
     canvas.width  = canvas.parentElement.clientWidth  || window.innerWidth;
     canvas.height = canvas.parentElement.clientHeight || window.innerHeight;
     buildTerrain(); // 重新映射地形
     if (gameState === 'countdown' || gameState === 'playing' || gameState === 'dead') {
       const nextAnchorY = getCharAnchorY();
       const anchorDelta = nextAnchorY - previousAnchorY;
-      if (previousWorldX != null) {
-        terrainScrollX = Math.max(0, previousWorldX - getPlayerWorldOffsetX());
-      }
       charY = nextAnchorY;
       charTargetY = nextAnchorY;
       terrainCameraOffsetY += anchorDelta;
       terrainCameraTargetOffsetY += anchorDelta;
-      cameraX = clamp(getCharWorldX() - canvas.width * CHAR_X_RATIO, 0, getMaxCameraX());
-      cameraTargetX = cameraX;
     }
   }
 
@@ -1141,14 +1095,6 @@
     charVisualOffsetY = 0;
     terrainCameraOffsetY = 0;
     terrainCameraTargetOffsetY = 0;
-    cameraX = 0;
-    cameraTargetX = 0;
-    cameraLerpFactor = CAMERA_FREE_LERP;
-    cameraZoom = CAMERA_FREE_ZOOM;
-    cameraTargetZoom = CAMERA_FREE_ZOOM;
-    cameraState = CAMERA_STATE_FREE;
-    cameraFocusStrength = 0;
-    cameraFocusWorldX = null;
 
     refreshThemeAssets();
     buildTerrain();
@@ -1160,15 +1106,12 @@
     timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO);
 
     // 角色與橘線固定在較低的畫面錨點，山體則對齊到這條線
-    const charX = getPlayerWorldOffsetX();
+    const charX = getCharX();
     charY       = getCharAnchorY();
     charTargetY = charY;
     terrainCameraOffsetY = charY - getLineYAt(charX);
     terrainCameraTargetOffsetY = terrainCameraOffsetY;
-    cameraX = clamp(getCharWorldX() - canvas.width * CHAR_X_RATIO, 0, getMaxCameraX());
-    cameraTargetX = cameraX;
     updateTerrainCameraOffset();
-    updateCamera(0);
     updateCharacterVisualOffset();
 
     gameState = 'countdown';
@@ -1313,7 +1256,6 @@
         if (countdownVal <= 0) gameState = 'playing';
       }
       updateTerrainCameraOffset();
-      updateCamera(0);
       updateCharacterVisualOffset();
       updateParticles();
       if (Math.random() < 0.3) {
@@ -1324,7 +1266,6 @@
 
     if (gameState === 'complete') {
       updateTerrainCameraOffset();
-      updateCamera(0);
       updateCharacterVisualOffset();
       updateParticles();
       if (Math.random() < 0.45) {
@@ -1335,7 +1276,6 @@
 
     if (gameState === 'dead') {
       updateTerrainCameraOffset();
-      updateCamera(0);
       updateCharacterVisualOffset();
       updateParticles();
       return;
@@ -1345,17 +1285,17 @@
 
     surviveFrames++;
     const config = getPeriodConfig();
+    const charX = getCharX();
 
     // 平滑移動角色
     charY += (charTargetY - charY) * 0.18;
 
     // 計算目前捲動位置對應的地形 Y
-    const playerWorldXBeforeScroll = getCharWorldX();
-    const lineYBeforeScroll = getLineYAt(playerWorldXBeforeScroll);
+    const lineYBeforeScroll = getLineYAt(terrainScrollX + charX);
 
     // ── 持續式速度物理 ──
     const lookAhead = 25; // 地圖變長後，讀取更遠一點的點來反應斜率變化
-    const nextLineY = getLineYAt(playerWorldXBeforeScroll + lookAhead);
+    const nextLineY = getLineYAt(terrainScrollX + charX + lookAhead);
     const slope     = (nextLineY - lineYBeforeScroll) / lookAhead; // 正=下坡, 負=上坡
 
     // 根據斜率累加/減速度 (加速度模型)
@@ -1391,10 +1331,8 @@
     currentSpeed = Math.max(dynamicMinSpeed, Math.min(dynamicMaxSpeed, currentSpeed));
 
     terrainScrollX += currentSpeed;
-    const playerWorldX = getCharWorldX();
-    const rawLineY = getLineYAt(playerWorldX);
+    const rawLineY = getLineYAt(terrainScrollX + charX);
     updateTerrainCameraOffset();
-    updateCamera(slope);
     updateCharacterVisualOffset();
     const lineY = rawLineY + terrainCameraOffsetY;
 
@@ -1450,7 +1388,7 @@
 
     // 關卡完成：捲過地形最後一點
     const lastX = terrainPoints[terrainPoints.length - 1].x;
-    if (playerWorldX >= lastX) {
+    if (terrainScrollX + charX >= lastX) {
       const secondsEarly = Math.max(0, getQualifyingSeconds() - getElapsedSeconds());
       earlyFinishBonus = Math.round(secondsEarly * 50);
       gameState = 'complete';
@@ -1521,106 +1459,6 @@
 
   function updateTerrainCameraOffset() {
     terrainCameraOffsetY += (terrainCameraTargetOffsetY - terrainCameraOffsetY) * 0.18;
-  }
-
-  function getDynamicCameraPlacement(playerWorldX) {
-    const placements = activeTerrainTheme?.placements || [];
-    let best = null;
-    for (const placement of placements) {
-      if (placement.anchor !== 'hero') continue;
-      const distance = placement.worldX - playerWorldX;
-      if (distance < -140 || distance > 340) continue;
-      const strength = (1 - Math.min(1, Math.abs(distance) / 340)) * (placement.alpha || 0.75);
-      if (!best || strength > best.strength) {
-        best = {
-          ...placement,
-          distance,
-          strength,
-        };
-      }
-    }
-    return best;
-  }
-
-  function getCameraDensity(playerWorldX) {
-    const placements = activeTerrainTheme?.placements || [];
-    if (!placements.length) return 0;
-    let count = 0;
-    for (const placement of placements) {
-      const distance = placement.worldX - playerWorldX;
-      if (distance < -160 || distance > 420) continue;
-      count += placement.anchor === 'hero' ? 2 : placement.anchor === 'ridge' ? 1.5 : 1;
-    }
-    return count;
-  }
-
-  function updateCamera(slope = 0) {
-    if (!canvas) return;
-    const playerWorldX = getCharWorldX();
-    const baseTargetX = playerWorldX - canvas.width * CHAR_X_RATIO;
-    const speedRatio = currentSpeed / Math.max(0.001, SCROLL_SPEED);
-    const dangerRatio = getDangerRatio();
-    const propDensity = getCameraDensity(playerWorldX);
-    const dynamicPlacement = getDynamicCameraPlacement(playerWorldX);
-    const stats = activeTerrainTheme?.stats || { volatility: 0, maxSwing: 0 };
-    const steepDownhill = slope > 0.34 || speedRatio > 1.2;
-    const lockPressure = steepDownhill || dangerRatio > 0.42 || propDensity >= 7 || stats.volatility > 0.06;
-
-    cameraFocusWorldX = dynamicPlacement?.worldX ?? null;
-    cameraFocusStrength = dynamicPlacement ? easeInOutCubic(dynamicPlacement.strength) : 0;
-
-    if (cameraFocusStrength > 0.12) {
-      cameraState = CAMERA_STATE_DYNAMIC;
-      const focusAhead = clamp(dynamicPlacement.distance * 0.52, -canvas.width * 0.08, canvas.width * 0.2);
-      cameraTargetX = baseTargetX + focusAhead;
-      cameraLerpFactor = lerp(CAMERA_DYNAMIC_LERP, 0.24, cameraFocusStrength);
-      cameraTargetZoom = lerp(CAMERA_LOCKED_ZOOM, CAMERA_DYNAMIC_ZOOM, cameraFocusStrength);
-    } else if (lockPressure) {
-      cameraState = CAMERA_STATE_LOCKED;
-      const downhillLookAhead = clamp(
-        slope * canvas.width * 0.42 + (speedRatio - 1) * canvas.width * 0.18,
-        -canvas.width * 0.05,
-        canvas.width * 0.16,
-      );
-      cameraTargetX = baseTargetX + downhillLookAhead;
-      cameraLerpFactor = lerp(CAMERA_LOCKED_LERP, 0.34, clamp((dangerRatio + Math.max(0, slope)) * 0.8, 0, 1));
-      cameraTargetZoom = lerp(CAMERA_FREE_ZOOM, CAMERA_LOCKED_ZOOM, clamp(Math.max(dangerRatio, speedRatio - 0.92), 0, 1));
-    } else {
-      cameraState = CAMERA_STATE_FREE;
-      const wideGlide = clamp((0.03 - stats.volatility) * canvas.width * 0.4, 0, canvas.width * 0.05);
-      cameraTargetX = baseTargetX - wideGlide;
-      cameraLerpFactor = CAMERA_FREE_LERP;
-      cameraTargetZoom = CAMERA_FREE_ZOOM;
-    }
-
-    const maxCameraX = getMaxCameraX();
-    const minAnchorScreenX = canvas.width * 0.18;
-    const maxAnchorScreenX = canvas.width * 0.42;
-    const minTargetX = Math.max(0, playerWorldX - maxAnchorScreenX);
-    const maxTargetForPlayer = Math.min(maxCameraX, playerWorldX - minAnchorScreenX);
-    cameraTargetX = clamp(cameraTargetX, minTargetX, Math.max(minTargetX, maxTargetForPlayer));
-    cameraX += (cameraTargetX - cameraX) * cameraLerpFactor;
-    cameraX = clamp(cameraX, 0, maxCameraX);
-    const zoomLerp = Math.max(0.04, cameraLerpFactor * 0.55);
-    cameraZoom += (cameraTargetZoom - cameraZoom) * zoomLerp;
-  }
-
-  function getCameraLayerX(multiplier = 1) {
-    return cameraX * multiplier;
-  }
-
-  function withCameraZoom(strength, drawFn) {
-    const zoom = 1 + (cameraZoom - 1) * strength;
-    if (!canvas || Math.abs(zoom - 1) < 0.001) {
-      drawFn();
-      return;
-    }
-    ctx.save();
-    ctx.translate(getCharX(), charY);
-    ctx.scale(zoom, zoom);
-    ctx.translate(-getCharX(), -charY);
-    drawFn();
-    ctx.restore();
   }
 
   function updateCharacterVisualOffset() {
@@ -1711,6 +1549,7 @@
     const H = canvas.height;
 
     // ── 畫面震動計算 ──
+    const dangerConfig = getPeriodConfig();
     const heatRatio = getDangerRatio();
     let shakeX = 0, shakeY = 0;
     if (heatRatio > 0.75 && gameState === 'playing') {
@@ -1740,15 +1579,16 @@
       drawMountains(W, H);
     }
 
-    withCameraZoom(1, () => {
-      drawTerrainWorld(W, H);
-      drawParticles(true);
-      if (gameState === 'countdown' || gameState === 'playing' || gameState === 'dead') {
-        drawCharacter(W);
-      }
-    });
+    // 地形線
+    drawTerrain(W, H);
 
-    drawTerrainOverlay(W, H);
+    // 粒子（雪花在後）
+    drawParticles(true);
+
+    // 角色
+    if (gameState === 'countdown' || gameState === 'playing' || gameState === 'dead') {
+      drawCharacter(W);
+    }
 
     // 危險警示光暈
     if (dangerFrames > 0 && gameState === 'playing') {
@@ -1787,14 +1627,10 @@
 
   function drawStars(W, H) {
     ctx.save();
-    const driftX = -(getCameraLayerX(0.08) % (W + 120));
     starPositions.forEach(s => {
       ctx.beginPath();
-      ctx.arc(s.x * W + driftX, s.y * H, s.r, 0, Math.PI * 2);
+      ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(200,220,255,${0.4 + s.r * 0.3})`;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(s.x * W + driftX + W + 120, s.y * H, s.r, 0, Math.PI * 2);
       ctx.fill();
     });
     ctx.restore();
@@ -1803,20 +1639,16 @@
   function drawMountains(W, H) {
     // 遠山（深色）
     ctx.save();
-    ctx.translate(-(getCameraLayerX(0.3) % (W * 0.6 + 80)), 0);
     ctx.fillStyle = '#0f1e33';
-    for (let band = -1; band <= 1; band++) {
-      const offsetX = band * (W * 0.6 + 80);
-      ctx.beginPath();
-      ctx.moveTo(offsetX, H * 0.55);
-      [0.05,0.15,0.28,0.4,0.52,0.65,0.78,0.9,1].forEach((rx, i) => {
-        const ry = i % 2 === 0 ? 0.25 : 0.38;
-        ctx.lineTo(offsetX + rx * W, ry * H);
-      });
-      ctx.lineTo(offsetX + W, H * 0.55);
-      ctx.closePath();
-      ctx.fill();
-    }
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.55);
+    [0.05,0.15,0.28,0.4,0.52,0.65,0.78,0.9,1].forEach((rx, i) => {
+      const ry = i % 2 === 0 ? 0.25 : 0.38;
+      ctx.lineTo(rx * W, ry * H);
+    });
+    ctx.lineTo(W, H * 0.55);
+    ctx.closePath();
+    ctx.fill();
     ctx.restore();
   }
 
@@ -1831,7 +1663,7 @@
     const drawW = img.naturalWidth * scale;
     const drawH = img.naturalHeight * scale;
     const offsetY = (H - drawH) / 2;
-    const drift = drawW > 0 ? ((getCameraLayerX(0.1)) % drawW + drawW) % drawW : 0;
+    const drift = drawW > 0 ? ((terrainScrollX * 0.14) % drawW + drawW) % drawW : 0;
     const startX = -drift;
 
     ctx.save();
@@ -1860,7 +1692,7 @@
     const points = [];
     let started = false;
     for (let i = 0; i < terrainPoints.length; i++) {
-      const screenX = terrainPoints[i].x - cameraX;
+      const screenX = terrainPoints[i].x - terrainScrollX;
       if (!started && screenX < -80) continue;
       if (screenX > W + 80 && started) break;
       started = true;
@@ -2271,7 +2103,7 @@
     const pattern = ctx.createPattern(getTerrainPatternTile(theme), 'repeat');
     if (pattern) {
       ctx.save();
-      ctx.translate(-((getCameraLayerX(0.42 + theme.stats.volatility * 1.4)) % 256), 0);
+      ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
       ctx.globalAlpha = clamp(0.16 + (theme.textureDensity - 0.7) * 0.14, 0.16, 0.32);
       ctx.fillStyle = pattern;
       ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 240);
@@ -2281,7 +2113,7 @@
     const detailPattern = ctx.createPattern(getTerrainDetailTile(theme), 'repeat');
     if (detailPattern) {
       ctx.save();
-      ctx.translate(-((getCameraLayerX(0.2 + theme.stats.volatility * 0.8)) % 384), -18);
+      ctx.translate(-((terrainScrollX * (0.08 + theme.stats.volatility * 2.8)) % 384), -18);
       ctx.globalCompositeOperation = 'screen';
       ctx.globalAlpha = clamp(0.16 + (theme.textureDensity - 0.7) * 0.15, 0.16, 0.3);
       ctx.fillStyle = detailPattern;
@@ -2294,7 +2126,7 @@
       ctx.strokeStyle = withAlpha(theme.glowColor, theme.variant === 'crash' ? 0.16 : 0.1);
       ctx.lineWidth = theme.variant === 'crash' ? 3 : 2;
       for (let i = -80; i < W + 120; i += 42) {
-        const jitter = Math.sin((i + getCameraLayerX(1)) * 0.06) * 16;
+        const jitter = Math.sin((i + terrainScrollX) * 0.06) * 16;
         ctx.beginPath();
         ctx.moveTo(i, terrainYMin + 40 + jitter);
         ctx.lineTo(i + 30, H - 30);
@@ -2756,7 +2588,7 @@
     ctx.clip(fillPath);
     for (const placement of theme.placements) {
       if (placement.anchor === 'ridge') continue;
-      const screenX = placement.worldX - cameraX;
+      const screenX = placement.worldX - terrainScrollX;
       if (screenX < -40 || screenX > W + 40) continue;
       const y = placement.ridgeY + placement.depth;
       if (y > H + 40) continue;
@@ -2772,7 +2604,7 @@
 
     for (const placement of theme.placements) {
       if (placement.anchor !== 'ridge') continue;
-      const screenX = placement.worldX - cameraX;
+      const screenX = placement.worldX - terrainScrollX;
       if (screenX < -40 || screenX > W + 40) continue;
       const y = placement.ridgeY - placement.size * 0.44;
       drawTerrainPropSprite(placement.prop, screenX, y, placement.size, theme, placement.alpha);
@@ -2819,7 +2651,7 @@
     ctx.restore();
   }
 
-  function drawTerrainWorld(W, H) {
+  function drawTerrain(W, H) {
     if (!terrainPoints.length) return;
 
     const theme = activeTerrainTheme || buildActiveTerrainTheme(stockData?.symbol);
@@ -2831,10 +2663,8 @@
     drawTerrainFill(theme, paths.fillPath, W, H);
     drawTerrainProps(theme, paths.fillPath, W, H);
     drawTerrainEdge(theme, paths.ridgePath);
-  }
 
-  function drawTerrainOverlay(W, H) {
-    if (!terrainPoints.length) return;
+    // 進度標記點（日期 dots）
     drawProgressDots(W, H);
     drawCurrentPriceGuide(W);
   }
@@ -2846,7 +2676,7 @@
     ctx.font = '9px Inter, sans-serif';
     ctx.textAlign = 'center';
     for (let i = 0; i < N; i += step) {
-      const screenX = terrainPoints[i].x - cameraX;
+      const screenX = terrainPoints[i].x - terrainScrollX;
       if (screenX < 0 || screenX > W) continue;
       const sy = terrainPoints[i].y + terrainCameraOffsetY;
       ctx.beginPath();
@@ -2935,7 +2765,7 @@
     const cx      = getCharX();
     const cy      = charY;
     const visualCy = cy + charVisualOffsetY;
-    const worldX  = getCharWorldX();
+    const worldX  = terrainScrollX + cx;
     const lineY   = getScreenLineYAt(worldX);
     const DR      = getDangerRatio(); // 0~1 危險程度
     const isOffTrack = isDangerAbove || isDangerBelow;
