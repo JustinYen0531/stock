@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI Designer"
+  short_description: "Design polished, responsive web interfaces"
+  default_prompt: "Use $ui-designer to turn a product idea into a responsive web UI spec and Tailwind implementation."

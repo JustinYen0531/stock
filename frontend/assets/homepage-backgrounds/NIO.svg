@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a1220"/>
+      <stop offset="48%" stop-color="#2c3f56"/>
+      <stop offset="100%" stop-color="#0a1118"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="25%" r="65%">
+      <stop offset="0%" stop-color="#E0F2FE47"/>
+      <stop offset="100%" stop-color="#E0F2FE00"/>
+    </radialGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#93C5FD2e"/>
+      <stop offset="100%" stop-color="#CBD5E108"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <rect width="1600" height="900" fill="url(#fade)"/>
+
+  
+        <g>
+          <path d="M-40 140 L1640 20" stroke="#93C5FD24" stroke-width="4"/><path d="M-40 182 L1640 62" stroke="#93C5FD26" stroke-width="5"/><path d="M-40 224 L1640 104" stroke="#93C5FD29" stroke-width="6"/><path d="M-40 266 L1640 146" stroke="#93C5FD2b" stroke-width="4"/><path d="M-40 308 L1640 188" stroke="#93C5FD2e" stroke-width="5"/><path d="M-40 350 L1640 230" stroke="#93C5FD30" stroke-width="6"/><path d="M-40 392 L1640 272" stroke="#93C5FD33" stroke-width="4"/><path d="M-40 434 L1640 314" stroke="#93C5FD36" stroke-width="5"/><path d="M-40 476 L1640 356" stroke="#93C5FD38" stroke-width="6"/><path d="M-40 518 L1640 398" stroke="#93C5FD3b" stroke-width="4"/><path d="M-40 560 L1640 440" stroke="#93C5FD3d" stroke-width="5"/><path d="M-40 602 L1640 482" stroke="#93C5FD40" stroke-width="6"/>
+          <path d="M0 540 Q800 400, 1600 540" stroke="#CBD5E129" stroke-width="3" fill="none"/><path d="M0 586 Q800 446, 1600 586" stroke="#CBD5E129" stroke-width="3" fill="none"/><path d="M0 632 Q800 492, 1600 632" stroke="#CBD5E129" stroke-width="3" fill="none"/><path d="M0 678 Q800 538, 1600 678" stroke="#CBD5E129" stroke-width="3" fill="none"/>
+        </g>
+      
+
+  <g opacity="0.92">
+    
+        <g transform="translate(289.5569171058014, 442.59843816049397)">
+          <rect x="-21.11071085016243" y="-44.14057723215782" width="42.22142170032486" height="88.28115446431563" rx="8" fill="#93C5FDc7" stroke="#E0F2FE99" stroke-width="3"/>
+          <path d="M-7.676622127331793 -17.272399786496536 H5.757466595498845 L-1.9191555318329483 1.9191555318329483 H9.595777659164742 L-7.676622127331793 26.868177445661278 Z" fill="#060a10e6"/>
+        </g>
+      
+        <g transform="translate(627.5466285459697, 620.4574035480618)">
+          <path d="M-39.92363765840419 0 Q-6.303732261853292 -29.417417221982035 39.92363765840419 0 Q-6.303732261853292 29.417417221982035 -39.92363765840419 0 Z" fill="#93C5FDc7" stroke="#E0F2FE99" stroke-width="3"/>
+          <circle cx="16.809952698275445" cy="0" r="8.404976349137723" fill="#060a10e6"/>
+        </g>
+      
+        <g transform="translate(977.6804797677323, 475.3907021647319)">
+          <circle r="31.446888115676117" fill="#93C5FDc7" stroke="#E0F2FE99" stroke-width="3"/>
+        </g>
+      
+        <g transform="translate(1225.742963925004, 618.8231174321845)">
+          <path d="M-46.163000481538475 10.491591018531473 Q-8.393272814825178 -35.671409463007 44.064682277832176 -8.393272814825178" stroke="#E0F2FE99" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M25.17981844447553 -16.786545629650355 L44.064682277832176 -8.393272814825178 L29.376454851888123 6.294954611118882" fill="#93C5FDc7"/>
+        </g>
+      
+  </g>
+
+  
+    <g>
+      <polyline points="0.0,634.1 160.0,601.5 320.0,584.5 480.0,567.1 640.0,533.3 800.0,504.0 960.0,470.8 1120.0,457.3 1280.0,428.9 1440.0,413.7 1600.0,396.3" fill="none" stroke="#E0F2FEe0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <polygon points="0,900 0.0,634.1 160.0,601.5 320.0,584.5 480.0,567.1 640.0,533.3 800.0,504.0 960.0,470.8 1120.0,457.3 1280.0,428.9 1440.0,413.7 1600.0,396.3 1600,900" fill="#93C5FD1f"/>
+    </g>
+  
+
+  <g opacity="0.09">
+    <text x="70" y="784" font-family="Segoe UI, Arial, sans-serif" font-size="180" font-weight="700" fill="#E0F2FE">
+      NIO
+    </text>
+  </g>
+  <g opacity="0.95">
+    <text x="82" y="96" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#E0F2FE">
+      NIO
+    </text>
+    <text x="82" y="132" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="500" fill="#CBD5E1e6">
+      NIO · 未來交通
+    </text>
+  </g>
+</svg>

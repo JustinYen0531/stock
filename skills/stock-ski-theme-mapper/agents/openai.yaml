@@ -1,0 +1,7 @@
+interface:
+  display_name: "股市滑雪主題映射"
+  short_description: "把 ticker 轉成四段式電影感關卡主題"
+  default_prompt: "使用 $stock-ski-theme-mapper 把這個 ticker 或產業轉成股市滑雪大冒險的四段式中文電影感主題包。"
+
+policy:
+  allow_implicit_invocation: true

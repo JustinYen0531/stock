@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "npm --prefix backend run dev",
     "start": "npm --prefix backend run start",
-    "install:backend": "npm --prefix backend install"
+    "install:backend": "npm --prefix backend install",
+    "generate:homepage-backgrounds": "node scripts/generate-homepage-backgrounds.mjs"
   },
   "dependencies": {
     "playwright": "^1.58.2"

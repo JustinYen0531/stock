@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a1220"/>
+      <stop offset="48%" stop-color="#2c3f56"/>
+      <stop offset="100%" stop-color="#0a1118"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="25%" r="65%">
+      <stop offset="0%" stop-color="#E0F2FE47"/>
+      <stop offset="100%" stop-color="#E0F2FE00"/>
+    </radialGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#93C5FD2e"/>
+      <stop offset="100%" stop-color="#CBD5E108"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <rect width="1600" height="900" fill="url(#fade)"/>
+
+  
+        <g>
+          <path d="M-40 140 L1640 20" stroke="#93C5FD24" stroke-width="4"/><path d="M-40 182 L1640 62" stroke="#93C5FD26" stroke-width="5"/><path d="M-40 224 L1640 104" stroke="#93C5FD29" stroke-width="6"/><path d="M-40 266 L1640 146" stroke="#93C5FD2b" stroke-width="4"/><path d="M-40 308 L1640 188" stroke="#93C5FD2e" stroke-width="5"/><path d="M-40 350 L1640 230" stroke="#93C5FD30" stroke-width="6"/><path d="M-40 392 L1640 272" stroke="#93C5FD33" stroke-width="4"/><path d="M-40 434 L1640 314" stroke="#93C5FD36" stroke-width="5"/><path d="M-40 476 L1640 356" stroke="#93C5FD38" stroke-width="6"/><path d="M-40 518 L1640 398" stroke="#93C5FD3b" stroke-width="4"/><path d="M-40 560 L1640 440" stroke="#93C5FD3d" stroke-width="5"/><path d="M-40 602 L1640 482" stroke="#93C5FD40" stroke-width="6"/>
+          <path d="M0 540 Q800 400, 1600 540" stroke="#CBD5E129" stroke-width="3" fill="none"/><path d="M0 586 Q800 446, 1600 586" stroke="#CBD5E129" stroke-width="3" fill="none"/><path d="M0 632 Q800 492, 1600 632" stroke="#CBD5E129" stroke-width="3" fill="none"/><path d="M0 678 Q800 538, 1600 678" stroke="#CBD5E129" stroke-width="3" fill="none"/>
+        </g>
+      
+
+  <g opacity="0.92">
+    
+        <g transform="translate(270.1670124894008, 437.1872192574665)">
+          <path d="M-38.58491587640718 0 Q-6.09235513838008 -28.43099064577371 38.58491587640718 0 Q-6.09235513838008 28.43099064577371 -38.58491587640718 0 Z" fill="#93C5FDc7" stroke="#E0F2FE99" stroke-width="3"/>
+          <circle cx="16.246280369013547" cy="0" r="8.123140184506774" fill="#060a10e6"/>
+        </g>
+      
+        <g transform="translate(641.4045360451564, 582.4928920669481)">
+          <circle r="28.13450003103353" fill="#93C5FDc7" stroke="#E0F2FE99" stroke-width="3"/>
+        </g>
+      
+        <g transform="translate(966.6158463433385, 424.7594325430691)">
+          <circle r="43.587129718810324" fill="#060a10e6" stroke="#E0F2FE99" stroke-width="4"/>
+          <circle r="19.614208373464642" fill="#93C5FDc7"/>
+        </g>
+      
+        <g transform="translate(1269.2444634530693, 616.6680388059467)">
+          <path d="M-35.188822966134175 -12.41958457628265 H35.188822966134175 M-22.769238389851527 12.41958457628265 H22.769238389851527" stroke="#E0F2FE99" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="-41.398615254275505" cy="-12.41958457628265" r="8.2797230508551" fill="#93C5FDc7"/>
+          <circle cx="41.398615254275505" cy="-12.41958457628265" r="8.2797230508551" fill="#93C5FDc7"/>
+        </g>
+      
+  </g>
+
+  
+    <g>
+      <polyline points="0.0,550.4 160.0,591.8 320.0,529.2 480.0,589.1 640.0,547.4 800.0,595.3 960.0,536.0 1120.0,574.7 1280.0,504.1 1440.0,598.8 1600.0,523.6" fill="none" stroke="#E0F2FEe0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <polygon points="0,900 0.0,550.4 160.0,591.8 320.0,529.2 480.0,589.1 640.0,547.4 800.0,595.3 960.0,536.0 1120.0,574.7 1280.0,504.1 1440.0,598.8 1600.0,523.6 1600,900" fill="#93C5FD1f"/>
+    </g>
+  
+
+  <g opacity="0.09">
+    <text x="70" y="784" font-family="Segoe UI, Arial, sans-serif" font-size="180" font-weight="700" fill="#E0F2FE">
+      RIVN
+    </text>
+  </g>
+  <g opacity="0.95">
+    <text x="82" y="96" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#E0F2FE">
+      RIVN
+    </text>
+    <text x="82" y="132" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="500" fill="#CBD5E1e6">
+      Rivian · 未來交通
+    </text>
+  </g>
+</svg>

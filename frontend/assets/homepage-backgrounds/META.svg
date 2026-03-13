@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#17071f"/>
+      <stop offset="48%" stop-color="#4c1d95"/>
+      <stop offset="100%" stop-color="#130619"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="25%" r="65%">
+      <stop offset="0%" stop-color="#FDA4FF47"/>
+      <stop offset="100%" stop-color="#FDA4FF00"/>
+    </radialGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF00FF2e"/>
+      <stop offset="100%" stop-color="#C4B5FD08"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <rect width="1600" height="900" fill="url(#fade)"/>
+
+  
+        <g>
+          <rect x="324.12003353238106" y="478.5600547073409" width="275.7153974985704" height="9.93484963150695" rx="5" fill="#FF00FF2b"/><rect x="1237.6625705510378" y="354.03404772281647" width="186.04057834949344" height="11.24836606439203" rx="5" fill="#FF00FF2c"/><rect x="679.3463930487633" y="336.39707093592733" width="349.0221787756309" height="12.382249653805047" rx="5" fill="#FF00FF31"/><rect x="1560.4429598897696" y="327.52532829530537" width="207.97928630840033" height="21.230597375892103" rx="5" fill="#FF00FF2e"/><rect x="1191.3353811949492" y="117.79619616921991" width="260.3833705978468" height="19.120529142208397" rx="5" fill="#FF00FF24"/><rect x="523.1100227683783" y="175.3612783830613" width="353.63775407895446" height="13.374088399112225" rx="5" fill="#C4B5FD2d"/><rect x="996.200067922473" y="230.7071832800284" width="362.9974196385592" height="10.549089682288468" rx="5" fill="#C4B5FD24"/><rect x="44.293177500367165" y="267.7884727343917" width="265.3639822639525" height="14.509243389125913" rx="5" fill="#FF00FF2f"/><rect x="700.5215935409069" y="225.69211936555803" width="194.486768450588" height="14.974998540710658" rx="5" fill="#C4B5FD31"/><rect x="649.5613921433687" y="143.3390740165487" width="200.54888162761927" height="23.120421431027353" rx="5" fill="#C4B5FD2b"/><rect x="1197.3821345716715" y="242.65593864023685" width="305.9665123419836" height="9.396767800208181" rx="5" fill="#C4B5FD2a"/><rect x="1283.5220891982317" y="516.587451598607" width="151.817730772309" height="16.370753568131477" rx="5" fill="#C4B5FD30"/><rect x="1388.7142699211836" y="371.40218125190586" width="127.30687789153308" height="21.457957983016968" rx="5" fill="#C4B5FD2f"/><rect x="737.7565279603004" y="302.47245592530817" width="248.51769874803722" height="17.62249444425106" rx="5" fill="#FF00FF23"/><rect x="1104.9064744263887" y="179.3406184623018" width="224.18683340307325" height="10.43234598590061" rx="5" fill="#C4B5FD30"/><rect x="90.68981595337391" y="420.64571872819215" width="290.260315714404" height="13.050357086583972" rx="5" fill="#C4B5FD24"/>
+          <rect x="246.206059246324" y="488.40692922472954" width="32.998602874577045" height="32.998602874577045" fill="#FDA4FF1f"/><rect x="867.7696242136881" y="485.0614595413208" width="29.22325217165053" height="29.22325217165053" fill="#FDA4FF1f"/><rect x="599.2895280523226" y="231.79491586983204" width="58.548384895548224" height="58.548384895548224" fill="#FDA4FF1f"/><rect x="1515.3356183506548" y="313.7830026447773" width="53.126734057441354" height="53.126734057441354" fill="#FDA4FF1f"/><rect x="885.916085052304" y="197.39348903298378" width="22.103048656135798" height="22.103048656135798" fill="#FDA4FF1f"/><rect x="343.58529469463974" y="250.42396619915962" width="38.01194543018937" height="38.01194543018937" fill="#FDA4FF1f"/><rect x="1460.7525853579864" y="389.16509211063385" width="55.422256300225854" height="55.422256300225854" fill="#FDA4FF1f"/><rect x="395.7475140178576" y="230.84270127117634" width="52.40666141733527" height="52.40666141733527" fill="#FDA4FF1f"/><rect x="1218.7730415258557" y="219.10859674215317" width="27.700301380828023" height="27.700301380828023" fill="#FDA4FF1f"/><rect x="434.2356183286756" y="175.6358439475298" width="32.75414562784135" height="32.75414562784135" fill="#FDA4FF1f"/><rect x="766.1996897915378" y="222.9084587097168" width="56.171614322811365" height="56.171614322811365" fill="#FDA4FF1f"/>
+        </g>
+      
+
+  <g opacity="0.92">
+    
+        <g transform="translate(279.4792886590585, 436.17146586533636)">
+          <rect x="-42.20691367219202" y="-31.196414453359324" width="84.41382734438405" height="51.38232968788594" rx="14.680665625110269" fill="#FF00FFc7" stroke="#FDA4FF99" stroke-width="3"/>
+          <path d="M-7.340332812555134 20.185915234526618 L-18.350832031387835 44.0419968753308 L5.50524960941635 25.69116484394297" fill="#FF00FFc7" stroke="#FDA4FF99" stroke-width="3"/>
+        </g>
+      
+        <g transform="translate(584.0350835165009, 616.7922365805134)">
+          <ellipse rx="44.31674896812066" ry="25.323856553211808" fill="none" stroke="#FDA4FF99" stroke-width="5"/>
+          <ellipse rx="21.103213794343176" ry="10.551606897171588" fill="none" stroke="#FF00FFc7" stroke-width="3"/>
+        </g>
+      
+        <g transform="translate(930.8697466365993, 441.1459354078397)">
+          <circle r="26.071290878858417" fill="#FF00FFc7" stroke="#FDA4FF99" stroke-width="3"/>
+        </g>
+      
+        <g transform="translate(1250.8390056109056, 583.4409207850695)">
+          <path d="M-36.581040727188814 0 Q0 -23.10381519611925 36.581040727188814 0 Q0 23.10381519611925 -36.581040727188814 0 Z" fill="#FF00FFc7" stroke="#FDA4FF99" stroke-width="3"/>
+          <path d="M-13.477225531069562 0 H15.4025434640795" stroke="#0a020fe6" stroke-width="3"/>
+        </g>
+      
+  </g>
+
+  
+    <g>
+      <polyline points="0.0,596.9 160.0,699.6 320.0,596.3 480.0,657.7 640.0,557.9 800.0,671.6 960.0,606.0 1120.0,710.2 1280.0,604.7 1440.0,683.5 1600.0,585.6" fill="none" stroke="#FDA4FFe0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <polygon points="0,900 0.0,596.9 160.0,699.6 320.0,596.3 480.0,657.7 640.0,557.9 800.0,671.6 960.0,606.0 1120.0,710.2 1280.0,604.7 1440.0,683.5 1600.0,585.6 1600,900" fill="#FF00FF1f"/>
+    </g>
+  
+
+  <g opacity="0.09">
+    <text x="70" y="784" font-family="Segoe UI, Arial, sans-serif" font-size="180" font-weight="700" fill="#FDA4FF">
+      META
+    </text>
+  </g>
+  <g opacity="0.95">
+    <text x="82" y="96" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#FDA4FF">
+      META
+    </text>
+    <text x="82" y="132" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="500" fill="#C4B5FDe6">
+      Meta · 霓虹傳媒
+    </text>
+  </g>
+</svg>

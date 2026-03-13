@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game UI Design"
+  short_description: "Design readable, immersive game interfaces"
+  default_prompt: "Use $game-ui-design to create or review a game HUD, menu flow, or game interface spec."

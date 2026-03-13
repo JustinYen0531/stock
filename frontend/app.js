@@ -209,6 +209,14 @@ function buildSparklineSvg(series, color) {
   `;
 }
 
+function getHomepageBackgroundFile(symbol) {
+  return `/static/assets/homepage-backgrounds/${String(symbol || "").replace(/[^A-Za-z0-9]+/g, "_")}.svg`;
+}
+
+function getHomepageBackgroundStyle(symbol) {
+  return `style="--stock-bg: url('${getHomepageBackgroundFile(symbol)}')"`;
+}
+
 function buildHomepageFeaturedCard() {
   const featured = homepageRecommendationData?.featured;
   if (!featured) {
@@ -216,7 +224,7 @@ function buildHomepageFeaturedCard() {
   }
   const watched = isHomepageWatched(featured.symbol);
   return `
-    <div class="welcome-rec-featured-shell">
+    <div class="welcome-rec-featured-shell homepage-stock-surface" ${getHomepageBackgroundStyle(featured.symbol)}>
       <div class="welcome-rec-featured-top">
         <div class="welcome-rec-symbol-group">
           <div class="welcome-rec-chip-row">
@@ -256,7 +264,7 @@ function buildHomepageHotRows() {
       const watched = isHomepageWatched(item.symbol);
       const expanded = homepageRecommendationState.hotExpanded === index;
       return `
-        <article class="welcome-rec-hot-row" data-action="analyze" data-symbol="${escapeHtml(item.symbol)}">
+        <article class="welcome-rec-hot-row homepage-stock-surface" ${getHomepageBackgroundStyle(item.symbol)} data-action="analyze" data-symbol="${escapeHtml(item.symbol)}">
           <div class="welcome-rec-hot-top">
             <div class="welcome-rec-hot-main">
               <div class="welcome-rec-hot-meta">
@@ -293,8 +301,9 @@ function buildHomepageThemeCards() {
   return themes
     .map((theme) => {
       const expanded = homepageRecommendationState.openThemes.has(theme.id);
+      const coverSymbol = theme.picks?.[0]?.symbol || "";
       return `
-        <article class="welcome-rec-theme-card">
+        <article class="welcome-rec-theme-card homepage-stock-surface" ${getHomepageBackgroundStyle(coverSymbol)}>
           <div class="welcome-rec-theme-top" data-action="toggle-theme-detail" data-theme-id="${escapeHtml(theme.id)}">
             <span class="welcome-rec-theme-icon">${escapeHtml(theme.icon)}</span>
             <div class="welcome-rec-theme-main">
@@ -307,7 +316,7 @@ function buildHomepageThemeCards() {
               ${theme.picks.map((pick) => {
                 const watched = isHomepageWatched(pick.symbol);
                 return `
-                  <div class="welcome-rec-pick-chip">
+                  <div class="welcome-rec-pick-chip homepage-stock-surface" ${getHomepageBackgroundStyle(pick.symbol)}>
                     <div>
                       <div class="welcome-rec-pick-symbol">${escapeHtml(pick.symbol)}</div>
                       <div class="welcome-rec-pick-name">${escapeHtml(pick.name)}</div>
