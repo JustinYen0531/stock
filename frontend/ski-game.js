@@ -424,6 +424,7 @@
   let terrainCameraTargetOffsetY = 0;
   let uphillCameraOffsetY = 0;
   let uphillCameraTargetOffsetY = 0;
+  let isUphillCameraFollowing = false;
   let cameraX = 0;
   let cameraTargetX = 0;
   let cameraLerpFactor = CAMERA_FREE_LERP;
@@ -996,6 +997,7 @@
         cameraTargetOffsetY: Number(terrainCameraTargetOffsetY.toFixed(1)),
         uphillCameraOffsetY: Number(uphillCameraOffsetY.toFixed(1)),
         uphillCameraTargetOffsetY: Number(uphillCameraTargetOffsetY.toFixed(1)),
+        uphillCameraFollowing: isUphillCameraFollowing,
         points: terrainPoints.length,
       },
       theme: activeTerrainTheme ? {
@@ -1075,6 +1077,7 @@
       terrainCameraTargetOffsetY += anchorDelta;
       uphillCameraOffsetY = 0;
       uphillCameraTargetOffsetY = 0;
+      isUphillCameraFollowing = false;
     }
   }
 
@@ -1167,6 +1170,7 @@
     terrainCameraTargetOffsetY = 0;
     uphillCameraOffsetY = 0;
     uphillCameraTargetOffsetY = 0;
+    isUphillCameraFollowing = false;
 
     refreshThemeAssets();
     buildTerrain();
@@ -1185,6 +1189,7 @@
     terrainCameraTargetOffsetY = terrainCameraOffsetY;
     uphillCameraOffsetY = 0;
     uphillCameraTargetOffsetY = 0;
+    isUphillCameraFollowing = false;
     updateTerrainCameraOffset();
     updateUphillCameraOffset();
     updateCharacterVisualOffset();
@@ -1413,8 +1418,11 @@
     if (charY < followTriggerY) {
       const followAmount = followTriggerY - charY;
       uphillCameraTargetOffsetY = clamp(followAmount, 0, canvas.height * 0.28);
+      isUphillCameraFollowing = uphillCameraTargetOffsetY > 0.01;
     } else {
       uphillCameraTargetOffsetY = 0;
+      uphillCameraOffsetY = 0;
+      isUphillCameraFollowing = false;
     }
     updateTerrainCameraOffset();
     updateUphillCameraOffset();
