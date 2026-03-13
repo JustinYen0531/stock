@@ -16,8 +16,6 @@
   const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
   const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
   const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
-  const TERRAIN_CAMERA_SHIFT_FACTOR = 0.58; // 山體相對橘線的垂直位移強度
-  const TERRAIN_CAMERA_SHIFT_MAX = 48;
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
@@ -64,6 +62,18 @@
     TSLA: [
       { prop: 'tsla-cyber-body', band: 0.30, depthRatio: 0.20, size: 176, anchor: 'hero' },
       { prop: 'tsla-supercharger-bay', band: 0.76, depthRatio: 0.50, size: 186, anchor: 'hero' },
+    ],
+    MSFT: [
+      { prop: 'msft-window-campus', band: 0.22, depthRatio: 0.18, size: 180, anchor: 'hero' },
+      { prop: 'msft-copilot-bridge', band: 0.74, depthRatio: 0.42, size: 174, anchor: 'hero' },
+    ],
+    GOOGL: [
+      { prop: 'googl-search-gateway', band: 0.2, depthRatio: 0.16, size: 178, anchor: 'hero' },
+      { prop: 'googl-data-orbit', band: 0.76, depthRatio: 0.46, size: 176, anchor: 'hero' },
+    ],
+    JPM: [
+      { prop: 'jpm-vault-facade', band: 0.24, depthRatio: 0.18, size: 186, anchor: 'hero' },
+      { prop: 'jpm-column-crown', band: 0.72, depthRatio: 0.44, size: 170, anchor: 'hero' },
     ],
   };
   const PROP_SPRITE_ALIASES = {
@@ -135,6 +145,12 @@
     'nvda-neural-core': 'nvda-neural-core',
     'tsla-cyber-body': 'tsla-cyber-body',
     'tsla-supercharger-bay': 'tsla-supercharger-bay',
+    'msft-window-campus': 'msft-window-campus',
+    'msft-copilot-bridge': 'msft-copilot-bridge',
+    'googl-search-gateway': 'googl-search-gateway',
+    'googl-data-orbit': 'googl-data-orbit',
+    'jpm-vault-facade': 'jpm-vault-facade',
+    'jpm-column-crown': 'jpm-column-crown',
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
@@ -192,6 +208,7 @@
   let charTargetY = 200;  // 滾輪目標 Y（加平滑）
   let charVisualOffsetY = 0; // 保留角色視覺偏移欄位，預設收斂回 0
   let terrainCameraOffsetY = 0;
+  let terrainCameraTargetOffsetY = 0;
   let isBoosting = false; // 滑鼠中鍵按住時提升上下移動幅度
   let spaceBoostDown = false;
 
@@ -745,6 +762,7 @@
         scrollX: Number(terrainScrollX.toFixed(1)),
         lineY: lineY == null ? null : Number(lineY.toFixed(1)),
         cameraOffsetY: Number(terrainCameraOffsetY.toFixed(1)),
+        cameraTargetOffsetY: Number(terrainCameraTargetOffsetY.toFixed(1)),
         points: terrainPoints.length,
       },
       theme: activeTerrainTheme ? {
@@ -902,6 +920,7 @@
     resultButtonRects = null;
     charVisualOffsetY = 0;
     terrainCameraOffsetY = 0;
+    terrainCameraTargetOffsetY = 0;
 
     refreshThemeAssets();
     buildTerrain();
@@ -916,7 +935,7 @@
     const charX = getCharX();
     charY       = getLineYAt(charX);
     charTargetY = charY;
-    updateTerrainCameraOffset(charY);
+    updateTerrainCameraOffset();
     updateCharacterVisualOffset();
 
     gameState = 'countdown';
@@ -961,10 +980,9 @@
     e.preventDefault();
     if (gameState !== 'playing') return;
     const moveAmount = SCROLL_SENS * (isBoosting ? BOOST_MULTIPLIER : 1);
-    charTargetY += e.deltaY > 0 ? moveAmount : -moveAmount;
-    // 夾在畫面範圍內
-    const hh = getHitboxH();
-    charTargetY = Math.max(hh / 2 + 5, Math.min(canvas.height - hh / 2 - 5, charTargetY));
+    terrainCameraTargetOffsetY += e.deltaY > 0 ? -moveAmount : moveAmount;
+    const maxOffset = Math.max(80, canvas.height * 0.42);
+    terrainCameraTargetOffsetY = clamp(terrainCameraTargetOffsetY, -maxOffset, maxOffset);
   }
 
   function onMouseDown(e) {
@@ -1060,7 +1078,7 @@
         countdownVal--;
         if (countdownVal <= 0) gameState = 'playing';
       }
-      updateTerrainCameraOffset(getLineYAt(getCharWorldX()));
+      updateTerrainCameraOffset();
       updateCharacterVisualOffset();
       updateParticles();
       if (Math.random() < 0.3) {
@@ -1070,7 +1088,7 @@
     }
 
     if (gameState === 'complete') {
-      updateTerrainCameraOffset(getLineYAt(getCharWorldX()));
+      updateTerrainCameraOffset();
       updateCharacterVisualOffset();
       updateParticles();
       if (Math.random() < 0.45) {
@@ -1080,7 +1098,7 @@
     }
 
     if (gameState === 'dead') {
-      updateTerrainCameraOffset(getLineYAt(getCharWorldX()));
+      updateTerrainCameraOffset();
       updateCharacterVisualOffset();
       updateParticles();
       return;
@@ -1137,7 +1155,7 @@
 
     terrainScrollX += currentSpeed;
     const rawLineY = getLineYAt(terrainScrollX + charX);
-    updateTerrainCameraOffset(rawLineY);
+    updateTerrainCameraOffset();
     updateCharacterVisualOffset();
     const lineY = rawLineY + terrainCameraOffsetY;
 
@@ -1262,15 +1280,8 @@
     return terrainYMax - ratio * (terrainYMax - terrainYMin) + terrainCameraOffsetY;
   }
 
-  function updateTerrainCameraOffset(lineY) {
-    if (!canvas) return;
-    const terrainMidY = (terrainYMin + terrainYMax) / 2 || canvas.height * LINE_Y_MID;
-    const targetOffset = clamp(
-      (lineY - terrainMidY) * TERRAIN_CAMERA_SHIFT_FACTOR,
-      -TERRAIN_CAMERA_SHIFT_MAX,
-      TERRAIN_CAMERA_SHIFT_MAX
-    );
-    terrainCameraOffsetY += (targetOffset - terrainCameraOffsetY) * 0.16;
+  function updateTerrainCameraOffset() {
+    terrainCameraOffsetY += (terrainCameraTargetOffsetY - terrainCameraOffsetY) * 0.18;
   }
 
   function updateCharacterVisualOffset() {
