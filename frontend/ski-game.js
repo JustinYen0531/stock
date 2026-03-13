@@ -19,6 +19,7 @@
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
+  const PROP_SPRITE_BASE = '/static/assets/ski-props';
   const PERIOD_TUNING = {
     "1mo": { mapWidth: 3.2, heightScale: 1.45, slopeAccel: 0.095, dangerTolerance: 38 },
     "3mo": { mapWidth: 4.2, heightScale: 1.2, slopeAccel: 0.085, dangerTolerance: 42 },
@@ -45,6 +46,68 @@
     "霓虹傳媒": { base: '#34184e', mid: '#6b21a8', glow: '#f0abfc', accent: '#e879f9', shadow: '#130817', snow: '#faf5ff', pattern: 'neon', edge: 'glitch' },
     "default": { base: '#20405f', mid: '#305d85', glow: '#93c5fd', accent: '#60a5fa', shadow: '#08111b', snow: '#eff6ff', pattern: 'ice', edge: 'ice' },
   };
+  const PROP_SPRITE_ALIASES = {
+    gpu: 'chip-core',
+    chip: 'chip-core',
+    'network-chip': 'chip-core',
+    'mobile-chip': 'chip-core',
+    'ai-core': 'chip-core',
+    wafer: 'wafer-disc',
+    'leaf-grid': 'wafer-disc',
+    server: 'tower-stack',
+    'server-rack': 'tower-stack',
+    'cleanroom-tower': 'tower-stack',
+    factory: 'tower-stack',
+    'beam-frame': 'tower-stack',
+    'data-cube': 'tower-stack',
+    'signal-beam': 'signal-array',
+    'search-beam': 'signal-array',
+    'fiber-tree': 'signal-array',
+    'fiber-node': 'signal-array',
+    connector: 'signal-array',
+    megaphone: 'signal-array',
+    'orbit-ring': 'orbital-ring',
+    'portal-ring': 'orbital-ring',
+    'wave-ring': 'orbital-ring',
+    'cloud-block': 'cloud-block',
+    'window-panel': 'window-panel',
+    'copilot-orb': 'orbital-ring',
+    'data-bridge': 'bridge-arch',
+    'market-arch': 'bridge-arch',
+    'data-prism': 'data-prism',
+    'chat-bubble': 'chat-bubble',
+    'pixel-stack': 'pixel-stack',
+    visor: 'visor-mask',
+    'game-pad': 'visor-mask',
+    'neon-tower': 'pixel-stack',
+    parcel: 'parcel-crate',
+    cart: 'cart-basket',
+    'arrow-arc': 'arrow-rush',
+    'price-tag': 'ticket-tag',
+    coupon: 'ticket-tag',
+    tire: 'tire-runner',
+    'speed-fin': 'arrow-rush',
+    headlamp: 'signal-array',
+    'trail-rack': 'tire-runner',
+    'hover-engine': 'engine-core',
+    'battery-pack': 'battery-module',
+    'charge-pillar': 'charge-pillar',
+    'swap-station': 'charge-pillar',
+    'wing-light': 'signal-array',
+    coin: 'coin-emblem',
+    column: 'column-shard',
+    vault: 'vault-core',
+    shield: 'shield-badge',
+    'cash-badge': 'shield-badge',
+    medal: 'shield-badge',
+    ribbon: 'shield-badge',
+    lantern: 'shield-badge',
+    'metal-bar': 'column-shard',
+    turbine: 'turbine-array',
+    'solar-panel': 'solar-panel',
+    'oil-rig': 'oil-rig',
+    container: 'container-stack',
+  };
 
   /* ── 狀態 ───────────────────────────────────────── */
   let canvas, ctx;
@@ -58,6 +121,7 @@
   const themeBackgroundCache = new Map();
   const terrainPatternCache = new Map();
   const terrainDetailCache = new Map();
+  const propSpriteCache = new Map();
   let themeManifestMap = null;
   let themeManifestPromise = null;
 
@@ -265,6 +329,31 @@
     return entry;
   }
 
+  function getPropSpriteKey(kind) {
+    return PROP_SPRITE_ALIASES[kind] || null;
+  }
+
+  function ensurePropSprite(kind) {
+    const key = getPropSpriteKey(kind);
+    if (!key) return null;
+    let entry = propSpriteCache.get(key);
+    if (!entry) {
+      const img = new Image();
+      entry = {
+        key,
+        src: `${PROP_SPRITE_BASE}/${key}.svg`,
+        img,
+        status: 'loading',
+      };
+      img.decoding = 'async';
+      img.onload = () => { entry.status = 'ready'; };
+      img.onerror = () => { entry.status = 'error'; };
+      img.src = entry.src;
+      propSpriteCache.set(key, entry);
+    }
+    return entry;
+  }
+
   function ensureThemeManifest() {
     if (themeManifestMap || themeManifestPromise || typeof fetch !== 'function') return themeManifestPromise;
     themeManifestPromise = fetch(THEME_MANIFEST_URL, { cache: 'force-cache' })
@@ -460,6 +549,8 @@
     activeThemeBackground = ensureThemeBackground(stockData?.symbol);
     ensureThemeManifest();
     activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
+    for (const prop of activeTerrainTheme?.props || []) ensurePropSprite(prop);
+    for (const placement of activeTerrainTheme?.placements || []) ensurePropSprite(placement.prop);
   }
 
   function getEarnedStars() {
@@ -1736,6 +1827,7 @@
     const fill = withAlpha(theme.palette.accent, 0.88 * alphaScale);
     const stroke = withAlpha(theme.palette.glow, 0.9 * alphaScale);
     const dark = withAlpha(theme.palette.shadow, 0.92 * alphaScale);
+    const spriteEntry = ensurePropSprite(kind);
     ctx.save();
     ctx.translate(x, y);
     ctx.lineCap = 'round';
@@ -1749,6 +1841,29 @@
     ctx.fill();
     ctx.shadowColor = withAlpha(theme.palette.glow, 0.8 * alphaScale);
     ctx.shadowBlur = Math.max(6, size * 0.22);
+
+    if (spriteEntry?.status === 'ready' && spriteEntry.img?.naturalWidth) {
+      ctx.save();
+      const wobble = ((x * 0.013 + y * 0.007) % 0.18) - 0.09;
+      ctx.rotate(wobble);
+      ctx.globalAlpha = clamp(alphaScale * 1.25, 0.28, 1);
+      const pad = size * 0.58;
+      ctx.fillStyle = withAlpha(theme.palette.shadow, 0.14 + alphaScale * 0.18);
+      ctx.beginPath();
+      ctx.roundRect(-pad * 0.72, -pad * 0.72, pad * 1.44, pad * 1.44, Math.max(10, size * 0.08));
+      ctx.fill();
+      ctx.drawImage(spriteEntry.img, -pad, -pad, pad * 2, pad * 2);
+      ctx.globalCompositeOperation = 'source-atop';
+      ctx.fillStyle = withAlpha(theme.palette.accent, 0.18 + alphaScale * 0.1);
+      ctx.fillRect(-pad, -pad, pad * 2, pad * 2);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = withAlpha(theme.palette.glow, 0.24 + alphaScale * 0.1);
+      ctx.lineWidth = Math.max(2, size * 0.03);
+      ctx.strokeRect(-pad * 0.82, -pad * 0.82, pad * 1.64, pad * 1.64);
+      ctx.restore();
+      ctx.restore();
+      return;
+    }
 
     switch (kind) {
       case 'gpu':
