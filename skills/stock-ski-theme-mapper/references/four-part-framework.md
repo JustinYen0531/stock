@@ -8,6 +8,7 @@
 - `Environment Biomes` 與 `Company Props` 裡的名稱都只是示例，不是只能從清單中挑選。
 - 當示例不夠用時，沿用相同原則擴寫新的遠景或組件：先定義情緒，再定義材質，再定義可識別輪廓。
 - 前 3 模組負責生成內容，第 4 模組負責把它們落地到實作。
+- 如果任務明確要求山體材質、K 線貼圖、公司配件貼附或數據驅動造型，額外讀 [terrain-material-workflow.md](terrain-material-workflow.md)。
 
 ## 1. Environment Biomes
 
@@ -120,3 +121,10 @@
 - 所有 props 座標都要可重現，避免每次 render 都重新亂數。
 - 遠景與 props 都要跟著 theme object 走，不要把顏色與圖片路徑寫死在主 loop。
 - 若先做 MVP，先完成資料結構與 placeholder 畫法，再替換成 AI 生成資產。
+
+### 若要做山體材質化
+
+- 把 `Terrain Layer` 再拆成 `fill texture`、`edge treatment`、`gradient mask` 與 `sprite decoration`。
+- 優先用重複貼圖與 sprite sheet，而不是一張固定大圖。
+- 把成交量、波動率、漲跌幅映射成紋理密度、位移強度與山脊發光。
+- 在轉折點、上坡處與平台處，按規則貼上公司組件，而不是平均撒點。
