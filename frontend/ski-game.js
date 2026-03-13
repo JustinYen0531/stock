@@ -15,7 +15,9 @@
   const BOOST_MULTIPLIER = 2.8; // 按住中鍵時的滾輪增幅
   const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
   const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
-  const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
+  const CHAR_X_RATIO_BASE = 0.24; // 角色預設停在畫面左側四分之一附近
+  const CHAR_X_RATIO_MIN  = 0.18; // 鏡頭不讓角色被擠到最左邊
+  const CHAR_X_RATIO_MAX  = 0.42; // 上坡或衝刺時可推進到更前方
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
@@ -133,6 +135,14 @@
     return Math.round(HITBOX_H + t * (100 - HITBOX_H)); // 40~100px
   }
 
+  function getCharX() {
+    return canvas ? canvas.width * charXRatio : 0;
+  }
+
+  function getCharWorldX() {
+    return terrainScrollX + getCharX();
+  }
+
   // 地形
   let terrainPoints = []; // [{x, y}] 已映射到畫面座標
   let terrainScrollX = 0; // 目前已捲過多少 px
@@ -150,6 +160,8 @@
   // 角色
   let charY = 200;        // 角色中心 Y
   let charTargetY = 200;  // 滾輪目標 Y（加平滑）
+  let charXRatio = CHAR_X_RATIO_BASE;
+  let charXRatioTarget = CHAR_X_RATIO_BASE;
   let isBoosting = false; // 滑鼠中鍵按住時提升上下移動幅度
   let spaceBoostDown = false;
 
@@ -514,10 +526,32 @@
         anchor: layerType,
         alpha:
           layerType === 'ridge' ? 0.88 + rng() * 0.08
-          : layerType === 'deep' ? 0.34 + rng() * 0.12
+          : layerType === 'deep' ? 0.38 + rng() * 0.14
           : 0.56 + rng() * 0.2,
       });
     }
+
+    const lowerBandCount = clamp(Math.round(baseProps.length * (1.6 + stats.volatility * 12)), 6, 12);
+    for (let i = 0; i < lowerBandCount; i++) {
+      const band = (i + 0.6) / (lowerBandCount + 0.4);
+      const anchor = anchors.length ? anchors[(i * 2 + 1) % anchors.length] : null;
+      const worldX = anchor
+        ? clamp(anchor.worldX + (rng() - 0.5) * 96, totalX * 0.06, totalX * 0.95)
+        : totalX * clamp(band + (rng() - 0.5) * 0.11, 0.06, 0.95);
+      const ridgeY = getLineYAt(worldX);
+      const availableDepth = Math.max(80, mountainFloorY - ridgeY - 18);
+      const lowerRatio = 0.66 + rng() * 0.22;
+      placements.push({
+        prop: baseProps[(i + 2) % baseProps.length],
+        worldX,
+        ridgeY,
+        depth: availableDepth * lowerRatio,
+        size: 42 + rng() * 24,
+        anchor: 'lower-band',
+        alpha: 0.36 + rng() * 0.12,
+      });
+    }
+
     const heroCount = Math.min(3, Math.max(2, Math.round((baseProps.length || 2) / 2)));
     for (let i = 0; i < heroCount; i++) {
       const anchor = anchorStrength[i];
@@ -641,14 +675,18 @@
   };
 
   window.render_game_to_text = function renderGameToText() {
-    const playerX = canvas ? canvas.width * CHAR_X_RATIO : 0;
-    const worldX = terrainScrollX + playerX;
+    const playerX = getCharX();
+    const worldX = getCharWorldX();
     const lineY = canvas && terrainPoints.length ? getLineYAt(worldX) : null;
     return JSON.stringify({
       coordinateSystem: { origin: 'top-left', x: 'right', y: 'down' },
       mode: gameState,
       symbol: stockData?.symbol || null,
-      player: { x: Number(playerX.toFixed(1)), y: Number(charY.toFixed(1)) },
+      player: {
+        x: Number(playerX.toFixed(1)),
+        y: Number(charY.toFixed(1)),
+        cameraAnchorRatio: Number(charXRatio.toFixed(3)),
+      },
       terrain: {
         scrollX: Number(terrainScrollX.toFixed(1)),
         lineY: lineY == null ? null : Number(lineY.toFixed(1)),
@@ -818,7 +856,9 @@
     timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO);
 
     // 角色起始 Y 對齊玩家所在 X 位置的地形中心，開場就精準壓在線上
-    const charX = canvas.width * CHAR_X_RATIO;
+    charXRatio = CHAR_X_RATIO_BASE;
+    charXRatioTarget = CHAR_X_RATIO_BASE;
+    const charX = getCharX();
     charY       = getLineYAt(charX);
     charTargetY = charY;
 
@@ -987,18 +1027,17 @@
 
     surviveFrames++;
     const config = getPeriodConfig();
-    
-    const charX = canvas.width * CHAR_X_RATIO;
 
     // 平滑移動角色
     charY += (charTargetY - charY) * 0.18;
 
     // 計算目前捲動位置對應的地形 Y
-    const lineY = getLineYAt(terrainScrollX + charX);
+    const baseCharX = getCharX();
+    let lineY = getLineYAt(terrainScrollX + baseCharX);
 
     // ── 持續式速度物理 ──
     const lookAhead = 25; // 地圖變長後，讀取更遠一點的點來反應斜率變化
-    const nextLineY = getLineYAt(terrainScrollX + charX + lookAhead);
+    const nextLineY = getLineYAt(terrainScrollX + baseCharX + lookAhead);
     const slope     = (nextLineY - lineY) / lookAhead; // 正=下坡, 負=上坡
 
     // 根據斜率累加/減速度 (加速度模型)
@@ -1033,7 +1072,26 @@
     const dynamicMaxSpeed = Math.min(MAX_SPEED, SCROLL_SPEED * SPEED_BOOST_MULT);
     currentSpeed = Math.max(dynamicMinSpeed, Math.min(dynamicMaxSpeed, currentSpeed));
 
+    const uphillLead = clamp((-slope - 0.015) / 0.11, 0, 1);
+    const downhillPull = clamp((slope - 0.015) / 0.13, 0, 1);
+    const speedLead = clamp((currentSpeed - SCROLL_SPEED) / Math.max(0.001, dynamicMaxSpeed - SCROLL_SPEED), 0, 1);
+    const brakePull = clamp((SCROLL_SPEED - currentSpeed) / Math.max(0.001, SCROLL_SPEED - dynamicMinSpeed), 0, 1);
+    charXRatioTarget = clamp(
+      CHAR_X_RATIO_BASE
+        + uphillLead * 0.13
+        + speedLead * 0.05
+        + (accelActive ? 0.028 : 0)
+        - downhillPull * 0.03
+        - brakePull * 0.018
+        - (brakeActive ? 0.018 : 0),
+      CHAR_X_RATIO_MIN,
+      CHAR_X_RATIO_MAX
+    );
+    charXRatio += (charXRatioTarget - charXRatio) * 0.1;
+
     terrainScrollX += currentSpeed;
+    const charX = getCharX();
+    lineY = getLineYAt(terrainScrollX + charX);
 
     if (getElapsedSeconds() > timeLimitSeconds) {
       triggerDeath(lineY);
@@ -1163,7 +1221,7 @@
     updateCursorVisibility();
     for (let i = 0; i < 40; i++) {
       particles.push({
-        x: canvas.width * CHAR_X_RATIO,
+        x: getCharX(),
         y: charY,
         vx: (Math.random() - 0.5) * 6,
         vy: (Math.random() - 0.8) * 5,
@@ -2285,6 +2343,7 @@
       if (y > H + 40) continue;
       const scale =
         placement.anchor === 'hero' ? 1
+        : placement.anchor === 'lower-band' ? 0.88
         : placement.anchor === 'deep' ? 0.9
         : placement.anchor === 'mid' ? 0.96
         : 0.94;
@@ -2452,7 +2511,7 @@
      角色繪製 — 右向滑雪者，5 種姿態
   ══════════════════════════════════════════════════ */
   function drawCharacter(W) {
-    const cx      = canvas.width * CHAR_X_RATIO;
+    const cx      = getCharX();
     const cy      = charY;
     const lineY   = getLineYAt(terrainScrollX + cx);
     const DR      = getDangerRatio(); // 0~1 危險程度
@@ -2729,7 +2788,7 @@
     }
 
     // 頂部進度群組
-    const charWorldX = terrainScrollX + canvas.width * CHAR_X_RATIO;
+    const charWorldX = getCharWorldX();
     const totalW = terrainPoints[terrainPoints.length - 1]?.x || 1;
     const prog = Math.min(1, charWorldX / totalW);
     const topHudW = 420;
