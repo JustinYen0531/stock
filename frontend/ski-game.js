@@ -318,21 +318,37 @@
     if (!terrainPoints.length) return [];
     const rng = createRng(`${symbol}:${terrainPoints.length}:${stats.trend.toFixed(3)}:${stats.volatility.toFixed(3)}`);
     const totalX = terrainPoints[terrainPoints.length - 1]?.x || 1;
-    const count = clamp(Math.round((props.length || 3) * (0.85 + stats.volatility * 10)), 4, 9);
+    const count = clamp(Math.round((props.length || 3) * (1.7 + stats.volatility * 16)), 7, 14);
     const baseProps = props.length ? props : ['signal-beam', 'chip', 'coin', 'parcel'];
     const placements = [];
     for (let i = 0; i < count; i++) {
       const band = (i + 1) / (count + 1);
       const worldX = totalX * clamp(band + (rng() - 0.5) * 0.07, 0.08, 0.95);
       const ridgeY = getLineYAt(worldX);
+      const layerType = i % 4 === 0 ? 'ridge' : 'interior';
       placements.push({
         prop: baseProps[i % baseProps.length],
         worldX,
         ridgeY,
-        depth: 34 + rng() * 110,
-        size: 28 + rng() * 26,
-        anchor: i % 3 === 0 ? 'ridge' : 'interior',
-        alpha: 0.3 + rng() * 0.35,
+        depth: layerType === 'ridge' ? 0 : 18 + rng() * 68,
+        size: layerType === 'ridge' ? 56 + rng() * 34 : 42 + rng() * 28,
+        anchor: layerType,
+        alpha: layerType === 'ridge' ? 0.92 : 0.54 + rng() * 0.24,
+      });
+    }
+    const heroCount = Math.min(2, Math.max(1, Math.round((props.length || 2) / 3)));
+    for (let i = 0; i < heroCount; i++) {
+      const band = heroCount === 1 ? 0.58 : 0.26 + i * 0.42;
+      const worldX = totalX * clamp(band + (rng() - 0.5) * 0.05, 0.14, 0.9);
+      const ridgeY = getLineYAt(worldX);
+      placements.push({
+        prop: baseProps[(i * 2 + 1) % baseProps.length],
+        worldX,
+        ridgeY,
+        depth: 62 + rng() * 72,
+        size: 116 + rng() * 44,
+        anchor: 'hero',
+        alpha: 0.18 + rng() * 0.08,
       });
     }
     return placements;
@@ -1406,7 +1422,7 @@
     if (pattern) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
-      ctx.globalAlpha = clamp(0.17 + (theme.textureDensity - 0.7) * 0.15, 0.17, 0.34);
+      ctx.globalAlpha = clamp(0.14 + (theme.textureDensity - 0.7) * 0.12, 0.14, 0.28);
       ctx.fillStyle = pattern;
       ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 240);
       ctx.restore();
@@ -1428,7 +1444,7 @@
 
     const depthMask = ctx.createLinearGradient(0, terrainYMin - 10, 0, H);
     depthMask.addColorStop(0, 'rgba(0,0,0,0)');
-    depthMask.addColorStop(1, withAlpha(theme.palette.shadow, 0.6));
+    depthMask.addColorStop(1, withAlpha(theme.palette.shadow, 0.46));
     ctx.fillStyle = depthMask;
     ctx.fillRect(-20, terrainYMin - 10, W + 40, H - terrainYMin + 40);
 
@@ -1436,13 +1452,22 @@
   }
 
   function drawTerrainPropSprite(kind, x, y, size, theme, alphaScale = 1) {
-    const fill = withAlpha(theme.palette.accent, 0.72 * alphaScale);
-    const stroke = withAlpha(theme.palette.glow, 0.66 * alphaScale);
+    const fill = withAlpha(theme.palette.accent, 0.88 * alphaScale);
+    const stroke = withAlpha(theme.palette.glow, 0.9 * alphaScale);
     const dark = withAlpha(theme.palette.shadow, 0.92 * alphaScale);
     ctx.save();
     ctx.translate(x, y);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    const halo = ctx.createRadialGradient(0, 0, size * 0.06, 0, 0, size * 0.72);
+    halo.addColorStop(0, withAlpha(theme.palette.glow, 0.26 * alphaScale));
+    halo.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.72, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowColor = withAlpha(theme.palette.glow, 0.8 * alphaScale);
+    ctx.shadowBlur = Math.max(6, size * 0.22);
 
     switch (kind) {
       case 'gpu':
@@ -1841,7 +1866,8 @@
       if (screenX < -40 || screenX > W + 40) continue;
       const y = placement.ridgeY + placement.depth;
       if (y > H + 40) continue;
-      drawTerrainPropSprite(placement.prop, screenX, y, placement.size * 0.82, theme, placement.alpha);
+      const scale = placement.anchor === 'hero' ? 1 : 0.94;
+      drawTerrainPropSprite(placement.prop, screenX, y, placement.size * scale, theme, placement.alpha);
     }
     ctx.restore();
 
@@ -1849,8 +1875,8 @@
       if (placement.anchor !== 'ridge') continue;
       const screenX = placement.worldX - terrainScrollX;
       if (screenX < -40 || screenX > W + 40) continue;
-      const y = placement.ridgeY - placement.size * 0.34;
-      drawTerrainPropSprite(placement.prop, screenX, y, placement.size, theme, 0.95);
+      const y = placement.ridgeY - placement.size * 0.44;
+      drawTerrainPropSprite(placement.prop, screenX, y, placement.size, theme, placement.alpha);
     }
   }
 
