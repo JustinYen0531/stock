@@ -18,6 +18,7 @@
   const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
+  const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
   const PERIOD_TUNING = {
     "1mo": { mapWidth: 3.2, heightScale: 1.45, slopeAccel: 0.095, dangerTolerance: 38 },
     "3mo": { mapWidth: 4.2, heightScale: 1.2, slopeAccel: 0.085, dangerTolerance: 42 },
@@ -37,8 +38,10 @@
   let animId;
   let gameState = 'idle'; // idle | countdown | playing | dead | complete
   let stockData = null;   // { symbol, closes, dates, period }
+  let activeThemeBackground = null;
   let practiceMode = false; // 練習模式開關
   let practiceOpts = { steepness: 40, hitboxSize: 60, startPct: 0, endPct: 100 }; // 從滑框傳入
+  const themeBackgroundCache = new Map();
 
   // 動態取得當前 hitbox 高度
   // hitboxSize 1√100 → 映射到 40√100px
@@ -172,6 +175,35 @@
     return timeLimitSeconds;
   }
 
+  function normalizeThemeSymbol(symbol) {
+    return String(symbol || '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_');
+  }
+
+  function ensureThemeBackground(symbol) {
+    const key = normalizeThemeSymbol(symbol);
+    if (!key) return null;
+    let entry = themeBackgroundCache.get(key);
+    if (!entry) {
+      const img = new Image();
+      entry = {
+        key,
+        src: `${THEME_BACKGROUND_BASE}/${key}.svg`,
+        img,
+        status: 'loading',
+      };
+      img.decoding = 'async';
+      img.onload = () => { entry.status = 'ready'; };
+      img.onerror = () => { entry.status = 'error'; };
+      img.src = entry.src;
+      themeBackgroundCache.set(key, entry);
+    }
+    return entry;
+  }
+
+  function refreshThemeBackground() {
+    activeThemeBackground = ensureThemeBackground(stockData?.symbol);
+  }
+
   function getEarnedStars() {
     const starRatio = getFinalScore() / Math.max(1, maxPossibleScore);
     if (starRatio > 0.85) return 3;
@@ -212,6 +244,7 @@
   window.SkiGame = {
     launch(data, options = {}) {
       stockData    = data; // { symbol, closes: [], dates: [], period }
+      refreshThemeBackground();
       practiceMode = !!options.practice;
       if (practiceMode) {
         practiceOpts = {
@@ -356,6 +389,7 @@
     };
     resultButtonRects = null;
 
+    refreshThemeBackground();
     buildTerrain();
 
     // 計算理論最高分 (假設每幀都是完美狀態 x10)
@@ -807,11 +841,15 @@
     ctx.fillStyle = bg;
     ctx.fillRect(-20, -20, W + 40, H + 40); // 這裡稍微畫大一點防止震動露底
 
-    // 星星背景
-    drawStars(W, H);
+    const usedThemeBackground = drawThemeBackground(W, H);
 
-    // 遠景山脈
-    drawMountains(W, H);
+    if (!usedThemeBackground) {
+      // 星星背景
+      drawStars(W, H);
+
+      // 遠景山脈
+      drawMountains(W, H);
+    }
 
     // 地形線
     drawTerrain(W, H);
@@ -884,6 +922,42 @@
     ctx.closePath();
     ctx.fill();
     ctx.restore();
+  }
+
+  function drawThemeBackground(W, H) {
+    const entry = activeThemeBackground;
+    if (!entry || entry.status !== 'ready' || !entry.img?.naturalWidth || !entry.img?.naturalHeight) {
+      return false;
+    }
+
+    const img = entry.img;
+    const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const drawW = img.naturalWidth * scale;
+    const drawH = img.naturalHeight * scale;
+    const offsetY = (H - drawH) / 2;
+    const drift = drawW > 0 ? ((terrainScrollX * 0.14) % drawW + drawW) % drawW : 0;
+    const startX = -drift;
+
+    ctx.save();
+    ctx.globalAlpha = 0.92;
+    for (let i = -1; i <= 1; i++) {
+      ctx.drawImage(img, startX + i * drawW, offsetY, drawW, drawH);
+    }
+
+    const veil = ctx.createLinearGradient(0, 0, 0, H);
+    veil.addColorStop(0, 'rgba(4, 9, 18, 0.10)');
+    veil.addColorStop(0.55, 'rgba(5, 11, 20, 0.18)');
+    veil.addColorStop(1, 'rgba(5, 10, 18, 0.40)');
+    ctx.fillStyle = veil;
+    ctx.fillRect(-20, -20, W + 40, H + 40);
+
+    const vignette = ctx.createRadialGradient(W * 0.5, H * 0.45, H * 0.1, W * 0.5, H * 0.55, H * 0.95);
+    vignette.addColorStop(0, 'rgba(255,255,255,0)');
+    vignette.addColorStop(1, 'rgba(3,7,12,0.28)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(-20, -20, W + 40, H + 40);
+    ctx.restore();
+    return true;
   }
 
   function drawTerrain(W, H) {
