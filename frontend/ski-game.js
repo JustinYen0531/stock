@@ -57,6 +57,7 @@
   let practiceOpts = { steepness: 40, hitboxSize: 60, startPct: 0, endPct: 100 }; // 從滑框傳入
   const themeBackgroundCache = new Map();
   const terrainPatternCache = new Map();
+  const terrainDetailCache = new Map();
   let themeManifestMap = null;
   let themeManifestPromise = null;
 
@@ -314,41 +315,115 @@
     return 'normal';
   }
 
+  function getTerrainFeatureAnchors(limit = 8) {
+    if (terrainPoints.length < 5) return [];
+    const totalX = terrainPoints[terrainPoints.length - 1]?.x || 1;
+    const sampleStride = Math.max(1, Math.floor(terrainPoints.length / 18));
+    const minGap = totalX * 0.08;
+    const candidates = [];
+    for (let i = sampleStride; i < terrainPoints.length - sampleStride; i += sampleStride) {
+      const prev = terrainPoints[i - sampleStride];
+      const curr = terrainPoints[i];
+      const next = terrainPoints[i + sampleStride];
+      const slopeIn = curr.y - prev.y;
+      const slopeOut = next.y - curr.y;
+      const bend = Math.abs(slopeOut - slopeIn);
+      const isPivot = Math.sign(slopeIn) !== Math.sign(slopeOut);
+      if (!isPivot && bend < 10) continue;
+      const prominence = bend + Math.abs(slopeIn) * 0.7 + Math.abs(slopeOut) * 0.7;
+      candidates.push({
+        worldX: curr.x,
+        ridgeY: curr.y,
+        prominence,
+      });
+    }
+    candidates.sort((a, b) => b.prominence - a.prominence);
+    const picked = [];
+    for (const candidate of candidates) {
+      if (picked.every((item) => Math.abs(item.worldX - candidate.worldX) > minGap)) {
+        picked.push(candidate);
+      }
+      if (picked.length >= limit) break;
+    }
+    return picked.sort((a, b) => a.worldX - b.worldX);
+  }
+
   function buildPropPlacements(symbol, props, stats) {
     if (!terrainPoints.length) return [];
     const rng = createRng(`${symbol}:${terrainPoints.length}:${stats.trend.toFixed(3)}:${stats.volatility.toFixed(3)}`);
     const totalX = terrainPoints[terrainPoints.length - 1]?.x || 1;
-    const count = clamp(Math.round((props.length || 3) * (1.7 + stats.volatility * 16)), 7, 14);
     const baseProps = props.length ? props : ['signal-beam', 'chip', 'coin', 'parcel'];
+    const anchors = getTerrainFeatureAnchors(Math.max(5, Math.min(8, baseProps.length + 4)));
+    const count = clamp(Math.round((baseProps.length || 3) * (2.5 + stats.volatility * 22)), 12, 22);
     const placements = [];
+    const anchorStrength = [...anchors].sort((a, b) => b.prominence - a.prominence);
+    const heroAnchorSet = new Set(anchorStrength.slice(0, Math.min(3, Math.max(2, Math.round(baseProps.length / 2)))).map((item) => item.worldX));
+
+    for (let i = 0; i < anchors.length; i++) {
+      const anchor = anchors[i];
+      const isHero = heroAnchorSet.has(anchor.worldX);
+      placements.push({
+        prop: baseProps[i % baseProps.length],
+        worldX: anchor.worldX,
+        ridgeY: anchor.ridgeY,
+        depth: isHero ? 34 + rng() * 68 : 0,
+        size: isHero ? 128 + rng() * 54 : 70 + rng() * 30,
+        anchor: isHero ? 'hero' : 'ridge',
+        alpha: isHero ? 0.28 + rng() * 0.1 : 0.94,
+      });
+
+      const flankCount = isHero ? 2 : 1;
+      for (let j = 0; j < flankCount; j++) {
+        const direction = j % 2 === 0 ? -1 : 1;
+        const offset = direction * (34 + rng() * 74);
+        const worldX = clamp(anchor.worldX + offset, totalX * 0.06, totalX * 0.95);
+        placements.push({
+          prop: baseProps[(i + j + 1) % baseProps.length],
+          worldX,
+          ridgeY: getLineYAt(worldX),
+          depth: 14 + rng() * 54,
+          size: 54 + rng() * 28,
+          anchor: 'interior',
+          alpha: 0.7 + rng() * 0.16,
+        });
+      }
+    }
+
     for (let i = 0; i < count; i++) {
       const band = (i + 1) / (count + 1);
-      const worldX = totalX * clamp(band + (rng() - 0.5) * 0.07, 0.08, 0.95);
+      const anchor = anchors.length ? anchors[i % anchors.length] : null;
+      const bandBase = anchor
+        ? anchor.worldX / totalX + (rng() - 0.5) * 0.08
+        : band + (rng() - 0.5) * 0.09;
+      const worldX = totalX * clamp(bandBase, 0.08, 0.95);
       const ridgeY = getLineYAt(worldX);
-      const layerType = i % 4 === 0 ? 'ridge' : 'interior';
+      const layerType = i % 5 === 0 ? 'ridge' : 'interior';
       placements.push({
         prop: baseProps[i % baseProps.length],
         worldX,
         ridgeY,
-        depth: layerType === 'ridge' ? 0 : 18 + rng() * 68,
-        size: layerType === 'ridge' ? 56 + rng() * 34 : 42 + rng() * 28,
+        depth: layerType === 'ridge' ? 0 : 12 + rng() * 64,
+        size: layerType === 'ridge' ? 60 + rng() * 36 : 46 + rng() * 30,
         anchor: layerType,
-        alpha: layerType === 'ridge' ? 0.92 : 0.54 + rng() * 0.24,
+        alpha: layerType === 'ridge' ? 0.88 + rng() * 0.08 : 0.56 + rng() * 0.2,
       });
     }
-    const heroCount = Math.min(2, Math.max(1, Math.round((props.length || 2) / 3)));
+    const heroCount = Math.min(3, Math.max(2, Math.round((baseProps.length || 2) / 2)));
     for (let i = 0; i < heroCount; i++) {
-      const band = heroCount === 1 ? 0.58 : 0.26 + i * 0.42;
-      const worldX = totalX * clamp(band + (rng() - 0.5) * 0.05, 0.14, 0.9);
+      const anchor = anchorStrength[i];
+      const band = heroCount === 1 ? 0.58 : 0.2 + i * (0.56 / Math.max(1, heroCount - 1));
+      const worldX = anchor
+        ? clamp(anchor.worldX + (rng() - 0.5) * 36, totalX * 0.14, totalX * 0.9)
+        : totalX * clamp(band + (rng() - 0.5) * 0.05, 0.14, 0.9);
       const ridgeY = getLineYAt(worldX);
       placements.push({
         prop: baseProps[(i * 2 + 1) % baseProps.length],
         worldX,
         ridgeY,
-        depth: 62 + rng() * 72,
-        size: 116 + rng() * 44,
+        depth: 42 + rng() * 78,
+        size: 138 + rng() * 56,
         anchor: 'hero',
-        alpha: 0.18 + rng() * 0.08,
+        alpha: 0.24 + rng() * 0.08,
       });
     }
     return placements;
@@ -1403,6 +1478,184 @@
     return tile;
   }
 
+  function getTerrainDetailTile(theme) {
+    const palette = theme.palette;
+    const cacheKey = [
+      'detail',
+      theme.pattern,
+      palette.base,
+      palette.mid,
+      palette.accent,
+      theme.variant,
+    ].join(':');
+    const cached = terrainDetailCache.get(cacheKey);
+    if (cached) return cached;
+
+    const tile = document.createElement('canvas');
+    tile.width = 384;
+    tile.height = 384;
+    const g = tile.getContext('2d');
+    const faint = (hex, alpha) => withAlpha(hex, alpha);
+    g.clearRect(0, 0, tile.width, tile.height);
+
+    switch (theme.pattern) {
+      case 'circuit':
+        g.strokeStyle = faint(palette.glow, 0.22);
+        g.lineWidth = 2;
+        for (let y = 26; y < 360; y += 72) {
+          g.beginPath();
+          g.moveTo(26, y);
+          g.lineTo(132, y);
+          g.lineTo(180, y - 24);
+          g.lineTo(312, y - 24);
+          g.stroke();
+        }
+        g.strokeStyle = faint(palette.accent, 0.16);
+        for (let x = 54; x < 330; x += 64) {
+          for (let y = 54; y < 330; y += 56) {
+            g.beginPath();
+            for (let i = 0; i < 6; i++) {
+              const angle = Math.PI / 3 * i + Math.PI / 6;
+              const px = x + Math.cos(angle) * 16;
+              const py = y + Math.sin(angle) * 16;
+              if (i === 0) g.moveTo(px, py);
+              else g.lineTo(px, py);
+            }
+            g.closePath();
+            g.stroke();
+          }
+        }
+        break;
+      case 'retail':
+        g.fillStyle = faint(palette.accent, 0.12);
+        for (let y = 18; y < 360; y += 90) {
+          g.fillRect(18, y, 348, 18);
+        }
+        g.strokeStyle = faint(palette.glow, 0.18);
+        g.lineWidth = 3;
+        for (let x = 32; x < 344; x += 52) {
+          g.beginPath();
+          g.moveTo(x, 102);
+          g.lineTo(x, 166);
+          g.moveTo(x + 10, 102);
+          g.lineTo(x + 10, 154);
+          g.stroke();
+        }
+        g.strokeStyle = faint(palette.snow, 0.14);
+        for (let i = 0; i < 5; i++) {
+          g.strokeRect(40 + i * 62, 220 + (i % 2) * 14, 42, 30);
+        }
+        break;
+      case 'finance':
+      case 'marble':
+        g.fillStyle = faint(palette.snow, 0.06);
+        for (let x = 22; x < 340; x += 84) {
+          g.fillRect(x, 28, 20, 312);
+          g.fillRect(x - 8, 42, 36, 12);
+        }
+        g.strokeStyle = faint(palette.glow, 0.16);
+        g.lineWidth = 2;
+        for (let y = 54; y < 340; y += 52) {
+          g.beginPath();
+          g.moveTo(20, y);
+          g.lineTo(364, y + ((y / 52) % 2 ? 8 : -8));
+          g.stroke();
+        }
+        break;
+      case 'energy':
+        g.strokeStyle = faint(palette.accent, 0.18);
+        g.lineWidth = 3;
+        for (let x = 44; x < 340; x += 72) {
+          g.beginPath();
+          g.moveTo(x, 330);
+          g.quadraticCurveTo(x + 34, 252, x + 12, 152);
+          g.stroke();
+        }
+        g.strokeStyle = faint(palette.glow, 0.18);
+        for (let x = 38; x < 344; x += 70) {
+          g.strokeRect(x, 62, 32, 48);
+          g.beginPath();
+          g.moveTo(x + 10, 62);
+          g.lineTo(x + 10, 48);
+          g.stroke();
+        }
+        break;
+      case 'industrial':
+        g.strokeStyle = faint(palette.glow, 0.16);
+        g.lineWidth = 3;
+        for (let y = 52; y < 340; y += 76) {
+          g.strokeRect(30, y, 76, 30);
+          g.strokeRect(150, y - 18, 96, 38);
+          g.strokeRect(278, y + 10, 54, 24);
+        }
+        g.fillStyle = faint(palette.accent, 0.14);
+        for (let x = 54; x < 340; x += 58) {
+          g.beginPath();
+          g.arc(x, 42 + (x % 3) * 12, 7, 0, Math.PI * 2);
+          g.fill();
+        }
+        break;
+      case 'transit':
+        g.strokeStyle = faint(palette.glow, 0.16);
+        g.lineWidth = 3;
+        for (let y = 54; y < 334; y += 56) {
+          g.beginPath();
+          g.moveTo(18, y);
+          g.lineTo(366, y - 26);
+          g.stroke();
+        }
+        g.strokeStyle = faint(palette.accent, 0.14);
+        for (let x = 40; x < 344; x += 68) {
+          g.beginPath();
+          g.arc(x, 290 - (x % 2) * 16, 18, Math.PI, 0);
+          g.stroke();
+        }
+        break;
+      case 'cloud':
+        g.strokeStyle = faint(palette.snow, 0.16);
+        g.lineWidth = 2;
+        for (let y = 48; y < 320; y += 82) {
+          g.beginPath();
+          g.roundRect(42, y, 288, 28, 14);
+          g.stroke();
+        }
+        g.fillStyle = faint(palette.accent, 0.14);
+        for (let i = 0; i < 8; i++) {
+          g.fillRect(48 + i * 38, 126 + (i % 2) * 48, 18 + (i % 3) * 8, 18 + (i % 2) * 12);
+        }
+        break;
+      case 'neon':
+        g.strokeStyle = faint(palette.glow, 0.18);
+        g.lineWidth = 3;
+        for (let i = 0; i < 5; i++) {
+          g.beginPath();
+          g.roundRect(34 + i * 62, 48 + (i % 2) * 28, 68, 44, 18);
+          g.stroke();
+        }
+        g.fillStyle = faint(palette.accent, 0.12);
+        for (let i = 0; i < 7; i++) {
+          g.beginPath();
+          g.arc(46 + i * 48, 238 - (i % 3) * 18, 18 + (i % 2) * 8, 0, Math.PI * 2);
+          g.fill();
+        }
+        break;
+      default:
+        g.strokeStyle = faint(palette.snow, 0.16);
+        g.lineWidth = 2;
+        for (let i = -20; i < 420; i += 52) {
+          g.beginPath();
+          g.moveTo(i, 0);
+          g.lineTo(i + 58, 112);
+          g.lineTo(i - 12, 220);
+          g.stroke();
+        }
+        break;
+    }
+
+    terrainDetailCache.set(cacheKey, tile);
+    return tile;
+  }
+
   function drawTerrainBackdrop(theme, fillPath, W, H) {
     ctx.save();
     ctx.translate(-W * 0.035, 28);
@@ -1430,9 +1683,20 @@
     if (pattern) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
-      ctx.globalAlpha = clamp(0.14 + (theme.textureDensity - 0.7) * 0.12, 0.14, 0.28);
+      ctx.globalAlpha = clamp(0.16 + (theme.textureDensity - 0.7) * 0.14, 0.16, 0.32);
       ctx.fillStyle = pattern;
       ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 240);
+      ctx.restore();
+    }
+
+    const detailPattern = ctx.createPattern(getTerrainDetailTile(theme), 'repeat');
+    if (detailPattern) {
+      ctx.save();
+      ctx.translate(-((terrainScrollX * (0.08 + theme.stats.volatility * 2.8)) % 384), -18);
+      ctx.globalCompositeOperation = 'screen';
+      ctx.globalAlpha = clamp(0.16 + (theme.textureDensity - 0.7) * 0.15, 0.16, 0.3);
+      ctx.fillStyle = detailPattern;
+      ctx.fillRect(-768, terrainYMin - 180, W + 1536, H - terrainYMin + 320);
       ctx.restore();
     }
 
@@ -1455,6 +1719,15 @@
     depthMask.addColorStop(1, withAlpha(theme.palette.shadow, 0.46));
     ctx.fillStyle = depthMask;
     ctx.fillRect(-20, terrainYMin - 10, W + 40, H - terrainYMin + 40);
+
+    const sheen = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
+    sheen.addColorStop(0, withAlpha(theme.palette.snow, 0.18));
+    sheen.addColorStop(0.24, 'rgba(255,255,255,0)');
+    sheen.addColorStop(0.66, withAlpha(theme.palette.glow, 0.08));
+    sheen.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.globalCompositeOperation = 'screen';
+    ctx.fillStyle = sheen;
+    ctx.fillRect(-20, terrainYMin - 30, W + 40, H - terrainYMin + 80);
 
     ctx.restore();
   }
