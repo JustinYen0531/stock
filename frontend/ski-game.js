@@ -15,9 +15,7 @@
   const BOOST_MULTIPLIER = 2.8; // 按住中鍵時的滾輪增幅
   const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
   const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
-  const CHAR_X_RATIO_BASE = 0.24; // 角色預設停在畫面左側四分之一附近
-  const CHAR_X_RATIO_MIN  = 0.18; // 鏡頭不讓角色被擠到最左邊
-  const CHAR_X_RATIO_MAX  = 0.42; // 上坡或衝刺時可推進到更前方
+  const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
@@ -136,7 +134,7 @@
   }
 
   function getCharX() {
-    return canvas ? canvas.width * charXRatio : 0;
+    return canvas ? canvas.width * CHAR_X_RATIO : 0;
   }
 
   function getCharWorldX() {
@@ -160,8 +158,6 @@
   // 角色
   let charY = 200;        // 角色中心 Y
   let charTargetY = 200;  // 滾輪目標 Y（加平滑）
-  let charXRatio = CHAR_X_RATIO_BASE;
-  let charXRatioTarget = CHAR_X_RATIO_BASE;
   let isBoosting = false; // 滑鼠中鍵按住時提升上下移動幅度
   let spaceBoostDown = false;
 
@@ -682,11 +678,7 @@
       coordinateSystem: { origin: 'top-left', x: 'right', y: 'down' },
       mode: gameState,
       symbol: stockData?.symbol || null,
-      player: {
-        x: Number(playerX.toFixed(1)),
-        y: Number(charY.toFixed(1)),
-        cameraAnchorRatio: Number(charXRatio.toFixed(3)),
-      },
+      player: { x: Number(playerX.toFixed(1)), y: Number(charY.toFixed(1)) },
       terrain: {
         scrollX: Number(terrainScrollX.toFixed(1)),
         lineY: lineY == null ? null : Number(lineY.toFixed(1)),
@@ -856,8 +848,6 @@
     timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO);
 
     // 角色起始 Y 對齊玩家所在 X 位置的地形中心，開場就精準壓在線上
-    charXRatio = CHAR_X_RATIO_BASE;
-    charXRatioTarget = CHAR_X_RATIO_BASE;
     const charX = getCharX();
     charY       = getLineYAt(charX);
     charTargetY = charY;
@@ -1027,18 +1017,18 @@
 
     surviveFrames++;
     const config = getPeriodConfig();
+    const charX = getCharX();
 
     // 平滑移動角色
     charY += (charTargetY - charY) * 0.18;
 
     // 計算目前捲動位置對應的地形 Y
-    const baseCharX = getCharX();
-    let lineY = getLineYAt(terrainScrollX + baseCharX);
+    const lineYBeforeScroll = getLineYAt(terrainScrollX + charX);
 
     // ── 持續式速度物理 ──
     const lookAhead = 25; // 地圖變長後，讀取更遠一點的點來反應斜率變化
-    const nextLineY = getLineYAt(terrainScrollX + baseCharX + lookAhead);
-    const slope     = (nextLineY - lineY) / lookAhead; // 正=下坡, 負=上坡
+    const nextLineY = getLineYAt(terrainScrollX + charX + lookAhead);
+    const slope     = (nextLineY - lineYBeforeScroll) / lookAhead; // 正=下坡, 負=上坡
 
     // 根據斜率累加/減速度 (加速度模型)
     currentSpeed += slope * config.slopeAccel;
@@ -1072,25 +1062,17 @@
     const dynamicMaxSpeed = Math.min(MAX_SPEED, SCROLL_SPEED * SPEED_BOOST_MULT);
     currentSpeed = Math.max(dynamicMinSpeed, Math.min(dynamicMaxSpeed, currentSpeed));
 
-    const uphillLead = clamp((-slope - 0.015) / 0.11, 0, 1);
-    const downhillPull = clamp((slope - 0.015) / 0.13, 0, 1);
-    const speedLead = clamp((currentSpeed - SCROLL_SPEED) / Math.max(0.001, dynamicMaxSpeed - SCROLL_SPEED), 0, 1);
-    const brakePull = clamp((SCROLL_SPEED - currentSpeed) / Math.max(0.001, SCROLL_SPEED - dynamicMinSpeed), 0, 1);
-    charXRatioTarget = clamp(
-      CHAR_X_RATIO_BASE
-        + uphillLead * 0.13
-        + speedLead * 0.05
-        + (accelActive ? 0.028 : 0)
-        - downhillPull * 0.03
-        - brakePull * 0.018
-        - (brakeActive ? 0.018 : 0),
-      CHAR_X_RATIO_MIN,
-      CHAR_X_RATIO_MAX
-    );
-    charXRatio += (charXRatioTarget - charXRatio) * 0.1;
-
     terrainScrollX += currentSpeed;
-    const charX = getCharX();
+    let lineY = getLineYAt(terrainScrollX + charX);
+    const terrainLift = lineY - lineYBeforeScroll;
+    charY += terrainLift;
+    charTargetY += terrainLift;
+
+    const hh = getHitboxH();
+    const minY = hh / 2 + 5;
+    const maxY = canvas.height - hh / 2 - 5;
+    charY = Math.max(minY, Math.min(maxY, charY));
+    charTargetY = Math.max(minY, Math.min(maxY, charTargetY));
     lineY = getLineYAt(terrainScrollX + charX);
 
     if (getElapsedSeconds() > timeLimitSeconds) {
@@ -1099,7 +1081,6 @@
     }
 
     // 判定：角色 hitbox 是否包住線
-    const hh        = getHitboxH();
     const hitTop    = charY - hh / 2;
     const hitBottom = charY + hh / 2;
     const aboveLine = hitBottom < lineY; // hitbox 完全在線上方
