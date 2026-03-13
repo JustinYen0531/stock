@@ -21,7 +21,7 @@
   const CAMERA_DEAD_ZONE_BOTTOM_RATIO = 0.78; // 死區下緣
   const CAMERA_FOLLOW_STRENGTH = 0.55; // 超出死區後，鏡頭只跟一部分
   const CAMERA_VERTICAL_DAMPING = 0.16; // 垂直鏡頭平滑度
-  const CAMERA_FLOOR_MARGIN_RATIO = 0.12; // 鏡頭往下最多跟到這個比例，之後就踩到地板
+  const CAMERA_FLOOR_MARGIN_RATIO = 0.2; // 鏡頭更早踩到底板，保留角色往下脫線的操作空間
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const CAMERA_STATE_FREE = 'free';
