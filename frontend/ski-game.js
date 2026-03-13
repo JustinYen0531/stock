@@ -1415,11 +1415,16 @@
     terrainScrollX += currentSpeed;
     const rawLineY = getLineYAt(terrainScrollX + charX);
     const followTriggerY = canvas.height * UPHILL_CAMERA_TRIGGER_RATIO;
+    const wasUphillCameraFollowing = isUphillCameraFollowing;
     if (charY < followTriggerY) {
       const followAmount = followTriggerY - charY;
       uphillCameraTargetOffsetY = clamp(followAmount, 0, canvas.height * 0.28);
       isUphillCameraFollowing = uphillCameraTargetOffsetY > 0.01;
     } else {
+      if (wasUphillCameraFollowing && Math.abs(uphillCameraOffsetY) > 0.01) {
+        terrainCameraOffsetY += uphillCameraOffsetY;
+        terrainCameraTargetOffsetY += uphillCameraOffsetY;
+      }
       uphillCameraTargetOffsetY = 0;
       uphillCameraOffsetY = 0;
       isUphillCameraFollowing = false;
