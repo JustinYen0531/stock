@@ -46,6 +46,38 @@
     "霓虹傳媒": { base: '#34184e', mid: '#6b21a8', glow: '#f0abfc', accent: '#e879f9', shadow: '#130817', snow: '#faf5ff', pattern: 'neon', edge: 'glitch' },
     "default": { base: '#20405f', mid: '#305d85', glow: '#93c5fd', accent: '#60a5fa', shadow: '#08111b', snow: '#eff6ff', pattern: 'ice', edge: 'ice' },
   };
+  const TSMC_HERO_PACK = [
+    { prop: 'tsmc-wafer-gate', band: 0.22, depthRatio: 0.16, size: 184, anchor: 'hero' },
+    { prop: 'tsmc-fab-spine', band: 0.76, depthRatio: 0.44, size: 176, anchor: 'hero' },
+  ];
+  const BABA_HERO_PACK = [
+    { prop: 'baba-market-gate', band: 0.26, depthRatio: 0.18, size: 184, anchor: 'hero' },
+    { prop: 'baba-lantern-cloud', band: 0.78, depthRatio: 0.48, size: 174, anchor: 'hero' },
+  ];
+  const RIVN_HERO_PACK = [
+    { prop: 'rivn-adventure-frame', band: 0.24, depthRatio: 0.18, size: 178, anchor: 'hero' },
+    { prop: 'rivn-rack-camp', band: 0.74, depthRatio: 0.46, size: 174, anchor: 'hero' },
+  ];
+  const NIO_HERO_PACK = [
+    { prop: 'nio-swap-core', band: 0.24, depthRatio: 0.18, size: 180, anchor: 'hero' },
+    { prop: 'nio-wing-hub', band: 0.74, depthRatio: 0.46, size: 172, anchor: 'hero' },
+  ];
+  const MEDIATEK_HERO_PACK = [
+    { prop: 'mtk-signal-pagoda', band: 0.22, depthRatio: 0.16, size: 180, anchor: 'hero' },
+    { prop: 'mtk-mobile-core', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
+  ];
+  const HONHAI_HERO_PACK = [
+    { prop: 'honhai-factory-arc', band: 0.24, depthRatio: 0.18, size: 186, anchor: 'hero' },
+    { prop: 'honhai-connector-yard', band: 0.76, depthRatio: 0.46, size: 174, anchor: 'hero' },
+  ];
+  const PDD_HERO_PACK = [
+    { prop: 'pdd-bargain-beacon', band: 0.24, depthRatio: 0.18, size: 178, anchor: 'hero' },
+    { prop: 'pdd-parcel-kite', band: 0.76, depthRatio: 0.48, size: 172, anchor: 'hero' },
+  ];
+  const TENCENT_HERO_PACK = [
+    { prop: 'tencent-super-app-tower', band: 0.22, depthRatio: 0.16, size: 182, anchor: 'hero' },
+    { prop: 'tencent-orbit-plaza', band: 0.76, depthRatio: 0.46, size: 176, anchor: 'hero' },
+  ];
   const STOCK_HERO_PACKS = {
     META: [
       { prop: 'meta-social-window', band: 0.18, depthRatio: 0.16, size: 184, anchor: 'hero' },
@@ -91,6 +123,17 @@
       { prop: 'bac-ledger-tower', band: 0.22, depthRatio: 0.18, size: 180, anchor: 'hero' },
       { prop: 'bac-civic-shield', band: 0.72, depthRatio: 0.44, size: 172, anchor: 'hero' },
     ],
+    '2330_TW': TSMC_HERO_PACK,
+    '2330': TSMC_HERO_PACK,
+    BABA: BABA_HERO_PACK,
+    RIVN: RIVN_HERO_PACK,
+    NIO: NIO_HERO_PACK,
+    '2454_TW': MEDIATEK_HERO_PACK,
+    '2454': MEDIATEK_HERO_PACK,
+    '2317_TW': HONHAI_HERO_PACK,
+    '2317': HONHAI_HERO_PACK,
+    PDD: PDD_HERO_PACK,
+    '700_HK': TENCENT_HERO_PACK,
   };
   const PROP_SPRITE_ALIASES = {
     gpu: 'chip-core',
@@ -175,6 +218,22 @@
     'avgo-switch-matrix': 'avgo-switch-matrix',
     'bac-ledger-tower': 'bac-ledger-tower',
     'bac-civic-shield': 'bac-civic-shield',
+    'tsmc-wafer-gate': 'tsmc-wafer-gate',
+    'tsmc-fab-spine': 'tsmc-fab-spine',
+    'baba-market-gate': 'baba-market-gate',
+    'baba-lantern-cloud': 'baba-lantern-cloud',
+    'rivn-adventure-frame': 'rivn-adventure-frame',
+    'rivn-rack-camp': 'rivn-rack-camp',
+    'nio-swap-core': 'nio-swap-core',
+    'nio-wing-hub': 'nio-wing-hub',
+    'mtk-signal-pagoda': 'mtk-signal-pagoda',
+    'mtk-mobile-core': 'mtk-mobile-core',
+    'honhai-factory-arc': 'honhai-factory-arc',
+    'honhai-connector-yard': 'honhai-connector-yard',
+    'pdd-bargain-beacon': 'pdd-bargain-beacon',
+    'pdd-parcel-kite': 'pdd-parcel-kite',
+    'tencent-super-app-tower': 'tencent-super-app-tower',
+    'tencent-orbit-plaza': 'tencent-orbit-plaza',
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
@@ -211,6 +270,17 @@
 
   function getScreenLineYAt(worldX) {
     return getLineYAt(worldX) + terrainCameraOffsetY;
+  }
+
+  function getTerrainScreenAngleAt(worldX) {
+    const slopeSample = 22;
+    const slopeStartY = getScreenLineYAt(worldX - slopeSample);
+    const slopeEndY = getScreenLineYAt(worldX + slopeSample);
+    return clamp(
+      Math.atan2(slopeEndY - slopeStartY, slopeSample * 2),
+      -0.6,
+      0.6,
+    );
   }
 
   // 地形
@@ -772,6 +842,7 @@
     const playerX = getCharX();
     const worldX = getCharWorldX();
     const lineY = canvas && terrainPoints.length ? getScreenLineYAt(worldX) : null;
+    const terrainAngle = canvas && terrainPoints.length ? getTerrainScreenAngleAt(worldX) : null;
     return JSON.stringify({
       coordinateSystem: { origin: 'top-left', x: 'right', y: 'down' },
       mode: gameState,
@@ -781,6 +852,7 @@
         y: Number(charY.toFixed(1)),
         spriteY: Number((charY + charVisualOffsetY).toFixed(1)),
         visualOffsetY: Number(charVisualOffsetY.toFixed(1)),
+        terrainAngle: terrainAngle == null ? null : Number(terrainAngle.toFixed(3)),
       },
       terrain: {
         scrollX: Number(terrainScrollX.toFixed(1)),
@@ -1005,7 +1077,8 @@
     if (gameState !== 'playing') return;
     const moveAmount = SCROLL_SENS * (isBoosting ? BOOST_MULTIPLIER : 1);
     terrainCameraTargetOffsetY += e.deltaY > 0 ? -moveAmount : moveAmount;
-    const maxOffset = Math.max(80, canvas.height * 0.42);
+    const terrainRange = Math.max(terrainYMax - terrainYMin, canvas.height * 0.9);
+    const maxOffset = Math.max(320, terrainRange * 1.1);
     terrainCameraTargetOffsetY = clamp(terrainCameraTargetOffsetY, -maxOffset, maxOffset);
   }
 
@@ -2612,7 +2685,8 @@
     const cx      = getCharX();
     const cy      = charY;
     const visualCy = cy + charVisualOffsetY;
-    const lineY   = getScreenLineYAt(terrainScrollX + cx);
+    const worldX  = terrainScrollX + cx;
+    const lineY   = getScreenLineYAt(worldX);
     const DR      = getDangerRatio(); // 0~1 危險程度
     const isOffTrack = isDangerAbove || isDangerBelow;
     const t       = Date.now() / 1000;
@@ -2650,38 +2724,41 @@
     /* ── 姿態計算 ────────────────────────────────── */
     // relPos: 0=線在hitbox中央, -1=線在頂端, +1=線在底端; 超出±1=出界
     const relPos = (lineY - cy) / (HITBOX_H / 2);
+    const terrainAngle = getTerrainScreenAngleAt(worldX);
 
     // bodyAngle: 正=前傾(向右), 負=後仰(向左)
-    let bodyAngle    = 0.12;  // 預設微微前傾
+    let bodyAngle    = terrainAngle; // 基準角度先貼齊山坡
     let bounceY      = 0;     // 重心額外 Y 位移
     let crouchFactor = 0.45;  // 0=全站直, 1=全蹲伏
     let armAngle     = 0.05;  // 前臂向右延伸角度
 
     if (isDangerAbove) {
       // ★ 太高危險：強烈後仰，不斷往上彈，快要飛走！
-      bodyAngle    = -0.55 + Math.sin(t * 6) * 0.2;
+      bodyAngle    = terrainAngle - 0.55 + Math.sin(t * 6) * 0.2;
       bounceY      = -Math.abs(Math.sin(t * 9)) * 11;
       crouchFactor = 0.08 + Math.abs(Math.sin(t * 7)) * 0.35;
       armAngle     = -0.65 + Math.sin(t * 8) * 0.45; // 手臂亂揮
     } else if (isDangerBelow) {
       // ★ 太低危險：極端前傾，快撲地，身體顫抖！
-      bodyAngle    = 0.88 + Math.sin(t * 12) * 0.13;
+      bodyAngle    = terrainAngle + 0.88 + Math.sin(t * 12) * 0.13;
       bounceY      = Math.sin(t * 10) * 3.5;
       crouchFactor = 0.04;
       armAngle     = 0.95 + Math.sin(t * 11) * 0.2;
     } else if (relPos < -0.25) {
       // 略高：身體上揚、稍微後仰
       const a   = Math.min(1, (-relPos - 0.25) / 0.75);
-      bodyAngle    = 0.12 - a * 0.42;
+      bodyAngle    = terrainAngle + 0.12 - a * 0.42;
       bounceY      = Math.sin(t * 5) * a * 4.5;
       crouchFactor = 0.45 - a * 0.22;
       armAngle     = 0.05 - a * 0.38;
     } else if (relPos > 0.25) {
       // 略低：重心下壓，急速蹲伏前傾
       const a   = Math.min(1, (relPos - 0.25) / 0.75);
-      bodyAngle    = 0.12 + a * 0.52;
+      bodyAngle    = terrainAngle + 0.12 + a * 0.52;
       crouchFactor = 0.45 + a * 0.48;
       armAngle     = 0.05 + a * 0.52;
+    } else {
+      bodyAngle += 0.04;
     }
 
     /* ── 顏色 ──────────────────────────────────────── */
