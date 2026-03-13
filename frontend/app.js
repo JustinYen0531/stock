@@ -12,7 +12,7 @@ let volumeChart = null;
 let rsiChart = null;
 let macdChart = null;
 const HOMEPAGE_WATCHLIST_KEY = "homepageWatchlist";
-const HOMEPAGE_RECOMMENDATIONS = {
+const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
   featured: {
     symbol: "NVDA",
     name: "NVIDIA",
@@ -103,8 +103,14 @@ const homepageRecommendationState = {
   featuredExpanded: false,
   hotExpanded: null,
   openThemes: new Set(),
+  loading: false,
+  error: "",
+  statusText: "正在整理今日熱度與推薦...",
+  source: "fallback",
+  updatedAt: null,
 };
 let homepageRecommendationsInitialized = false;
+let homepageRecommendationData = FALLBACK_HOMEPAGE_RECOMMENDATIONS;
 
 // ── 工具函數 ─────────────────────────────────────
 function $(id) { return document.getElementById(id); }
@@ -134,6 +140,18 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
+function formatRecommendationUpdatedAt(isoString) {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("zh-TW", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 function getHomepageWatchlist() {
   try {
     const parsed = JSON.parse(localStorage.getItem(HOMEPAGE_WATCHLIST_KEY) || "[]");
@@ -156,6 +174,13 @@ function toggleHomepageWatch(symbol) {
 }
 
 function buildSparklineSvg(series, color) {
+  if (!Array.isArray(series) || series.length < 2) {
+    return `
+      <svg viewBox="0 0 420 110" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="0" y1="55" x2="420" y2="55" stroke="${color}" stroke-width="3" stroke-dasharray="10 8" opacity="0.45"></line>
+      </svg>
+    `;
+  }
   const width = 420;
   const height = 110;
   const fillId = `sparkFill-${color.replace(/[^a-zA-Z0-9]/g, "")}`;
@@ -185,7 +210,10 @@ function buildSparklineSvg(series, color) {
 }
 
 function buildHomepageFeaturedCard() {
-  const featured = HOMEPAGE_RECOMMENDATIONS.featured;
+  const featured = homepageRecommendationData?.featured;
+  if (!featured) {
+    return `<div class="welcome-rec-feedback is-error">目前暫時沒有可用的主推薦，請稍後再試。</div>`;
+  }
   const watched = isHomepageWatched(featured.symbol);
   return `
     <div class="welcome-rec-featured-shell">
@@ -219,7 +247,11 @@ function buildHomepageFeaturedCard() {
 }
 
 function buildHomepageHotRows() {
-  return HOMEPAGE_RECOMMENDATIONS.hot
+  const hotList = homepageRecommendationData?.hot || [];
+  if (!hotList.length) {
+    return `<div class="welcome-rec-feedback is-error">熱門排行暫時抓不到資料，先休息一下。</div>`;
+  }
+  return hotList
     .map((item, index) => {
       const watched = isHomepageWatched(item.symbol);
       const expanded = homepageRecommendationState.hotExpanded === index;
@@ -254,7 +286,11 @@ function buildHomepageHotRows() {
 }
 
 function buildHomepageThemeCards() {
-  return HOMEPAGE_RECOMMENDATIONS.themes
+  const themes = homepageRecommendationData?.themes || [];
+  if (!themes.length) {
+    return `<div class="welcome-rec-feedback is-error">主題精選還沒準備好，等一下就會回來。</div>`;
+  }
+  return themes
     .map((theme) => {
       const expanded = homepageRecommendationState.openThemes.has(theme.id);
       return `
@@ -291,11 +327,66 @@ function buildHomepageThemeCards() {
     .join("");
 }
 
+function buildHomepageLoadingState(copy) {
+  return `<div class="welcome-rec-feedback is-loading">${escapeHtml(copy)}</div>`;
+}
+
+function updateHomepageRecommendationStatus() {
+  const statusEl = $("homepageRecommendationStatus");
+  if (!statusEl) return;
+  statusEl.classList.remove("is-live", "is-error");
+  if (homepageRecommendationState.error) statusEl.classList.add("is-error");
+  else if (homepageRecommendationState.source === "live") statusEl.classList.add("is-live");
+  statusEl.textContent = homepageRecommendationState.statusText;
+}
+
 function renderHomepageRecommendations() {
-  $("homepageFeaturedRecommendation").innerHTML = buildHomepageFeaturedCard();
-  $("homepageHotRecommendations").innerHTML = buildHomepageHotRows();
-  $("homepageThemeRecommendations").innerHTML = buildHomepageThemeCards();
+  if (homepageRecommendationState.loading && homepageRecommendationState.source !== "live") {
+    $("homepageFeaturedRecommendation").innerHTML = buildHomepageLoadingState("正在抓取今日最值得先看的股票...");
+    $("homepageHotRecommendations").innerHTML = buildHomepageLoadingState("正在同步市場熱度排行...");
+    $("homepageThemeRecommendations").innerHTML = buildHomepageLoadingState("正在整理主題精選...");
+  } else {
+    $("homepageFeaturedRecommendation").innerHTML = buildHomepageFeaturedCard();
+    $("homepageHotRecommendations").innerHTML = buildHomepageHotRows();
+    $("homepageThemeRecommendations").innerHTML = buildHomepageThemeCards();
+  }
   $("homepageWatchCount").textContent = String(getHomepageWatchlist().length);
+  updateHomepageRecommendationStatus();
+}
+
+async function loadHomepageRecommendations() {
+  homepageRecommendationState.loading = true;
+  homepageRecommendationState.error = "";
+  homepageRecommendationState.statusText = "正在同步今日熱度與技術面...";
+  renderHomepageRecommendations();
+
+  try {
+    const res = await fetch(`${API_BASE}/homepage-recommendations`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "首頁推薦暫時抓取失敗");
+    }
+
+    const data = await res.json();
+    if (!data?.featured || !Array.isArray(data.hot) || !Array.isArray(data.themes)) {
+      throw new Error("首頁推薦資料格式不正確");
+    }
+
+    homepageRecommendationData = data;
+    homepageRecommendationState.source = data.source || "live";
+    homepageRecommendationState.updatedAt = data.generatedAt || null;
+    homepageRecommendationState.statusText = data.generatedAt
+      ? `已依 ${formatRecommendationUpdatedAt(data.generatedAt)} 的市場資料更新`
+      : "已更新今日熱度與推薦";
+  } catch (error) {
+    homepageRecommendationState.error = error.message;
+    homepageRecommendationState.source = "fallback";
+    homepageRecommendationState.statusText = "即時推薦暫時不可用，先顯示預設名單";
+    console.error("[Homepage Recommendations]", error);
+  } finally {
+    homepageRecommendationState.loading = false;
+    renderHomepageRecommendations();
+  }
 }
 
 function initHomepageRecommendations() {
@@ -344,6 +435,7 @@ function initHomepageRecommendations() {
   });
 
   renderHomepageRecommendations();
+  loadHomepageRecommendations();
 }
 
 // ── 快捷搜尋 ─────────────────────────────────────

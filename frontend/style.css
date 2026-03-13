@@ -437,6 +437,39 @@ body::before {
   line-height: 1.7;
 }
 
+.welcome-rec-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.95rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  background: rgba(10, 19, 35, 0.82);
+  color: #cfe3ff;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.welcome-rec-status::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.65);
+}
+
+.welcome-rec-status.is-live::before {
+  background: #4ade80;
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.65);
+}
+
+.welcome-rec-status.is-error::before {
+  background: #f87171;
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.65);
+}
+
 .welcome-rec-watch-pill {
   display: inline-flex;
   align-items: baseline;
@@ -839,6 +872,31 @@ body::before {
   color: #cfe3ff;
   font-size: 0.9rem;
   line-height: 1.7;
+}
+
+.welcome-rec-feedback {
+  border-radius: 18px;
+  border: 1px solid rgba(96, 165, 250, 0.12);
+  background: rgba(12, 23, 39, 0.82);
+  padding: 1rem 1.05rem;
+  color: #cfe3ff;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.welcome-rec-feedback.is-loading {
+  color: #dbeafe;
+  animation: welcome-rec-pulse 1.2s ease-in-out infinite;
+}
+
+.welcome-rec-feedback.is-error {
+  border-color: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
+}
+
+@keyframes welcome-rec-pulse {
+  0%, 100% { opacity: 0.72; }
+  50% { opacity: 1; }
 }
 
 .welcome-rec-theme-grid {
