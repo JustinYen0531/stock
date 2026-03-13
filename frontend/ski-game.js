@@ -613,10 +613,14 @@
         key,
         src: `${THEME_BACKGROUND_BASE}/${key}.svg`,
         img,
+        seamlessTile: null,
         status: 'loading',
       };
       img.decoding = 'async';
-      img.onload = () => { entry.status = 'ready'; };
+      img.onload = () => {
+        entry.seamlessTile = buildSeamlessThemeTile(img);
+        entry.status = 'ready';
+      };
       img.onerror = () => { entry.status = 'error'; };
       img.src = entry.src;
       themeBackgroundCache.set(key, entry);
@@ -1773,10 +1777,12 @@
       return false;
     }
 
-    const img = entry.img;
-    const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
-    const drawW = img.naturalWidth * scale;
-    const drawH = img.naturalHeight * scale;
+    const img = entry.seamlessTile || entry.img;
+    const naturalWidth = img.width || img.naturalWidth;
+    const naturalHeight = img.height || img.naturalHeight;
+    const scale = Math.max(W / naturalWidth, H / naturalHeight);
+    const drawW = naturalWidth * scale;
+    const drawH = naturalHeight * scale;
     const offsetY = (H - drawH) / 2;
     const drift = drawW > 0 ? ((terrainScrollX * 0.14) % drawW + drawW) % drawW : 0;
     const startX = -drift;
@@ -1801,6 +1807,80 @@
     ctx.fillRect(-20, -20, W + 40, H + 40);
     ctx.restore();
     return true;
+  }
+
+  function buildSeamlessThemeTile(img) {
+    if (!img?.naturalWidth || !img?.naturalHeight) return null;
+    const tile = document.createElement('canvas');
+    tile.width = img.naturalWidth;
+    tile.height = img.naturalHeight;
+    const g = tile.getContext('2d');
+    g.drawImage(img, 0, 0);
+
+    const blendWidth = Math.max(24, Math.floor(tile.width * 0.12));
+    if (blendWidth * 2 >= tile.width) return tile;
+
+    const leftStrip = document.createElement('canvas');
+    leftStrip.width = blendWidth;
+    leftStrip.height = tile.height;
+    const leftCtx = leftStrip.getContext('2d');
+    leftCtx.drawImage(img, 0, 0, blendWidth, tile.height, 0, 0, blendWidth, tile.height);
+
+    const rightStrip = document.createElement('canvas');
+    rightStrip.width = blendWidth;
+    rightStrip.height = tile.height;
+    const rightCtx = rightStrip.getContext('2d');
+    rightCtx.drawImage(
+      img,
+      tile.width - blendWidth,
+      0,
+      blendWidth,
+      tile.height,
+      0,
+      0,
+      blendWidth,
+      tile.height,
+    );
+
+    g.save();
+    g.globalCompositeOperation = 'source-over';
+
+    const leftFade = g.createLinearGradient(0, 0, blendWidth, 0);
+    leftFade.addColorStop(0, 'rgba(255,255,255,0.92)');
+    leftFade.addColorStop(1, 'rgba(255,255,255,0)');
+    g.globalAlpha = 1;
+    g.drawImage(rightStrip, 0, 0);
+    g.globalCompositeOperation = 'destination-in';
+    g.fillStyle = leftFade;
+    g.fillRect(0, 0, blendWidth, tile.height);
+
+    g.restore();
+    g.save();
+    g.globalCompositeOperation = 'source-over';
+    g.drawImage(tile, 0, 0);
+    g.globalCompositeOperation = 'lighter';
+    g.globalAlpha = 0.45;
+    g.drawImage(rightStrip, 0, 0);
+    g.restore();
+
+    g.save();
+    g.globalCompositeOperation = 'source-over';
+    g.drawImage(leftStrip, tile.width - blendWidth, 0);
+    g.globalCompositeOperation = 'destination-in';
+    const rightFade = g.createLinearGradient(tile.width - blendWidth, 0, tile.width, 0);
+    rightFade.addColorStop(0, 'rgba(255,255,255,0)');
+    rightFade.addColorStop(1, 'rgba(255,255,255,0.92)');
+    g.fillStyle = rightFade;
+    g.fillRect(tile.width - blendWidth, 0, blendWidth, tile.height);
+    g.restore();
+
+    g.save();
+    g.globalCompositeOperation = 'lighter';
+    g.globalAlpha = 0.45;
+    g.drawImage(leftStrip, tile.width - blendWidth, 0);
+    g.restore();
+
+    return tile;
   }
 
   function getVisibleTerrainPoints(W) {
