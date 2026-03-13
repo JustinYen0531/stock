@@ -16,9 +16,9 @@
   const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
   const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
   const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
-  const CHAR_VISUAL_LIFT_FACTOR = 0.18; // 只影響角色視覺，不改 hitbox 邏輯
-  const CHAR_VISUAL_MOTION_FACTOR = 0.42;
-  const CHAR_VISUAL_LIFT_MAX = 26;
+  const CHAR_VISUAL_LIFT_FACTOR = 0.24; // 只影響角色視覺，不改 hitbox 邏輯
+  const CHAR_VISUAL_MOTION_FACTOR = 0.58;
+  const CHAR_VISUAL_LIFT_MAX = 34;
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
@@ -384,6 +384,10 @@
 
   function getThemeManifestEntry(symbol) {
     return themeManifestMap?.get(normalizeThemeSymbol(symbol)) || null;
+  }
+
+  function getStockHeroPack() {
+    return [];
   }
 
   function analyzeMarketShape(closes) {
@@ -1210,7 +1214,7 @@
     const liftFromElevation = clamp((lineY - terrainMidY) * CHAR_VISUAL_LIFT_FACTOR, -CHAR_VISUAL_LIFT_MAX, CHAR_VISUAL_LIFT_MAX);
     const liftFromMotion = clamp(lineYDelta * CHAR_VISUAL_MOTION_FACTOR, -12, 12);
     const targetOffset = clamp(liftFromElevation + liftFromMotion, -CHAR_VISUAL_LIFT_MAX, CHAR_VISUAL_LIFT_MAX);
-    charVisualOffsetY += (targetOffset - charVisualOffsetY) * 0.18;
+    charVisualOffsetY += (targetOffset - charVisualOffsetY) * 0.22;
   }
 
   /* ── 死亡 ────────────────────────────────────────── */
