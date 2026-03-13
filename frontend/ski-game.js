@@ -441,6 +441,8 @@
     if (!terrainPoints.length) return [];
     const rng = createRng(`${symbol}:${terrainPoints.length}:${stats.trend.toFixed(3)}:${stats.volatility.toFixed(3)}`);
     const totalX = terrainPoints[terrainPoints.length - 1]?.x || 1;
+    const viewportH = canvas?.height || terrainYMax || 720;
+    const mountainFloorY = Math.max(terrainYMax + 110, viewportH - 28);
     const baseProps = props.length ? props : ['signal-beam', 'chip', 'coin', 'parcel'];
     const anchors = getTerrainFeatureAnchors(Math.max(5, Math.min(8, baseProps.length + 4)));
     const count = clamp(Math.round((baseProps.length || 3) * (2.5 + stats.volatility * 22)), 12, 22);
@@ -451,29 +453,33 @@
     for (let i = 0; i < anchors.length; i++) {
       const anchor = anchors[i];
       const isHero = heroAnchorSet.has(anchor.worldX);
+      const availableDepth = Math.max(80, mountainFloorY - anchor.ridgeY - 24);
       placements.push({
         prop: baseProps[i % baseProps.length],
         worldX: anchor.worldX,
         ridgeY: anchor.ridgeY,
-        depth: isHero ? 34 + rng() * 68 : 0,
+        depth: isHero ? availableDepth * (0.14 + rng() * 0.14) : 0,
         size: isHero ? 128 + rng() * 54 : 70 + rng() * 30,
         anchor: isHero ? 'hero' : 'ridge',
         alpha: isHero ? 0.28 + rng() * 0.1 : 0.94,
       });
 
-      const flankCount = isHero ? 2 : 1;
+      const flankCount = isHero ? 3 : 2;
       for (let j = 0; j < flankCount; j++) {
         const direction = j % 2 === 0 ? -1 : 1;
-        const offset = direction * (34 + rng() * 74);
+        const offset = direction * (34 + rng() * 74) + (j > 1 ? direction * (46 + rng() * 54) : 0);
         const worldX = clamp(anchor.worldX + offset, totalX * 0.06, totalX * 0.95);
+        const flankRidgeY = getLineYAt(worldX);
+        const flankAvailableDepth = Math.max(76, mountainFloorY - flankRidgeY - 22);
+        const depthRatio = j === 0 ? 0.22 + rng() * 0.18 : 0.46 + rng() * 0.24;
         placements.push({
           prop: baseProps[(i + j + 1) % baseProps.length],
           worldX,
-          ridgeY: getLineYAt(worldX),
-          depth: 14 + rng() * 54,
-          size: 54 + rng() * 28,
-          anchor: 'interior',
-          alpha: 0.7 + rng() * 0.16,
+          ridgeY: flankRidgeY,
+          depth: flankAvailableDepth * depthRatio,
+          size: j === 0 ? 56 + rng() * 28 : 50 + rng() * 26,
+          anchor: j === 0 ? 'interior' : 'deep',
+          alpha: j === 0 ? 0.72 + rng() * 0.14 : 0.44 + rng() * 0.14,
         });
       }
     }
@@ -486,15 +492,30 @@
         : band + (rng() - 0.5) * 0.09;
       const worldX = totalX * clamp(bandBase, 0.08, 0.95);
       const ridgeY = getLineYAt(worldX);
-      const layerType = i % 5 === 0 ? 'ridge' : 'interior';
+      const availableDepth = Math.max(72, mountainFloorY - ridgeY - 24);
+      let layerType = 'interior';
+      const layerRoll = rng();
+      if (i % 6 === 0) layerType = 'ridge';
+      else if (layerRoll > 0.68) layerType = 'deep';
+      else if (layerRoll > 0.36) layerType = 'mid';
       placements.push({
         prop: baseProps[i % baseProps.length],
         worldX,
         ridgeY,
-        depth: layerType === 'ridge' ? 0 : 12 + rng() * 64,
-        size: layerType === 'ridge' ? 60 + rng() * 36 : 46 + rng() * 30,
+        depth:
+          layerType === 'ridge' ? 0
+          : layerType === 'mid' ? availableDepth * (0.34 + rng() * 0.18)
+          : layerType === 'deep' ? availableDepth * (0.56 + rng() * 0.22)
+          : availableDepth * (0.16 + rng() * 0.18),
+        size:
+          layerType === 'ridge' ? 60 + rng() * 36
+          : layerType === 'deep' ? 48 + rng() * 24
+          : 46 + rng() * 30,
         anchor: layerType,
-        alpha: layerType === 'ridge' ? 0.88 + rng() * 0.08 : 0.56 + rng() * 0.2,
+        alpha:
+          layerType === 'ridge' ? 0.88 + rng() * 0.08
+          : layerType === 'deep' ? 0.34 + rng() * 0.12
+          : 0.56 + rng() * 0.2,
       });
     }
     const heroCount = Math.min(3, Math.max(2, Math.round((baseProps.length || 2) / 2)));
@@ -509,7 +530,7 @@
         prop: baseProps[(i * 2 + 1) % baseProps.length],
         worldX,
         ridgeY,
-        depth: 42 + rng() * 78,
+        depth: Math.max(72, mountainFloorY - ridgeY - 36) * (0.22 + rng() * 0.16),
         size: 138 + rng() * 56,
         anchor: 'hero',
         alpha: 0.24 + rng() * 0.08,
@@ -2262,7 +2283,11 @@
       if (screenX < -40 || screenX > W + 40) continue;
       const y = placement.ridgeY + placement.depth;
       if (y > H + 40) continue;
-      const scale = placement.anchor === 'hero' ? 1 : 0.94;
+      const scale =
+        placement.anchor === 'hero' ? 1
+        : placement.anchor === 'deep' ? 0.9
+        : placement.anchor === 'mid' ? 0.96
+        : 0.94;
       drawTerrainPropSprite(placement.prop, screenX, y, placement.size * scale, theme, placement.alpha);
     }
     ctx.restore();
