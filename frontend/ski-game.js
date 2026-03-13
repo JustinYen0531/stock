@@ -22,7 +22,7 @@
   const CAMERA_FOLLOW_STRENGTH = 0.55; // 超出死區後，鏡頭只跟一部分
   const CAMERA_VERTICAL_DAMPING = 0.16; // 垂直鏡頭平滑度
   const CAMERA_FLOOR_MARGIN_RATIO = 0.28; // 鏡頭更早踩到底板，保留角色往下脫線的操作空間
-  const PLAYER_BOTTOM_OVERSHOOT_RATIO = 1.4; // 允許角色中心大幅超出畫面底部，避免再被底部 clamp 卡住
+  const PLAYER_MIN_HEIGHT_FROM_BOTTOM_RATIO = 0.3; // 角色最往下只能停在距離底部 30% 的位置
   const BELOW_LINE_DANGER_MULTIPLIER = 0.45; // 在線下方時放慢 danger 累積，避免看起來像被卡住
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
@@ -1248,7 +1248,7 @@
     const moveAmount = SCROLL_SENS * (isBoosting ? BOOST_MULTIPLIER : 1);
     charTargetY += e.deltaY > 0 ? moveAmount : -moveAmount;
     const topMargin = Math.max(40, canvas.height * 0.06);
-    const bottomLimit = canvas.height + getHitboxH() * PLAYER_BOTTOM_OVERSHOOT_RATIO;
+    const bottomLimit = canvas.height * (1 - PLAYER_MIN_HEIGHT_FROM_BOTTOM_RATIO);
     charTargetY = clamp(charTargetY, topMargin, bottomLimit);
   }
 
