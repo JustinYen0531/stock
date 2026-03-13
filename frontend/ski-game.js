@@ -17,6 +17,7 @@
   const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
   const CHAR_X_RATIO   = 0.3; // 基準鏡頭錨點：角色目標落在畫面左 30%
   const CHAR_Y_RATIO   = 0.7; // 角色/橘線固定在畫面較下方的位置
+  const UPHILL_CAMERA_TRIGGER_RATIO = 0.6; // 角色到畫面 60% 高度時開始垂直跟隨
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const CAMERA_STATE_FREE = 'free';
@@ -104,6 +105,38 @@
     { prop: 'esg878-leaf-shield', band: 0.24, depthRatio: 0.18, size: 178, anchor: 'hero' },
     { prop: 'esg878-sustain-column', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
   ];
+  const DIVIDEND919_HERO_PACK = [
+    { prop: 'div919-medal-vault', band: 0.24, depthRatio: 0.18, size: 180, anchor: 'hero' },
+    { prop: 'div919-income-column', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
+  ];
+  const NFLX_HERO_PACK = [
+    { prop: 'nflx-screen-portal', band: 0.22, depthRatio: 0.16, size: 184, anchor: 'hero' },
+    { prop: 'nflx-marquee-stack', band: 0.76, depthRatio: 0.46, size: 174, anchor: 'hero' },
+  ];
+  const CRM_HERO_PACK = [
+    { prop: 'crm-cloud-campus', band: 0.24, depthRatio: 0.18, size: 182, anchor: 'hero' },
+    { prop: 'crm-data-loop', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
+  ];
+  const ORCL_HERO_PACK = [
+    { prop: 'orcl-red-vault', band: 0.22, depthRatio: 0.16, size: 182, anchor: 'hero' },
+    { prop: 'orcl-database-bridge', band: 0.76, depthRatio: 0.46, size: 174, anchor: 'hero' },
+  ];
+  const QCOM_HERO_PACK = [
+    { prop: 'qcom-signal-satellite', band: 0.24, depthRatio: 0.18, size: 180, anchor: 'hero' },
+    { prop: 'qcom-mobile-wave', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
+  ];
+  const INTC_HERO_PACK = [
+    { prop: 'intc-fab-fortress', band: 0.22, depthRatio: 0.16, size: 184, anchor: 'hero' },
+    { prop: 'intc-silicon-arch', band: 0.76, depthRatio: 0.46, size: 174, anchor: 'hero' },
+  ];
+  const MU_HERO_PACK = [
+    { prop: 'mu-memory-stack', band: 0.24, depthRatio: 0.18, size: 182, anchor: 'hero' },
+    { prop: 'mu-data-lattice', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
+  ];
+  const AMAT_HERO_PACK = [
+    { prop: 'amat-toolframe-gate', band: 0.22, depthRatio: 0.16, size: 184, anchor: 'hero' },
+    { prop: 'amat-cleanroom-crane', band: 0.76, depthRatio: 0.48, size: 176, anchor: 'hero' },
+  ];
   const STOCK_HERO_PACKS = {
     META: [
       { prop: 'meta-social-window', band: 0.18, depthRatio: 0.16, size: 184, anchor: 'hero' },
@@ -168,6 +201,16 @@
     '0056': DIVIDEND56_HERO_PACK,
     '00878_TW': ESG878_HERO_PACK,
     '00878': ESG878_HERO_PACK,
+    '00919_TW': DIVIDEND919_HERO_PACK,
+    '00919': DIVIDEND919_HERO_PACK,
+    '9988_HK': BABA_HERO_PACK,
+    NFLX: NFLX_HERO_PACK,
+    CRM: CRM_HERO_PACK,
+    ORCL: ORCL_HERO_PACK,
+    QCOM: QCOM_HERO_PACK,
+    INTC: INTC_HERO_PACK,
+    MU: MU_HERO_PACK,
+    AMAT: AMAT_HERO_PACK,
   };
   const PROP_SPRITE_ALIASES = {
     gpu: 'chip-core',
@@ -276,6 +319,22 @@
     'div56-cash-ribbon': 'div56-cash-ribbon',
     'esg878-leaf-shield': 'esg878-leaf-shield',
     'esg878-sustain-column': 'esg878-sustain-column',
+    'div919-medal-vault': 'div919-medal-vault',
+    'div919-income-column': 'div919-income-column',
+    'nflx-screen-portal': 'nflx-screen-portal',
+    'nflx-marquee-stack': 'nflx-marquee-stack',
+    'crm-cloud-campus': 'crm-cloud-campus',
+    'crm-data-loop': 'crm-data-loop',
+    'orcl-red-vault': 'orcl-red-vault',
+    'orcl-database-bridge': 'orcl-database-bridge',
+    'qcom-signal-satellite': 'qcom-signal-satellite',
+    'qcom-mobile-wave': 'qcom-mobile-wave',
+    'intc-fab-fortress': 'intc-fab-fortress',
+    'intc-silicon-arch': 'intc-silicon-arch',
+    'mu-memory-stack': 'mu-memory-stack',
+    'mu-data-lattice': 'mu-data-lattice',
+    'amat-toolframe-gate': 'amat-toolframe-gate',
+    'amat-cleanroom-crane': 'amat-cleanroom-crane',
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
@@ -307,7 +366,7 @@
   }
 
   function getCharX() {
-    return getCharWorldX() - cameraX;
+    return getPlayerWorldOffsetX();
   }
 
   function getCharAnchorY() {
@@ -319,7 +378,11 @@
   }
 
   function getScreenLineYAt(worldX) {
-    return getLineYAt(worldX) + terrainCameraOffsetY;
+    return getLineYAt(worldX) + terrainCameraOffsetY + uphillCameraOffsetY;
+  }
+
+  function getTerrainRenderOffsetY() {
+    return terrainCameraOffsetY + uphillCameraOffsetY;
   }
 
   function getTerrainScreenAngleAt(worldX) {
@@ -359,6 +422,8 @@
   let charVisualOffsetY = 0; // 保留角色視覺偏移欄位，預設收斂回 0
   let terrainCameraOffsetY = 0;
   let terrainCameraTargetOffsetY = 0;
+  let uphillCameraOffsetY = 0;
+  let uphillCameraTargetOffsetY = 0;
   let cameraX = 0;
   let cameraTargetX = 0;
   let cameraLerpFactor = CAMERA_FREE_LERP;
@@ -919,7 +984,8 @@
       player: {
         x: Number(playerX.toFixed(1)),
         y: Number(charY.toFixed(1)),
-        spriteY: Number((charY + charVisualOffsetY).toFixed(1)),
+        screenY: Number((charY + uphillCameraOffsetY).toFixed(1)),
+        spriteY: Number((charY + uphillCameraOffsetY + charVisualOffsetY).toFixed(1)),
         visualOffsetY: Number(charVisualOffsetY.toFixed(1)),
         terrainAngle: terrainAngle == null ? null : Number(terrainAngle.toFixed(3)),
       },
@@ -928,6 +994,8 @@
         lineY: lineY == null ? null : Number(lineY.toFixed(1)),
         cameraOffsetY: Number(terrainCameraOffsetY.toFixed(1)),
         cameraTargetOffsetY: Number(terrainCameraTargetOffsetY.toFixed(1)),
+        uphillCameraOffsetY: Number(uphillCameraOffsetY.toFixed(1)),
+        uphillCameraTargetOffsetY: Number(uphillCameraTargetOffsetY.toFixed(1)),
         points: terrainPoints.length,
       },
       theme: activeTerrainTheme ? {
@@ -1005,6 +1073,8 @@
       charTargetY = nextAnchorY;
       terrainCameraOffsetY += anchorDelta;
       terrainCameraTargetOffsetY += anchorDelta;
+      uphillCameraOffsetY = 0;
+      uphillCameraTargetOffsetY = 0;
     }
   }
 
@@ -1095,6 +1165,8 @@
     charVisualOffsetY = 0;
     terrainCameraOffsetY = 0;
     terrainCameraTargetOffsetY = 0;
+    uphillCameraOffsetY = 0;
+    uphillCameraTargetOffsetY = 0;
 
     refreshThemeAssets();
     buildTerrain();
@@ -1111,7 +1183,10 @@
     charTargetY = charY;
     terrainCameraOffsetY = charY - getLineYAt(charX);
     terrainCameraTargetOffsetY = terrainCameraOffsetY;
+    uphillCameraOffsetY = 0;
+    uphillCameraTargetOffsetY = 0;
     updateTerrainCameraOffset();
+    updateUphillCameraOffset();
     updateCharacterVisualOffset();
 
     gameState = 'countdown';
@@ -1156,10 +1231,9 @@
     e.preventDefault();
     if (gameState !== 'playing') return;
     const moveAmount = SCROLL_SENS * (isBoosting ? BOOST_MULTIPLIER : 1);
-    terrainCameraTargetOffsetY += e.deltaY > 0 ? -moveAmount : moveAmount;
-    const terrainRange = Math.max(terrainYMax - terrainYMin, canvas.height * 0.9);
-    const maxOffset = Math.max(320, terrainRange * 1.1);
-    terrainCameraTargetOffsetY = clamp(terrainCameraTargetOffsetY, -maxOffset, maxOffset);
+    charTargetY += e.deltaY > 0 ? moveAmount : -moveAmount;
+    const margin = Math.max(40, canvas.height * 0.06);
+    charTargetY = clamp(charTargetY, margin, canvas.height - margin);
   }
 
   function onMouseDown(e) {
@@ -1256,6 +1330,7 @@
         if (countdownVal <= 0) gameState = 'playing';
       }
       updateTerrainCameraOffset();
+      updateUphillCameraOffset();
       updateCharacterVisualOffset();
       updateParticles();
       if (Math.random() < 0.3) {
@@ -1266,6 +1341,7 @@
 
     if (gameState === 'complete') {
       updateTerrainCameraOffset();
+      updateUphillCameraOffset();
       updateCharacterVisualOffset();
       updateParticles();
       if (Math.random() < 0.45) {
@@ -1276,6 +1352,7 @@
 
     if (gameState === 'dead') {
       updateTerrainCameraOffset();
+      updateUphillCameraOffset();
       updateCharacterVisualOffset();
       updateParticles();
       return;
@@ -1332,7 +1409,15 @@
 
     terrainScrollX += currentSpeed;
     const rawLineY = getLineYAt(terrainScrollX + charX);
+    const followTriggerY = canvas.height * UPHILL_CAMERA_TRIGGER_RATIO;
+    if (charY < followTriggerY) {
+      const followAmount = followTriggerY - charY;
+      uphillCameraTargetOffsetY = clamp(followAmount, 0, canvas.height * 0.28);
+    } else {
+      uphillCameraTargetOffsetY = 0;
+    }
     updateTerrainCameraOffset();
+    updateUphillCameraOffset();
     updateCharacterVisualOffset();
     const lineY = rawLineY + terrainCameraOffsetY;
 
@@ -1446,7 +1531,7 @@
   }
 
   function getCloseAtScreenY(screenY) {
-    const clampedY = Math.max(terrainYMin, Math.min(terrainYMax, screenY - terrainCameraOffsetY));
+    const clampedY = Math.max(terrainYMin, Math.min(terrainYMax, screenY - getTerrainRenderOffsetY()));
     const ratio = (terrainYMax - clampedY) / Math.max(1, terrainYMax - terrainYMin);
     return priceMin + ratio * (priceMax - priceMin);
   }
@@ -1454,11 +1539,15 @@
   function getScreenYForClose(close) {
     if (priceMax === priceMin) return (terrainYMin + terrainYMax) / 2;
     const ratio = (close - priceMin) / (priceMax - priceMin);
-    return terrainYMax - ratio * (terrainYMax - terrainYMin) + terrainCameraOffsetY;
+    return terrainYMax - ratio * (terrainYMax - terrainYMin) + getTerrainRenderOffsetY();
   }
 
   function updateTerrainCameraOffset() {
     terrainCameraOffsetY += (terrainCameraTargetOffsetY - terrainCameraOffsetY) * 0.18;
+  }
+
+  function updateUphillCameraOffset() {
+    uphillCameraOffsetY += (uphillCameraTargetOffsetY - uphillCameraOffsetY) * 0.16;
   }
 
   function updateCharacterVisualOffset() {
@@ -1696,7 +1785,7 @@
       if (!started && screenX < -80) continue;
       if (screenX > W + 80 && started) break;
       started = true;
-      points.push({ x: screenX, y: terrainPoints[i].y + terrainCameraOffsetY });
+      points.push({ x: screenX, y: terrainPoints[i].y + getTerrainRenderOffsetY() });
     }
     return points;
   }
@@ -2678,7 +2767,7 @@
     for (let i = 0; i < N; i += step) {
       const screenX = terrainPoints[i].x - terrainScrollX;
       if (screenX < 0 || screenX > W) continue;
-      const sy = terrainPoints[i].y + terrainCameraOffsetY;
+      const sy = terrainPoints[i].y + getTerrainRenderOffsetY();
       ctx.beginPath();
       ctx.arc(screenX, sy, 3, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(100,180,255,0.6)';
@@ -2692,7 +2781,7 @@
   }
 
   function drawCurrentPriceGuide(W) {
-    const guideY = Math.max(terrainYMin, Math.min(terrainYMax, charY));
+    const guideY = Math.max(terrainYMin, Math.min(canvas.height, charY + uphillCameraOffsetY));
     const currentClose = getCloseAtScreenY(guideY);
     if (currentClose == null) return;
 
@@ -2763,7 +2852,7 @@
   ══════════════════════════════════════════════════ */
   function drawCharacter(W) {
     const cx      = getCharX();
-    const cy      = charY;
+    const cy      = charY + uphillCameraOffsetY;
     const visualCy = cy + charVisualOffsetY;
     const worldX  = terrainScrollX + cx;
     const lineY   = getScreenLineYAt(worldX);
