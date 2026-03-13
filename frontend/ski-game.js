@@ -15,10 +15,19 @@
   const BOOST_MULTIPLIER = 2.8; // 按住中鍵時的滾輪增幅
   const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
   const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
-  const CHAR_X_RATIO   = 0.22; // 角色在畫面的 X 比例（左側固定位置）
+  const CHAR_X_RATIO   = 0.3; // 基準鏡頭錨點：角色目標落在畫面左 30%
   const CHAR_Y_RATIO   = 0.7; // 角色/橘線固定在畫面較下方的位置
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
+  const CAMERA_STATE_FREE = 'free';
+  const CAMERA_STATE_LOCKED = 'locked';
+  const CAMERA_STATE_DYNAMIC = 'dynamic';
+  const CAMERA_FREE_LERP = 0.05;
+  const CAMERA_LOCKED_LERP = 0.24;
+  const CAMERA_DYNAMIC_LERP = 0.16;
+  const CAMERA_FREE_ZOOM = 0.94;
+  const CAMERA_LOCKED_ZOOM = 1.05;
+  const CAMERA_DYNAMIC_ZOOM = 1.12;
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
   const PROP_SPRITE_BASE = '/static/assets/ski-props';
   const PERIOD_TUNING = {
@@ -79,6 +88,22 @@
     { prop: 'tencent-super-app-tower', band: 0.22, depthRatio: 0.16, size: 182, anchor: 'hero' },
     { prop: 'tencent-orbit-plaza', band: 0.76, depthRatio: 0.46, size: 176, anchor: 'hero' },
   ];
+  const QUANTA_HERO_PACK = [
+    { prop: 'quanta-server-vault', band: 0.24, depthRatio: 0.18, size: 182, anchor: 'hero' },
+    { prop: 'quanta-cloud-frame', band: 0.76, depthRatio: 0.46, size: 174, anchor: 'hero' },
+  ];
+  const TW50_HERO_PACK = [
+    { prop: 'tw50-benchmark-arch', band: 0.24, depthRatio: 0.18, size: 182, anchor: 'hero' },
+    { prop: 'tw50-coin-spine', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
+  ];
+  const DIVIDEND56_HERO_PACK = [
+    { prop: 'div56-coupon-vault', band: 0.24, depthRatio: 0.18, size: 180, anchor: 'hero' },
+    { prop: 'div56-cash-ribbon', band: 0.76, depthRatio: 0.46, size: 170, anchor: 'hero' },
+  ];
+  const ESG878_HERO_PACK = [
+    { prop: 'esg878-leaf-shield', band: 0.24, depthRatio: 0.18, size: 178, anchor: 'hero' },
+    { prop: 'esg878-sustain-column', band: 0.76, depthRatio: 0.46, size: 172, anchor: 'hero' },
+  ];
   const STOCK_HERO_PACKS = {
     META: [
       { prop: 'meta-social-window', band: 0.18, depthRatio: 0.16, size: 184, anchor: 'hero' },
@@ -135,6 +160,14 @@
     '2317': HONHAI_HERO_PACK,
     PDD: PDD_HERO_PACK,
     '700_HK': TENCENT_HERO_PACK,
+    '2382_TW': QUANTA_HERO_PACK,
+    '2382': QUANTA_HERO_PACK,
+    '0050_TW': TW50_HERO_PACK,
+    '0050': TW50_HERO_PACK,
+    '0056_TW': DIVIDEND56_HERO_PACK,
+    '0056': DIVIDEND56_HERO_PACK,
+    '00878_TW': ESG878_HERO_PACK,
+    '00878': ESG878_HERO_PACK,
   };
   const PROP_SPRITE_ALIASES = {
     gpu: 'chip-core',
@@ -235,6 +268,14 @@
     'pdd-parcel-kite': 'pdd-parcel-kite',
     'tencent-super-app-tower': 'tencent-super-app-tower',
     'tencent-orbit-plaza': 'tencent-orbit-plaza',
+    'quanta-server-vault': 'quanta-server-vault',
+    'quanta-cloud-frame': 'quanta-cloud-frame',
+    'tw50-benchmark-arch': 'tw50-benchmark-arch',
+    'tw50-coin-spine': 'tw50-coin-spine',
+    'div56-coupon-vault': 'div56-coupon-vault',
+    'div56-cash-ribbon': 'div56-cash-ribbon',
+    'esg878-leaf-shield': 'esg878-leaf-shield',
+    'esg878-sustain-column': 'esg878-sustain-column',
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
@@ -261,8 +302,12 @@
     return Math.round(HITBOX_H + t * (100 - HITBOX_H)); // 40~100px
   }
 
-  function getCharX() {
+  function getPlayerWorldOffsetX() {
     return canvas ? canvas.width * CHAR_X_RATIO : 0;
+  }
+
+  function getCharX() {
+    return getCharWorldX() - cameraX;
   }
 
   function getCharAnchorY() {
@@ -270,7 +315,7 @@
   }
 
   function getCharWorldX() {
-    return terrainScrollX + getCharX();
+    return terrainScrollX + getPlayerWorldOffsetX();
   }
 
   function getScreenLineYAt(worldX) {
@@ -286,6 +331,12 @@
       -0.6,
       0.6,
     );
+  }
+
+  function getMaxCameraX() {
+    if (!canvas || !terrainPoints.length) return 0;
+    const lastX = terrainPoints[terrainPoints.length - 1]?.x || 0;
+    return Math.max(0, lastX - canvas.width * 0.14);
   }
 
   // 地形
@@ -308,6 +359,14 @@
   let charVisualOffsetY = 0; // 保留角色視覺偏移欄位，預設收斂回 0
   let terrainCameraOffsetY = 0;
   let terrainCameraTargetOffsetY = 0;
+  let cameraX = 0;
+  let cameraTargetX = 0;
+  let cameraLerpFactor = CAMERA_FREE_LERP;
+  let cameraZoom = CAMERA_FREE_ZOOM;
+  let cameraTargetZoom = CAMERA_FREE_ZOOM;
+  let cameraState = CAMERA_STATE_FREE;
+  let cameraFocusStrength = 0;
+  let cameraFocusWorldX = null;
   let isBoosting = false; // 滑鼠中鍵按住時提升上下移動幅度
   let spaceBoostDown = false;
 
@@ -425,6 +484,11 @@
 
   function lerp(a, b, t) {
     return a + (b - a) * t;
+  }
+
+  function easeInOutCubic(t) {
+    const x = clamp(t, 0, 1);
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
   }
 
   function hashString(input) {
