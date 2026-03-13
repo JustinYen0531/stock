@@ -16,10 +16,11 @@
   const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
   const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
   const CHAR_X_RATIO   = 0.3; // 基準鏡頭錨點：角色目標落在畫面左 30%
-  const CHAR_Y_RATIO   = 0.7; // 角色/橘線固定在畫面較下方的位置
-  const UPHILL_CAMERA_TRIGGER_RATIO = 0.6; // 角色到畫面 60% 高度時開始垂直跟隨
-  const DOWNHILL_CAMERA_TRIGGER_RATIO = 0.78; // 角色接近底部時，鏡頭也開始有限度往下帶
-  const CAMERA_FOLLOW_BLEND = 0.55; // 鏡頭只跟一部分，保留角色本身的上下移動
+  const CHAR_Y_RATIO   = 0.7; // 角色初始落點仍在較下方
+  const CAMERA_DEAD_ZONE_TOP_RATIO = 0.6; // 死區上緣
+  const CAMERA_DEAD_ZONE_BOTTOM_RATIO = 0.78; // 死區下緣
+  const CAMERA_FOLLOW_STRENGTH = 0.55; // 超出死區後，鏡頭只跟一部分
+  const CAMERA_VERTICAL_DAMPING = 0.16; // 垂直鏡頭平滑度
   const CAMERA_FLOOR_MARGIN_RATIO = 0.12; // 鏡頭往下最多跟到這個比例，之後就踩到地板
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
@@ -381,11 +382,11 @@
   }
 
   function getScreenLineYAt(worldX) {
-    return getLineYAt(worldX) + terrainCameraOffsetY + uphillCameraOffsetY;
+    return getLineYAt(worldX) + terrainCameraOffsetY + verticalCameraOffsetY;
   }
 
   function getTerrainRenderOffsetY() {
-    return terrainCameraOffsetY + uphillCameraOffsetY;
+    return terrainCameraOffsetY + verticalCameraOffsetY;
   }
 
   function getTerrainScreenAngleAt(worldX) {
@@ -425,9 +426,9 @@
   let charVisualOffsetY = 0; // 保留角色視覺偏移欄位，預設收斂回 0
   let terrainCameraOffsetY = 0;
   let terrainCameraTargetOffsetY = 0;
-  let uphillCameraOffsetY = 0;
-  let uphillCameraTargetOffsetY = 0;
-  let isUphillCameraFollowing = false;
+  let verticalCameraOffsetY = 0;
+  let verticalCameraTargetOffsetY = 0;
+  let isVerticalCameraFollowing = false;
   let terrainCameraFloorOffsetY = -Infinity;
   let cameraX = 0;
   let cameraTargetX = 0;
@@ -989,8 +990,8 @@
       player: {
         x: Number(playerX.toFixed(1)),
         y: Number(charY.toFixed(1)),
-        screenY: Number((charY + uphillCameraOffsetY).toFixed(1)),
-        spriteY: Number((charY + uphillCameraOffsetY + charVisualOffsetY).toFixed(1)),
+        screenY: Number((charY + verticalCameraOffsetY).toFixed(1)),
+        spriteY: Number((charY + verticalCameraOffsetY + charVisualOffsetY).toFixed(1)),
         visualOffsetY: Number(charVisualOffsetY.toFixed(1)),
         terrainAngle: terrainAngle == null ? null : Number(terrainAngle.toFixed(3)),
       },
@@ -999,9 +1000,9 @@
         lineY: lineY == null ? null : Number(lineY.toFixed(1)),
         cameraOffsetY: Number(terrainCameraOffsetY.toFixed(1)),
         cameraTargetOffsetY: Number(terrainCameraTargetOffsetY.toFixed(1)),
-        uphillCameraOffsetY: Number(uphillCameraOffsetY.toFixed(1)),
-        uphillCameraTargetOffsetY: Number(uphillCameraTargetOffsetY.toFixed(1)),
-        uphillCameraFollowing: isUphillCameraFollowing,
+        verticalCameraOffsetY: Number(verticalCameraOffsetY.toFixed(1)),
+        verticalCameraTargetOffsetY: Number(verticalCameraTargetOffsetY.toFixed(1)),
+        verticalCameraFollowing: isVerticalCameraFollowing,
         cameraFloorOffsetY: Number(terrainCameraFloorOffsetY.toFixed(1)),
         points: terrainPoints.length,
       },
@@ -1080,9 +1081,9 @@
       charTargetY = nextAnchorY;
       terrainCameraOffsetY += anchorDelta;
       terrainCameraTargetOffsetY += anchorDelta;
-      uphillCameraOffsetY = 0;
-      uphillCameraTargetOffsetY = 0;
-      isUphillCameraFollowing = false;
+      verticalCameraOffsetY = 0;
+      verticalCameraTargetOffsetY = 0;
+      isVerticalCameraFollowing = false;
     }
   }
 
@@ -1174,9 +1175,9 @@
     charVisualOffsetY = 0;
     terrainCameraOffsetY = 0;
     terrainCameraTargetOffsetY = 0;
-    uphillCameraOffsetY = 0;
-    uphillCameraTargetOffsetY = 0;
-    isUphillCameraFollowing = false;
+    verticalCameraOffsetY = 0;
+    verticalCameraTargetOffsetY = 0;
+    isVerticalCameraFollowing = false;
     terrainCameraFloorOffsetY = -Infinity;
 
     refreshThemeAssets();
@@ -1194,11 +1195,11 @@
     charTargetY = charY;
     terrainCameraOffsetY = charY - getLineYAt(charX);
     terrainCameraTargetOffsetY = terrainCameraOffsetY;
-    uphillCameraOffsetY = 0;
-    uphillCameraTargetOffsetY = 0;
-    isUphillCameraFollowing = false;
+    verticalCameraOffsetY = 0;
+    verticalCameraTargetOffsetY = 0;
+    isVerticalCameraFollowing = false;
     updateTerrainCameraOffset();
-    updateUphillCameraOffset();
+    updateVerticalCameraOffset();
     updateCharacterVisualOffset();
 
     gameState = 'countdown';
@@ -1342,7 +1343,7 @@
         if (countdownVal <= 0) gameState = 'playing';
       }
       updateTerrainCameraOffset();
-      updateUphillCameraOffset();
+      updateVerticalCameraOffset();
       updateCharacterVisualOffset();
       updateParticles();
       if (Math.random() < 0.3) {
@@ -1353,7 +1354,7 @@
 
     if (gameState === 'complete') {
       updateTerrainCameraOffset();
-      updateUphillCameraOffset();
+      updateVerticalCameraOffset();
       updateCharacterVisualOffset();
       updateParticles();
       if (Math.random() < 0.45) {
@@ -1364,7 +1365,7 @@
 
     if (gameState === 'dead') {
       updateTerrainCameraOffset();
-      updateUphillCameraOffset();
+      updateVerticalCameraOffset();
       updateCharacterVisualOffset();
       updateParticles();
       return;
@@ -1421,24 +1422,24 @@
 
     terrainScrollX += currentSpeed;
     const rawLineY = getLineYAt(terrainScrollX + charX);
-    const topTriggerY = canvas.height * UPHILL_CAMERA_TRIGGER_RATIO;
-    const bottomTriggerY = canvas.height * DOWNHILL_CAMERA_TRIGGER_RATIO;
+    const topTriggerY = canvas.height * CAMERA_DEAD_ZONE_TOP_RATIO;
+    const bottomTriggerY = canvas.height * CAMERA_DEAD_ZONE_BOTTOM_RATIO;
     let desiredCameraOffsetY = 0;
     if (charY < topTriggerY) {
-      desiredCameraOffsetY = (topTriggerY - charY) * CAMERA_FOLLOW_BLEND;
+      desiredCameraOffsetY = (topTriggerY - charY) * CAMERA_FOLLOW_STRENGTH;
     } else if (charY > bottomTriggerY) {
-      desiredCameraOffsetY = -(charY - bottomTriggerY) * CAMERA_FOLLOW_BLEND;
+      desiredCameraOffsetY = -(charY - bottomTriggerY) * CAMERA_FOLLOW_STRENGTH;
     }
     const minFollowOffsetY = terrainCameraFloorOffsetY;
-    uphillCameraTargetOffsetY = Math.max(minFollowOffsetY, desiredCameraOffsetY);
-    uphillCameraTargetOffsetY = clamp(
-      uphillCameraTargetOffsetY,
+    verticalCameraTargetOffsetY = Math.max(minFollowOffsetY, desiredCameraOffsetY);
+    verticalCameraTargetOffsetY = clamp(
+      verticalCameraTargetOffsetY,
       minFollowOffsetY,
       canvas.height * 0.28,
     );
-    isUphillCameraFollowing = Math.abs(uphillCameraTargetOffsetY) > 0.01;
+    isVerticalCameraFollowing = Math.abs(verticalCameraTargetOffsetY) > 0.01;
     updateTerrainCameraOffset();
-    updateUphillCameraOffset();
+    updateVerticalCameraOffset();
     updateCharacterVisualOffset();
     const lineY = rawLineY + terrainCameraOffsetY;
 
@@ -1567,8 +1568,8 @@
     terrainCameraOffsetY += (terrainCameraTargetOffsetY - terrainCameraOffsetY) * 0.18;
   }
 
-  function updateUphillCameraOffset() {
-    uphillCameraOffsetY += (uphillCameraTargetOffsetY - uphillCameraOffsetY) * 0.16;
+  function updateVerticalCameraOffset() {
+    verticalCameraOffsetY += (verticalCameraTargetOffsetY - verticalCameraOffsetY) * CAMERA_VERTICAL_DAMPING;
   }
 
   function updateCharacterVisualOffset() {
@@ -2802,7 +2803,7 @@
   }
 
   function drawCurrentPriceGuide(W) {
-    const guideY = Math.max(terrainYMin, Math.min(canvas.height, charY + uphillCameraOffsetY));
+    const guideY = Math.max(terrainYMin, Math.min(canvas.height, charY + verticalCameraOffsetY));
     const currentClose = getCloseAtScreenY(guideY);
     if (currentClose == null) return;
 
@@ -2873,7 +2874,7 @@
   ══════════════════════════════════════════════════ */
   function drawCharacter(W) {
     const cx      = getCharX();
-    const cy      = charY + uphillCameraOffsetY;
+    const cy      = charY + verticalCameraOffsetY;
     const visualCy = cy + charVisualOffsetY;
     const worldX  = terrainScrollX + cx;
     const lineY   = getScreenLineYAt(worldX);
@@ -3576,3 +3577,4 @@
   }
 
 })();
+
