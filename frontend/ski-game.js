@@ -2547,17 +2547,18 @@
   }
 
   function drawResultTable(W, topY) {
-    const cardW = 520;
-    const rowH = 34;
-    const headerH = 42;
+    const tableScale = 1.2;
+    const cardW = 520 * tableScale;
+    const rowH = 34 * tableScale;
+    const headerH = 60 * tableScale;
     const cardH = headerH + rowH * 4;
     const x = W / 2 - cardW / 2;
     const y = topY;
-    const labelX = x + 24;
-    const valueX = x + cardW - 24;
+    const labelX = x + 24 * tableScale;
+    const valueX = x + cardW - 24 * tableScale;
     const rows = [
-      ['基準追蹤 (Low / Mid / High)', `${getBandPct('perfect').toFixed(0)}% / ${getBandPct('light').toFixed(0)}% / ${getBandPct('mild').toFixed(0)}%`],
-      ['偏離值 (Elevated / Extreme)', `${getBandPct('medium').toFixed(0)}% / ${getBandPct('heavy').toFixed(0)}%`],
+      ['基準追蹤', `${getBandPct('perfect').toFixed(0)}% / ${getBandPct('light').toFixed(0)}% / ${getBandPct('mild').toFixed(0)}%`],
+      ['偏離值', `${getBandPct('medium').toFixed(0)}% / ${getBandPct('heavy').toFixed(0)}%`],
       ['結算工期 / 目標期限 / 效率溢價', `${getElapsedSeconds().toFixed(2)}s / ${getQualifyingSeconds().toFixed(2)}s / +${earlyFinishBonus}`],
       ['連續獲利週 / 峰值紀律', `+${streakBonusScore} / ${getBestPerfectPct().toFixed(0)}%`],
     ];
@@ -2565,27 +2566,27 @@
     ctx.save();
     ctx.fillStyle = 'rgba(9, 18, 34, 0.88)';
     ctx.strokeStyle = 'rgba(96, 165, 250, 0.24)';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * tableScale;
     ctx.beginPath();
-    ctx.roundRect(x, y, cardW, cardH, 18);
+    ctx.roundRect(x, y, cardW, cardH, 18 * tableScale);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = 'rgba(30, 41, 59, 0.85)';
     ctx.beginPath();
-    ctx.roundRect(x + 2, y + 2, cardW - 4, headerH, 16);
+    ctx.roundRect(x + 2 * tableScale, y + 2 * tableScale, cardW - 4 * tableScale, headerH, 16 * tableScale);
     ctx.fill();
 
-    ctx.font = '700 16px Inter, sans-serif';
+    ctx.font = '700 19px Inter, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#f8fafc';
-    ctx.fillText('交易報告', labelX, y + headerH / 2 + 1);
+    ctx.fillText('交易報告', labelX, y + headerH * 0.34);
 
     ctx.font = '600 12px Inter, sans-serif';
-    ctx.textAlign = 'right';
+    ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(191, 219, 254, 0.9)';
-    ctx.fillText('收益模型：基準追蹤 10/12/14/16/18/20，低偏離 7，策略偏離 5，高偏離 3，極端偏離 1', valueX, y + headerH / 2 + 1);
+    ctx.fillText('收益模型：追蹤 10/12/14/16/18/20，低偏離 7，偏離 5，高偏離 3，極端 1', labelX, y + headerH * 0.72);
 
     rows.forEach((row, index) => {
       const rowY = y + headerH + index * rowH;
@@ -2593,17 +2594,17 @@
         ctx.strokeStyle = 'rgba(148, 163, 184, 0.14)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(x + 16, rowY);
-        ctx.lineTo(x + cardW - 16, rowY);
+        ctx.moveTo(x + 16 * tableScale, rowY);
+        ctx.lineTo(x + cardW - 16 * tableScale, rowY);
         ctx.stroke();
       }
       ctx.textAlign = 'left';
-      ctx.font = '600 14px Inter, sans-serif';
+      ctx.font = '600 17px Inter, sans-serif';
       ctx.fillStyle = 'rgba(191, 219, 254, 0.95)';
       ctx.fillText(row[0], labelX, rowY + rowH / 2);
 
       ctx.textAlign = 'right';
-      ctx.font = '700 15px JetBrains Mono, monospace';
+      ctx.font = '700 18px JetBrains Mono, monospace';
       ctx.fillStyle = '#e2e8f0';
       ctx.fillText(row[1], valueX, rowY + rowH / 2);
     });
