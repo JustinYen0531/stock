@@ -21,7 +21,9 @@
   const CAMERA_DEAD_ZONE_BOTTOM_RATIO = 0.78; // 死區下緣
   const CAMERA_FOLLOW_STRENGTH = 0.55; // 超出死區後，鏡頭只跟一部分
   const CAMERA_VERTICAL_DAMPING = 0.16; // 垂直鏡頭平滑度
-  const CAMERA_FLOOR_MARGIN_RATIO = 0.2; // 鏡頭更早踩到底板，保留角色往下脫線的操作空間
+  const CAMERA_FLOOR_MARGIN_RATIO = 0.28; // 鏡頭更早踩到底板，保留角色往下脫線的操作空間
+  const PLAYER_BOTTOM_MARGIN_RATIO = 0.015; // 放寬角色能往下探的螢幕空間
+  const BELOW_LINE_DANGER_MULTIPLIER = 0.45; // 在線下方時放慢 danger 累積，避免看起來像被卡住
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
   const CAMERA_STATE_FREE = 'free';
@@ -1245,8 +1247,9 @@
     if (gameState !== 'playing') return;
     const moveAmount = SCROLL_SENS * (isBoosting ? BOOST_MULTIPLIER : 1);
     charTargetY += e.deltaY > 0 ? moveAmount : -moveAmount;
-    const margin = Math.max(40, canvas.height * 0.06);
-    charTargetY = clamp(charTargetY, margin, canvas.height - margin);
+    const topMargin = Math.max(40, canvas.height * 0.06);
+    const bottomMargin = Math.max(12, canvas.height * PLAYER_BOTTOM_MARGIN_RATIO);
+    charTargetY = clamp(charTargetY, topMargin, canvas.height - bottomMargin);
   }
 
   function onMouseDown(e) {
@@ -1460,7 +1463,8 @@
       // 這樣單次大失誤仍可挽回，但反覆的小失誤會慢慢把容錯吃光。
       const dist = aboveLine ? (lineY - hitBottom) : (hitTop - lineY);
       const distRatio = dist / Math.max(1, hh);
-      const increaseRate = 0.12 + Math.pow(Math.max(0, distRatio), 0.85) * 0.55;
+      const baseIncreaseRate = 0.12 + Math.pow(Math.max(0, distRatio), 0.85) * 0.55;
+      const increaseRate = baseIncreaseRate * (belowLine ? BELOW_LINE_DANGER_MULTIPLIER : 1);
       
       dangerFrames += increaseRate;
       isDangerAbove = aboveLine;
