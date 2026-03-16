@@ -710,10 +710,10 @@
   }
 
   function getDifficultyLabel(score) {
-    if (score >= 81) return 'hell';
-    if (score >= 66) return 'expert';
-    if (score >= 46) return 'hard';
-    if (score >= 26) return 'normal';
+    if (score >= 95) return 'hell';
+    if (score >= 80) return 'expert';
+    if (score >= 60) return 'hard';
+    if (score >= 40) return 'normal';
     return 'easy';
   }
 
@@ -1097,7 +1097,7 @@
   }
 
   function getPeriodConfig() {
-    const base = PERIOD_TUNING[stockData?.period] || PERIOD_TUNING["6mo"];
+    return getPeriodConfigFor(stockData?.period, practiceMode, practiceOpts);
     if (!practiceMode) return base;
     // steepness 1~100 → 地形高度 0.08~1.0 倍，斜率加速 0.05~1.0 倍
     const t = (practiceOpts.steepness - 1) / 99; // 0~1
@@ -1135,6 +1135,28 @@
     close: closeGame,
     getDifficulty() {
       return activeMapDifficulty;
+    },
+    previewDifficulty(data, options = {}) {
+      if (!data?.closes?.length) return null;
+      const isPractice = !!options.practice;
+      const normalized = normalizePracticeOptions(options);
+      const config = getPeriodConfigFor(data.period, isPractice, normalized);
+      const allCloses = data.closes;
+      let closes = allCloses;
+      if (isPractice && (normalized.startPct > 0 || normalized.endPct < 100)) {
+        const startIndex = Math.floor(allCloses.length * normalized.startPct / 100);
+        const endIndex = Math.min(allCloses.length, Math.ceil(allCloses.length * normalized.endPct / 100));
+        closes = allCloses.slice(startIndex, endIndex);
+      }
+      return calculateSkiDifficulty({
+        closes,
+        period: data.period,
+        practiceMode: isPractice,
+        practiceOpts: normalized,
+        width: Math.max(1100, window.innerWidth || 1100),
+        height: Math.max(640, window.innerHeight || 640),
+        config,
+      });
     },
   };
 
@@ -3771,5 +3793,32 @@
     ctx.restore();
   }
 
-})();
+  function normalizePracticeOptions(options = {}) {
+    const normalized = {
+      steepness:  Math.max(1, Math.min(100, options.steepness ?? 40)),
+      hitboxSize: Math.max(1, Math.min(100, options.hitboxSize ?? 60)),
+      startPct:   Math.max(0, Math.min(99, options.startPct ?? 0)),
+      endPct:     Math.max(1, Math.min(100, options.endPct ?? 100)),
+    };
+    if (normalized.startPct >= normalized.endPct) {
+      normalized.endPct = Math.min(100, normalized.startPct + 1);
+    }
+    return normalized;
+  }
 
+  function getPeriodConfigFor(period, isPractice, options = {}) {
+    const base = PERIOD_TUNING[period] || PERIOD_TUNING["6mo"];
+    if (!isPractice) return base;
+    const normalized = normalizePracticeOptions(options);
+    const t = (normalized.steepness - 1) / 99;
+    const heightMult = 0.08 + t * 0.92;
+    const slopeMult  = 0.05 + t * 0.95;
+    return {
+      mapWidth:        base.mapWidth,
+      heightScale:     base.heightScale * heightMult,
+      slopeAccel:      base.slopeAccel  * slopeMult,
+      dangerTolerance: Math.round(base.dangerTolerance * PRACTICE_DANGER_TOL_MULT),
+    };
+  }
+
+})();

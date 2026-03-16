@@ -598,6 +598,7 @@ function renderDashboard(data) {
     closes: ohlcv.map(d => d.Close),
     period: $("periodSelect").value,
   };
+  renderSkiDifficultyPreview();
 }
 
 // ── 投資建議渲染 ──────────────────────────────────
@@ -1107,6 +1108,55 @@ function updateSkiLaunchButton() {
   text.textContent = state.isNormal ? '開始！' : '練習模式';
 }
 
+function getSkiDifficultyDisplayLabel(label) {
+  const labels = {
+    easy: '簡單',
+    normal: '普通',
+    hard: '困難',
+    expert: '專家',
+    hell: '地獄',
+  };
+  return labels[label] || '未定';
+}
+
+function renderSkiDifficultyPreview() {
+  const scoreEl = document.getElementById('skiDifficultyScore');
+  const levelEl = document.getElementById('skiDifficultyLevel');
+  const metaEl = document.getElementById('skiDifficultyMeta');
+  const panelEl = document.getElementById('skiDifficultyPanel');
+  if (!scoreEl || !levelEl || !metaEl || !panelEl) return;
+
+  if (!window.currentGameData || !window.SkiGame?.previewDifficulty) {
+    scoreEl.textContent = '--';
+    levelEl.textContent = '尚未載入';
+    metaEl.textContent = '先查詢股票後，這裡會顯示目前滑雪地圖的難度係數。';
+    panelEl.dataset.level = 'unknown';
+    return;
+  }
+
+  const state = getSkiDifficultyState();
+  const preview = window.SkiGame.previewDifficulty(window.currentGameData, state.isNormal ? {} : {
+    practice: true,
+    steepness: state.steepness,
+    hitboxSize: state.hitboxSize,
+    startPct: state.startPct,
+    endPct: state.endPct,
+  });
+
+  if (!preview) {
+    scoreEl.textContent = '--';
+    levelEl.textContent = '無法計算';
+    metaEl.textContent = '目前資料不足，暫時無法建立滑雪難度。';
+    panelEl.dataset.level = 'unknown';
+    return;
+  }
+
+  scoreEl.textContent = String(preview.score);
+  levelEl.textContent = getSkiDifficultyDisplayLabel(preview.label);
+  metaEl.textContent = `${window.currentGameData.symbol} ・ ${state.isNormal ? '標準模式' : `${state.startPct}% - ${state.endPct}% 練習區間`} ・ 下坡風險 ${Math.round((preview.factors.downhillRisk || 0) * 100)}%`;
+  panelEl.dataset.level = preview.label;
+}
+
 function getSkiMedalState() {
   try {
     return JSON.parse(localStorage.getItem('skiMedals') || '{}');
@@ -1138,6 +1188,7 @@ function setPracticeRange(start, end) {
   if (s) s.value = start;
   if (e) e.value = end;
   updateSkiLaunchButton();
+  renderSkiDifficultyPreview();
 }
 
 // 滑桿初始化：讓 CSS --val 變數追蹤滑桿進度（填色效果）
@@ -1148,12 +1199,19 @@ function setPracticeRange(start, end) {
     el.addEventListener('input', () => {
       el.style.setProperty('--val', el.value);
       updateSkiLaunchButton();
+      renderSkiDifficultyPreview();
     });
   }
   function bindRange(el) {
     if (!el) return;
-    el.addEventListener('input', updateSkiLaunchButton);
-    el.addEventListener('change', updateSkiLaunchButton);
+    el.addEventListener('input', () => {
+      updateSkiLaunchButton();
+      renderSkiDifficultyPreview();
+    });
+    el.addEventListener('change', () => {
+      updateSkiLaunchButton();
+      renderSkiDifficultyPreview();
+    });
   }
   // DOM 可能還沒 ready，等一下
   document.addEventListener('DOMContentLoaded', () => {
@@ -1195,6 +1253,7 @@ function setNormalPreset() {
   if (rs) rs.value = 0;
   if (re) re.value = 100;
   updateSkiLaunchButton();
+  renderSkiDifficultyPreview();
 }
 
 // ── 分類股票選股器 ─────────────────────────────────
