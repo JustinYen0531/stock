@@ -263,13 +263,13 @@ function buildHomepageFeaturedCards() {
         const watched = isHomepageWatched(item.symbol);
         const summary = item.summary || item.blurb || item.detail || "";
         const exchange = item.exchange || (String(item.symbol).includes(".TW") ? "TWSE" : String(item.symbol).includes(".HK") ? "HKEX" : "NASDAQ");
-        const chips = item.chips || [{ label: index === 0 ? "主推薦" : `推薦 ${index + 1}`, tone: index === 0 ? "primary" : "success" }];
+        const chips = item.chips || [{ label: "主推薦", tone: "primary" }];
         return `
           <article class="welcome-rec-featured-card${index === 0 ? " is-primary-card" : " is-secondary-card"} homepage-stock-surface" ${getHomepageBackgroundStyle(item.symbol)}>
             <div class="welcome-rec-featured-top">
               <div class="welcome-rec-symbol-group">
                 <div class="welcome-rec-chip-row">
-                  ${chips.map((chip) => `<span class="welcome-rec-chip${chip.tone === "warning" ? " is-warning" : chip.tone === "success" ? " is-success" : ""}">${escapeHtml(chip.label)}</span>`).join("")}
+                  ${chips.map((chip) => `<span class="welcome-rec-chip">${escapeHtml(chip.label)}</span>`).join("")}
                 </div>
                 <div class="welcome-rec-symbol-row">
                   <span class="welcome-rec-symbol">${escapeHtml(item.symbol)}</span>
