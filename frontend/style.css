@@ -321,17 +321,6 @@ body::before {
   z-index: 1;
 }
 
-.welcome-rec-quick-panel {
-  position: relative;
-  z-index: 1;
-  margin-bottom: 1.5rem;
-  padding: 1rem 1.1rem 1.1rem;
-  border: 1px solid rgba(96, 165, 250, 0.16);
-  border-radius: 22px;
-  background: rgba(9, 18, 33, 0.74);
-  text-align: left;
-}
-
 .welcome-rec-header {
   display: flex;
   align-items: flex-start;
@@ -436,6 +425,7 @@ body::before {
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.95rem;
+  text-align: left;
 }
 
 .welcome-rec-quick-title {
@@ -445,9 +435,17 @@ body::before {
   color: #f8fafc;
 }
 
+.welcome-rec-quick-band {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 1320px);
+  margin: 0 auto 3rem;
+  padding: 0 0.2rem;
+}
+
 .welcome-rec-quick-list {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
@@ -494,7 +492,7 @@ body::before {
 
 .welcome-rec-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr);
+  grid-template-columns: 1fr;
   gap: 1.5rem;
   align-items: stretch;
 }
@@ -504,6 +502,30 @@ body::before {
   border: 1px solid rgba(96, 165, 250, 0.18);
   border-radius: 24px;
   background: rgba(10, 19, 35, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.welcome-rec-featured {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.welcome-rec-featured-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.welcome-rec-featured-card {
+  padding: 1.35rem;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  border-radius: 24px;
+  background-color: rgba(10, 19, 35, 0.76);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
@@ -517,14 +539,7 @@ body::before {
   background-repeat: no-repeat;
 }
 
-.welcome-rec-featured {
-  padding: 1.5rem;
-  text-align: left;
-  position: relative;
-  overflow: hidden;
-}
-
-.welcome-rec-featured::after {
+.welcome-rec-featured-card::after {
   content: '';
   position: absolute;
   inset: auto -10% -25% auto;
@@ -713,6 +728,7 @@ body::before {
 
 .welcome-rec-side {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
 }
 
@@ -979,8 +995,10 @@ body::before {
 }
 
 @media (max-width: 1100px) {
-  .welcome-rec-layout {
-    grid-template-columns: 1fr;
+  .welcome-rec-featured-grid,
+  .welcome-rec-quick-list,
+  .welcome-rec-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -988,10 +1006,6 @@ body::before {
   .welcome-recommendations {
     padding: 1.1rem;
     border-radius: 22px;
-  }
-
-  .welcome-rec-quick-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .welcome-rec-header {
@@ -1003,8 +1017,14 @@ body::before {
     font-size: 1.7rem;
   }
 
+  .welcome-rec-featured-grid,
+  .welcome-rec-quick-list,
   .welcome-rec-theme-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .welcome-rec-side {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1025,6 +1045,7 @@ body::before {
     flex-direction: column;
   }
 
+  .welcome-rec-featured-grid,
   .welcome-rec-theme-grid {
     grid-template-columns: 1fr;
   }
