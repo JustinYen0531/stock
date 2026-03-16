@@ -1249,12 +1249,14 @@
     charTargetY += e.deltaY > 0 ? moveAmount : -moveAmount;
     const topMargin = Math.max(40, canvas.height * 0.06);
     const bottomLimit = canvas.height * (1 - PLAYER_MIN_HEIGHT_FROM_BOTTOM_RATIO);
-    if (charTargetY > bottomLimit) {
+    if (charTargetY < topMargin) {
+      const overflow = topMargin - charTargetY;
+      charTargetY = topMargin;
+      terrainCameraTargetOffsetY += overflow;
+    } else if (charTargetY > bottomLimit) {
       const overflow = charTargetY - bottomLimit;
       charTargetY = bottomLimit;
       terrainCameraTargetOffsetY -= overflow;
-    } else {
-      charTargetY = Math.max(charTargetY, topMargin);
     }
   }
 
