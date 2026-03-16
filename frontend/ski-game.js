@@ -1252,7 +1252,6 @@
     if (charTargetY > bottomLimit) {
       const overflow = charTargetY - bottomLimit;
       charTargetY = bottomLimit;
-      terrainCameraOffsetY -= overflow;
       terrainCameraTargetOffsetY -= overflow;
     } else {
       charTargetY = Math.max(charTargetY, topMargin);
