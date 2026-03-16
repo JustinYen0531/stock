@@ -350,6 +350,7 @@
   let stockData = null;   // { symbol, closes, dates, period }
   let activeThemeBackground = null;
   let activeTerrainTheme = null;
+  let activeMapDifficulty = null;
   let practiceMode = false; // 練習模式開關
   let practiceOpts = { steepness: 40, hitboxSize: 60, startPct: 0, endPct: 100 }; // 從滑框傳入
   const themeBackgroundCache = new Map();
@@ -696,6 +697,159 @@
     };
   }
 
+  function average(values) {
+    if (!Array.isArray(values) || values.length === 0) return 0;
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }
+
+  function getTopAverage(values, ratio = 0.1) {
+    if (!Array.isArray(values) || values.length === 0) return 0;
+    const count = Math.max(1, Math.ceil(values.length * ratio));
+    const sorted = [...values].sort((a, b) => b - a);
+    return average(sorted.slice(0, count));
+  }
+
+  function getDifficultyLabel(score) {
+    if (score >= 81) return 'hell';
+    if (score >= 66) return 'expert';
+    if (score >= 46) return 'hard';
+    if (score >= 26) return 'normal';
+    return 'easy';
+  }
+
+  function calculateSkiDifficulty({ closes, period, practiceMode, practiceOpts, width, height, config }) {
+    if (!Array.isArray(closes) || closes.length < 3 || !width || !height || !config) {
+      return {
+        score: 0,
+        label: 'easy',
+        factors: {
+          terrainVariation: 0,
+          timePressure: 0,
+          downhillRisk: 0,
+          uphillDrag: 0,
+          directionChangeDensity: 0,
+          recoveryScarcity: 0,
+          burstPenalty: 0,
+        },
+      };
+    }
+
+    const minP = Math.min(...closes);
+    const maxP = Math.max(...closes);
+    const range = maxP - minP || 1;
+    const totalW = width * config.mapWidth;
+    const segW = totalW / Math.max(1, closes.length - 1);
+    const amplitude = Math.min(height * 0.42, height * 0.35 * config.heightScale);
+    const ySpan = amplitude * 2;
+    const screenY = closes.map((close) => ySpan - ((close - minP) / range) * ySpan);
+    const slopes = [];
+    const slopeChanges = [];
+    let signChanges = 0;
+    let safeSegments = 0;
+    let extremeDownhillCount = 0;
+
+    for (let i = 1; i < screenY.length; i++) {
+      const slope = (screenY[i] - screenY[i - 1]) / Math.max(1, segW);
+      slopes.push(slope);
+      if (Math.abs(slope) <= 0.035) safeSegments++;
+      if (slope >= 0.14) extremeDownhillCount++;
+      if (i >= 2) {
+        slopeChanges.push(Math.abs(slope - slopes[i - 2]));
+        if (Math.sign(slope) !== 0 && Math.sign(slopes[i - 2]) !== 0 && Math.sign(slope) !== Math.sign(slopes[i - 2])) {
+          signChanges++;
+        }
+      }
+    }
+
+    const downhillSlopes = slopes.filter((slope) => slope > 0);
+    const uphillSlopes = slopes.filter((slope) => slope < 0).map((slope) => Math.abs(slope));
+    const marketShape = analyzeMarketShape(closes);
+    const practiceSteepness = practiceMode ? clamp((practiceOpts?.steepness ?? 40) / 100, 0.2, 1) : 1;
+    const segmentCount = Math.max(1, slopes.length);
+    const downhillRatio = downhillSlopes.length / segmentCount;
+    const uphillRatio = uphillSlopes.length / segmentCount;
+    const avgDownhill = average(downhillSlopes);
+    const maxDownhill = downhillSlopes.length ? Math.max(...downhillSlopes) : 0;
+    const avgUphill = average(uphillSlopes);
+
+    const terrainVariation = clamp(average(slopeChanges) / 0.075, 0, 1);
+    const timePressure = clamp(
+      ((config.mapWidth - 3.2) / 7.3) * 0.55
+      + clamp(marketShape.volatility / 0.04, 0, 1) * 0.3
+      + (1 - TIME_LIMIT_RATIO) * 0.75 * 0.15,
+      0,
+      1,
+    );
+    const downhillRisk = clamp(
+      clamp(avgDownhill / 0.085, 0, 1) * 0.5
+      + clamp(maxDownhill / 0.18, 0, 1) * 0.3
+      + clamp(downhillRatio / 0.68, 0, 1) * 0.12
+      + clamp(getTopAverage(downhillSlopes, 0.1) / 0.13, 0, 1) * 0.08,
+      0,
+      1,
+    );
+    const uphillDrag = clamp(
+      clamp(avgUphill / 0.09, 0, 1) * 0.72
+      + clamp(uphillRatio / 0.7, 0, 1) * 0.28,
+      0,
+      1,
+    );
+    const directionChangeDensity = clamp(signChanges / Math.max(1, slopes.length - 1) / 0.42, 0, 1);
+    const recoveryScarcity = 1 - clamp((safeSegments / segmentCount) / 0.42, 0, 1);
+    const burstPenalty = clamp(
+      clamp(extremeDownhillCount / Math.max(1, Math.round(segmentCount * 0.12)), 0, 1) * 0.8
+      + clamp(getTopAverage(downhillSlopes, 0.05) / 0.18, 0, 1) * 0.2,
+      0,
+      1,
+    );
+
+    const score = Math.round(100 * clamp(
+      0.15 * terrainVariation
+      + 0.15 * timePressure
+      + 0.35 * downhillRisk
+      + 0.08 * uphillDrag
+      + 0.12 * directionChangeDensity
+      + 0.08 * recoveryScarcity
+      + 0.07 * burstPenalty,
+      0,
+      1,
+    ) * practiceSteepness);
+
+    return {
+      score,
+      label: getDifficultyLabel(score),
+      factors: {
+        terrainVariation: +terrainVariation.toFixed(3),
+        timePressure: +timePressure.toFixed(3),
+        downhillRisk: +downhillRisk.toFixed(3),
+        uphillDrag: +uphillDrag.toFixed(3),
+        directionChangeDensity: +directionChangeDensity.toFixed(3),
+        recoveryScarcity: +recoveryScarcity.toFixed(3),
+        burstPenalty: +burstPenalty.toFixed(3),
+      },
+      metrics: {
+        segmentCount,
+        avgDownhill: +avgDownhill.toFixed(4),
+        maxDownhill: +maxDownhill.toFixed(4),
+        avgUphill: +avgUphill.toFixed(4),
+        downhillRatio: +downhillRatio.toFixed(3),
+        uphillRatio: +uphillRatio.toFixed(3),
+        signChanges,
+        safeSegmentRatio: +(safeSegments / segmentCount).toFixed(3),
+        extremeDownhillCount,
+      },
+      profile: {
+        symbol: stockData?.symbol || null,
+        period: period || stockData?.period || null,
+        practiceMode: !!practiceMode,
+        range: practiceMode ? {
+          startPct: practiceOpts?.startPct ?? 0,
+          endPct: practiceOpts?.endPct ?? 100,
+        } : null,
+      },
+    };
+  }
+
   function getThemeVariant(stats) {
     if (stats.trend <= -0.12) return 'crash';
     if (stats.trend <= -0.035) return 'bearish';
@@ -978,7 +1132,10 @@
       openModal();
       initGame();
     },
-    close: closeGame
+    close: closeGame,
+    getDifficulty() {
+      return activeMapDifficulty;
+    },
   };
 
   window.render_game_to_text = function renderGameToText() {
@@ -1015,6 +1172,7 @@
         variant: activeTerrainTheme.variant,
         props: activeTerrainTheme.props.slice(0, 4),
       } : null,
+      difficulty: activeMapDifficulty,
       hud: {
         score: getFinalScore(),
         elapsedSeconds: Number(getElapsedSeconds().toFixed(2)),
@@ -1053,6 +1211,7 @@
   function closeGame() {
     cancelAnimationFrame(animId);
     gameState = 'idle';
+    activeMapDifficulty = null;
     particles = [];
     unbindInput();
     window.removeEventListener('resize', resizeCanvas);
@@ -1109,6 +1268,7 @@
 
     activeCloses = closes;
     activeDates = dates;
+    activeMapDifficulty = null;
 
     const N = closes.length;
     if (N < 2) return;
@@ -1138,6 +1298,16 @@
       y: yMax - ((c - minP) / range) * (yMax - yMin),
     }));
     activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
+    activeMapDifficulty = calculateSkiDifficulty({
+      closes,
+      period: stockData?.period,
+      practiceMode,
+      practiceOpts,
+      width: W,
+      height: H,
+      config,
+    });
+    if (stockData) stockData.activeMapDifficulty = activeMapDifficulty;
   }
 
   /* ── 初始化遊戲 ──────────────────────────────────── */
