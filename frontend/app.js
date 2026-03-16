@@ -265,7 +265,7 @@ function buildHomepageFeaturedCards() {
         const exchange = item.exchange || (String(item.symbol).includes(".TW") ? "TWSE" : String(item.symbol).includes(".HK") ? "HKEX" : "NASDAQ");
         const chips = item.chips || [{ label: index === 0 ? "主推薦" : `推薦 ${index + 1}`, tone: index === 0 ? "primary" : "success" }];
         return `
-          <article class="welcome-rec-featured-card homepage-stock-surface" ${getHomepageBackgroundStyle(item.symbol)}>
+          <article class="welcome-rec-featured-card${index === 0 ? " is-primary-card" : " is-secondary-card"} homepage-stock-surface" ${getHomepageBackgroundStyle(item.symbol)}>
             <div class="welcome-rec-featured-top">
               <div class="welcome-rec-symbol-group">
                 <div class="welcome-rec-chip-row">
