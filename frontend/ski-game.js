@@ -18,7 +18,7 @@
   const CHAR_X_RATIO   = 0.3; // 基準鏡頭錨點：角色目標落在畫面左 30%
   const CHAR_Y_RATIO   = 0.7; // 角色初始落點仍在較下方
   const CAMERA_DEAD_ZONE_TOP_RATIO = 0.6; // 死區上緣
-  const CAMERA_DEAD_ZONE_BOTTOM_RATIO = 0.94; // 死區下緣下移到接近底部，避免往下時太早被鏡頭拉住
+  const CAMERA_DEAD_ZONE_BOTTOM_RATIO = 0.78; // 死區下緣
   const CAMERA_FOLLOW_STRENGTH = 0.55; // 超出死區後，鏡頭只跟一部分
   const CAMERA_VERTICAL_DAMPING = 0.16; // 垂直鏡頭平滑度
   const CAMERA_FLOOR_MARGIN_RATIO = 0.28; // 鏡頭更早踩到底板，保留角色往下脫線的操作空間
@@ -1426,12 +1426,9 @@
     terrainScrollX += currentSpeed;
     const rawLineY = getLineYAt(terrainScrollX + charX);
     const topTriggerY = canvas.height * CAMERA_DEAD_ZONE_TOP_RATIO;
-    const bottomTriggerY = canvas.height * CAMERA_DEAD_ZONE_BOTTOM_RATIO;
     let desiredCameraOffsetY = 0;
     if (charY < topTriggerY) {
       desiredCameraOffsetY = (topTriggerY - charY) * CAMERA_FOLLOW_STRENGTH;
-    } else if (charY > bottomTriggerY) {
-      desiredCameraOffsetY = -(charY - bottomTriggerY) * CAMERA_FOLLOW_STRENGTH;
     }
     const minFollowOffsetY = terrainCameraFloorOffsetY;
     verticalCameraTargetOffsetY = Math.max(minFollowOffsetY, desiredCameraOffsetY);
