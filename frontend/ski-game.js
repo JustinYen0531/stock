@@ -22,7 +22,7 @@
   const CAMERA_FOLLOW_STRENGTH = 0.55; // 超出死區後，鏡頭只跟一部分
   const CAMERA_VERTICAL_DAMPING = 0.16; // 垂直鏡頭平滑度
   const CAMERA_FLOOR_MARGIN_RATIO = 0.28; // 鏡頭更早踩到底板，保留角色往下脫線的操作空間
-  const PLAYER_BOTTOM_SCREEN_MARGIN = 6; // 只保留極小底部邊界，讓角色 hitbox 幾乎能貼到底
+  const PLAYER_MIN_HEIGHT_FROM_BOTTOM_RATIO = 0.3; // 角色碰到底部 30% 停線後，後續下拉改由鏡頭接手
   const BELOW_LINE_DANGER_MULTIPLIER = 0.45; // 在線下方時放慢 danger 累積，避免看起來像被卡住
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
@@ -1248,8 +1248,15 @@
     const moveAmount = SCROLL_SENS * (isBoosting ? BOOST_MULTIPLIER : 1);
     charTargetY += e.deltaY > 0 ? moveAmount : -moveAmount;
     const topMargin = Math.max(40, canvas.height * 0.06);
-    const bottomLimit = canvas.height - getHitboxH() / 2 - PLAYER_BOTTOM_SCREEN_MARGIN;
-    charTargetY = clamp(charTargetY, topMargin, bottomLimit);
+    const bottomLimit = canvas.height * (1 - PLAYER_MIN_HEIGHT_FROM_BOTTOM_RATIO);
+    if (charTargetY > bottomLimit) {
+      const overflow = charTargetY - bottomLimit;
+      charTargetY = bottomLimit;
+      terrainCameraOffsetY -= overflow;
+      terrainCameraTargetOffsetY -= overflow;
+    } else {
+      charTargetY = Math.max(charTargetY, topMargin);
+    }
   }
 
   function onMouseDown(e) {
