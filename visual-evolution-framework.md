@@ -70,3 +70,19 @@
 *   [ ] 遠景與材質是否指向同一個「產業幻想」？
 *   [ ] 低細節模式是否依然保持可玩性與視覺清晰度？
 *   [ ] 高細節資產是否有正確的 `fillPattern` 實作方式？
+
+---
+
+## 🚀 實作狀態 (Implementation Status)
+
+### 當前進度
+- [x] **視覺控制核心**：在 `ski-game.js` 中實作 `highDetailMode` 切換邏輯。
+- [x] **UI 控制層**：完成右下角「書籤式」Detail Toggle 切換按鈕。
+- [x] **自動資產獲取**：支援從 `/assets/themes/{symbol}/` 加載特製 PNG 資源。
+- [x] **範例實作 (Intel/INTC)**：
+    *   完成 **Digital Vista** (遠景視差背景)。
+    *   完成 **Tech Grid Texture** (山體覆蓋材質疊加)。
+
+### 未來計畫
+- [ ] 增加更多高權重 Ticker (如 AAPL, TSLA) 的專屬資產。
+- [ ] 實作 Layer 3 的特製地標 (Landmark) 渲染優化。

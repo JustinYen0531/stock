@@ -352,6 +352,10 @@
   let activeTerrainTheme = null;
   let practiceMode = false; // 練習模式開關
   let practiceOpts = { steepness: 40, hitboxSize: 60, startPct: 0, endPct: 100 }; // 從滑框傳入
+
+  // ── 視覺細節狀態 ──
+  let highDetailMode = false;
+  let themeAssets = { vista: null, texture: null };
   const themeBackgroundCache = new Map();
   const terrainPatternCache = new Map();
   const terrainDetailCache = new Map();
@@ -977,7 +981,18 @@
       openModal();
       initGame();
     },
-    close: closeGame
+    close: closeGame,
+    toggleDetail() {
+      highDetailMode = !highDetailMode;
+      const btn = document.querySelector('.ski-detail-toggle');
+      if (btn) {
+        btn.classList.toggle('active', highDetailMode);
+        btn.querySelector('.detail-label').textContent = highDetailMode ? '高細節模式：開啟' : '低細節模式';
+      }
+      if (highDetailMode && stockData) {
+         loadThemeAssets(stockData.symbol);
+      }
+    }
   };
 
   window.render_game_to_text = function renderGameToText() {
@@ -1065,9 +1080,26 @@
     modal.innerHTML = `
       <canvas id="skiCanvas"></canvas>
       <button class="ski-close-btn" onclick="SkiGame.close()">✕ 離開</button>
+      <button class="ski-detail-toggle ${highDetailMode ? 'active' : ''}" onclick="SkiGame.toggleDetail()">
+        <span class="detail-label">${highDetailMode ? '高細節模式：開啟' : '低細節模式'}</span>
+      </button>
       <div class="ski-hint">🖱️ 滾輪上下移動 &nbsp;·&nbsp; 同時按住 ←→ 或 A+D 往右衝刺 &nbsp;·&nbsp; 別被拖到最左邊</div>
     `;
     return modal;
+  }
+
+  // ── 主題資產加載 ──
+  function loadThemeAssets(symbol) {
+    const themeDir = symbol === 'INTC' ? 'intel' : null; 
+    if (!themeDir) return;
+
+    const vistaImg = new Image();
+    vistaImg.src = `/static/assets/themes/${themeDir}/vista.png`;
+    vistaImg.onload = () => themeAssets.vista = vistaImg;
+
+    const textureImg = new Image();
+    textureImg.src = `/static/assets/themes/${themeDir}/texture.png`;
+    textureImg.onload = () => themeAssets.texture = textureImg;
   }
 
   function resizeCanvas() {
@@ -1687,7 +1719,15 @@
     bg.addColorStop(0.5, '#0d1829');
     bg.addColorStop(1,   '#111f35');
     ctx.fillStyle = bg;
-    ctx.fillRect(-20, -20, W + 40, H + 40); // 這裡稍微畫大一點防止震動露底
+    ctx.fillRect(-20, -20, W + 40, H + 40); 
+
+    // ── 高細節：遠景 Vista (Parallax) ──
+    if (highDetailMode && themeAssets.vista) {
+      const scrollRatio = 0.15; // 慢速位移
+      const scrollX = (terrainScrollX * scrollRatio) % W;
+      ctx.drawImage(themeAssets.vista, -scrollX, 0, W, H);
+      ctx.drawImage(themeAssets.vista, W - scrollX, 0, W, H);
+    }
 
     const usedThemeBackground = drawThemeBackground(W, H);
 
@@ -2279,7 +2319,19 @@
     sheen.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.globalCompositeOperation = 'screen';
     ctx.fillStyle = sheen;
-    ctx.fillRect(-20, terrainYMin - 30, W + 40, H - terrainYMin + 80);
+    // ── 高細節：材質疊加模式 (Overlay Texture) ──
+    if (highDetailMode && themeAssets.texture) {
+      ctx.save();
+      ctx.clip(fillPath);
+      const hdPattern = ctx.createPattern(themeAssets.texture, 'repeat');
+      const xOffset = -terrainScrollX % 512; 
+      ctx.translate(xOffset, 0); 
+      
+      ctx.globalCompositeOperation = 'overlay'; 
+      ctx.fillStyle = hdPattern;
+      ctx.fill();
+      ctx.restore();
+    }
 
     ctx.restore();
   }
