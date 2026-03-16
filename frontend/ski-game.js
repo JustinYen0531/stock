@@ -456,6 +456,7 @@
   let timeLimitSeconds = 0;
   let countdownVal = 3;
   let countdownTimer = 0;
+  let countdownRemainingMs = 3000;
   let perfectStreakDistance = 0;
   let bestPerfectStreakDistance = 0;
   let streakBonusScore = 0;
@@ -1154,6 +1155,7 @@
     playerSpeedMultiplier = 1;
     countdownVal   = 3;
     countdownTimer = 0;
+    countdownRemainingMs = 3000;
     leftKeyDown    = false;
     rightKeyDown   = false;
     leftMouseDown  = false;
@@ -1335,7 +1337,7 @@
     if (!lastFrameTs) lastFrameTs = now;
     const deltaMs = Math.min(50, Math.max(0, now - lastFrameTs));
     lastFrameTs = now;
-    update();
+    update(deltaMs);
     if (gameState === 'playing') {
       elapsedMs += deltaMs;
     }
@@ -1345,9 +1347,12 @@
     }
   }
 
-  function update() {
+  function update(deltaMs = 1000 / 60) {
     if (gameState === 'countdown') {
-      countdownTimer++;
+      countdownTimer += deltaMs;
+      countdownRemainingMs = Math.max(0, countdownRemainingMs - deltaMs);
+      countdownVal = Math.ceil(countdownRemainingMs / 1000);
+      countdownTimer = countdownRemainingMs > 0 ? 0 : 60;
       if (countdownTimer >= 60) { // 每秒
         countdownTimer = 0;
         countdownVal--;
