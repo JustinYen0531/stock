@@ -401,3 +401,86 @@
   color: #fef3c7;
   box-shadow: 0 0 0 1px rgba(251,191,36,0.3), 0 6px 20px rgba(180,83,9,0.4);
 }
+
+/* ── 儀表板視覺細節切換 (Lobby Detail Toggle) ─────────────────── */
+.ski-detail-toggle-lobby {
+  background: rgba(30, 45, 69, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 6px;
+  color: rgba(148, 163, 184, 0.85);
+  font-size: 0.7rem;
+  font-family: inherit;
+  font-weight: 600;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ski-detail-toggle-lobby:hover {
+  border-color: rgba(94, 163, 250, 0.6);
+  color: #fff;
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.ski-detail-toggle-lobby.active {
+  background: linear-gradient(135deg, #6b21a8 0%, #4c1d95 100%);
+  color: #fff;
+  border-color: rgba(168, 85, 247, 0.6);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+}
+
+.ski-detail-toggle-lobby.active::before {
+  content: '✨';
+  font-size: 10px;
+}
+
+/* ── 視覺細節切換按鈕 (Detail Toggle) ─────────────────── */
+.ski-detail-toggle {
+  display: none; /* 隱藏遊戲內按鈕，因為我們改用大廳控制 */
+  position: absolute;
+  bottom: 0px;
+  right: 180px; /* 避開右側的提示文字 */
+  background: rgba(30, 45, 69, 0.85);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-bottom: none; /* 書籤感：底部貼齊不留邊 */
+  border-radius: 8px 8px 0 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 10000;
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+}
+
+.ski-detail-toggle:hover {
+  transform: translateY(-2px);
+  color: #fff;
+  background: rgba(59, 130, 246, 0.4);
+  border-color: rgba(94, 163, 250, 0.6);
+}
+
+.ski-detail-toggle.active {
+  background: linear-gradient(180deg, #6b21a8 0%, #4c1d95 100%); /* 深紫色 */
+  color: #f5f3ff;
+  border-color: rgba(168, 85, 247, 0.6);
+  box-shadow: 0 -4px 20px rgba(168, 85, 247, 0.3);
+}
+
+.ski-detail-toggle.active::before {
+  content: '✨';
+  font-size: 14px;
+}
+
+.ski-detail-toggle .detail-label {
+  letter-spacing: 0.05em;
+}
