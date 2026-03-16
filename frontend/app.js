@@ -217,6 +217,33 @@ function getHomepageBackgroundStyle(symbol) {
   return `style="--stock-bg: url('${getHomepageBackgroundFile(symbol)}')"`;
 }
 
+function buildHomepageQuickEntries() {
+  const picks = [];
+  const seen = new Set();
+
+  const pushPick = (symbol, name) => {
+    if (!symbol || seen.has(symbol)) return;
+    seen.add(symbol);
+    picks.push({ symbol, name: name || symbol });
+  };
+
+  pushPick(homepageRecommendationData?.featured?.symbol, homepageRecommendationData?.featured?.name);
+  (homepageRecommendationData?.hot || []).forEach((item) => pushPick(item.symbol, item.name));
+  (homepageRecommendationData?.themes || []).forEach((theme) => {
+    (theme.picks || []).forEach((pick) => pushPick(pick.symbol, pick.name));
+  });
+
+  return picks
+    .slice(0, 8)
+    .map((item) => `
+      <button class="welcome-rec-quick-button homepage-stock-surface" ${getHomepageBackgroundStyle(item.symbol)} data-action="analyze" data-symbol="${escapeHtml(item.symbol)}">
+        <span class="welcome-rec-quick-symbol">${escapeHtml(item.symbol)}</span>
+        <span class="welcome-rec-quick-name">${escapeHtml(item.name)}</span>
+      </button>
+    `)
+    .join("");
+}
+
 function buildHomepageFeaturedCard() {
   const featured = homepageRecommendationData?.featured;
   if (!featured) {
@@ -359,6 +386,7 @@ function renderHomepageRecommendations() {
     $("homepageHotRecommendations").innerHTML = buildHomepageHotRows();
     $("homepageThemeRecommendations").innerHTML = buildHomepageThemeCards();
   }
+  $("homepageQuickEntries").innerHTML = buildHomepageQuickEntries();
   $("homepageWatchCount").textContent = String(getHomepageWatchlist().length);
   updateHomepageRecommendationStatus();
 }
