@@ -368,11 +368,36 @@ function scoreRecommendationSnapshots(snapshots) {
   });
 }
 
-function buildFeaturedRecommendation(snapshot) {
+async function buildFeaturedGeminiReason(snapshot) {
+  const prompt = `你是一位股票首頁編輯，請用繁體中文簡短說明為什麼今天首頁推薦 ${snapshot.symbol}${snapshot.name ? `（${snapshot.name}）` : ""}。
+
+請根據以下資料產生 2 句內容：
+- 單日漲跌幅：${formatPct(snapshot.changePercent)}
+- 5 日動能：${formatPct(snapshot.momentum5d)}
+- 量能脈衝：${snapshot.volumePulse.toFixed(1)}x
+- 技術面訊號：${snapshot.adviceSignal}
+- 技術面理由：${snapshot.adviceReasons.join("、")}
+
+限制：
+1. 只輸出 2 句完整句子，不要條列。
+2. 第一 句講今天為什麼值得先看這檔。
+3. 第二 句講點進分析頁可以先關注什麼。
+4. 不要加免責聲明。`;
+
+  try {
+    return await generateGeminiText(prompt, { temperature: 0.5, maxOutputTokens: 220 });
+  } catch (error) {
+    console.error("[Homepage Gemini Reason]", error.message);
+    return `${snapshot.name} 今天同時具備 ${buildHeatReason(snapshot)} 與技術面「${snapshot.adviceSignal}」訊號，所以值得優先查看。點進分析頁後，可以先對照 RSI、MACD 與均線是否持續支持這個方向。`;
+  }
+}
+
+async function buildFeaturedRecommendation(snapshot) {
   const primaryThemeId = snapshot.themeIds[0];
   const primaryTheme = HOMEPAGE_THEME_DEFS.find((theme) => theme.id === primaryThemeId);
   const changeLabel = snapshot.changePercent >= 0 ? `走勢轉強 ${formatPct(snapshot.changePercent)}` : `震盪擴大 ${formatPct(snapshot.changePercent)}`;
   const pulseLabel = snapshot.volumePulse >= 1.1 ? `量能 ${snapshot.volumePulse.toFixed(1)}x` : "量能穩定";
+  const aiReason = await buildFeaturedGeminiReason(snapshot);
 
   return {
     symbol: snapshot.symbol,
@@ -390,6 +415,7 @@ function buildFeaturedRecommendation(snapshot) {
       ...snapshot.adviceReasons,
       `熱度分數 ${snapshot.heatScore.toFixed(1)}`,
     ]),
+    aiReason,
     series: snapshot.series,
   };
 }
@@ -457,7 +483,7 @@ async function buildHomepageRecommendations() {
 
   const featuredPool = [...snapshots].sort((a, b) => b.featuredScore - a.featuredScore);
   const hotPool = [...snapshots].sort((a, b) => b.heatScore - a.heatScore);
-  const featured = buildFeaturedRecommendation(featuredPool[0]);
+  const featured = await buildFeaturedRecommendation(featuredPool[0]);
   const hot = buildHotRecommendations(hotPool);
   const themes = buildThemeRecommendations(hotPool);
 
@@ -501,6 +527,31 @@ async function getHomepageRecommendations(forceFresh = false) {
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
+async function generateGeminiText(prompt, { temperature = 0.7, maxOutputTokens = 8192 } = {}) {
+  if (!GEMINI_API_KEY) throw new Error("Gemini API key 未設定");
+
+  const response = await fetch(GEMINI_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature,
+        maxOutputTokens,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("[Gemini Error]", errText);
+    throw new Error("Gemini API 錯誤");
+  }
+
+  const data = await response.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "（無回應）";
+}
+
 app.post("/chat", async (req, res) => {
   const { message, context } = req.body;
   if (!message) return res.status(400).json({ error: "缺少 message" });
@@ -529,32 +580,7 @@ app.post("/chat", async (req, res) => {
   }
 
   try {
-    const response = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: systemContext + "\n\n用戶問題：" + message }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 8192,
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("[Gemini Error]", errText);
-      return res.status(500).json({ error: "Gemini API 錯誤" });
-    }
-
-    const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "（無回應）";
+    const text = await generateGeminiText(systemContext + "\n\n用戶問題：" + message);
     res.json({ reply: text });
 
   } catch (e) {

@@ -244,52 +244,40 @@ function buildHomepageQuickEntries() {
     .join("");
 }
 
-function buildHomepageFeaturedCards() {
+function buildHomepageFeaturedCard() {
   const featured = homepageRecommendationData?.featured;
-  const hotList = homepageRecommendationData?.hot || [];
   if (!featured) {
     return `<div class="welcome-rec-feedback is-error">目前暫時沒有可用的主推薦，請稍後再試。</div>`;
   }
-
-  const cards = [featured];
-  for (const item of hotList) {
-    if (cards.length >= 3) break;
-    if (item.symbol !== featured.symbol) cards.push(item);
-  }
+  const watched = isHomepageWatched(featured.symbol);
 
   return `
-    <div class="welcome-rec-featured-grid">
-      ${cards.map((item, index) => {
-        const watched = isHomepageWatched(item.symbol);
-        const summary = item.summary || item.blurb || item.detail || "";
-        const exchange = item.exchange || (String(item.symbol).includes(".TW") ? "TWSE" : String(item.symbol).includes(".HK") ? "HKEX" : "NASDAQ");
-        const chips = item.chips || [{ label: "主推薦", tone: "primary" }];
-        return `
-          <article class="welcome-rec-featured-card${index === 0 ? " is-primary-card" : " is-secondary-card"} homepage-stock-surface" ${getHomepageBackgroundStyle(item.symbol)}>
-            <div class="welcome-rec-featured-top">
-              <div class="welcome-rec-symbol-group">
-                <div class="welcome-rec-chip-row">
-                  ${chips.map((chip) => `<span class="welcome-rec-chip">${escapeHtml(chip.label)}</span>`).join("")}
-                </div>
-                <div class="welcome-rec-symbol-row">
-                  <span class="welcome-rec-symbol">${escapeHtml(item.symbol)}</span>
-                  <span class="welcome-rec-exchange">${escapeHtml(exchange)}</span>
-                </div>
-                <div class="welcome-rec-name">${escapeHtml(item.name)}</div>
-              </div>
-            </div>
-            <div class="welcome-rec-headline">${escapeHtml(summary)}</div>
-            <div class="welcome-rec-reason-row">
-              ${(item.reasons || []).map((reason) => `<span class="welcome-rec-reason">${escapeHtml(reason)}</span>`).join("")}
-            </div>
-            <div class="welcome-rec-sparkline">${buildSparklineSvg(item.series || [], index === 0 ? "#38BDF8" : "#67E8F9")}</div>
-            <div class="welcome-rec-featured-actions">
-              <button class="welcome-rec-button is-primary" data-action="analyze" data-symbol="${escapeHtml(item.symbol)}">立即分析</button>
-              <button class="welcome-rec-button ${watched ? "is-watched" : "is-ghost"}" data-action="watch" data-symbol="${escapeHtml(item.symbol)}">${watched ? "已加入觀察" : "加入觀察"}</button>
-            </div>
-          </article>
-        `;
-      }).join("")}
+    <div class="welcome-rec-featured-shell homepage-stock-surface" ${getHomepageBackgroundStyle(featured.symbol)}>
+      <div class="welcome-rec-featured-top">
+        <div class="welcome-rec-symbol-group">
+          <div class="welcome-rec-chip-row">
+            ${(featured.chips || [{ label: "主推薦" }]).map((chip) => `<span class="welcome-rec-chip">${escapeHtml(chip.label)}</span>`).join("")}
+          </div>
+          <div class="welcome-rec-symbol-row">
+            <span class="welcome-rec-symbol">${escapeHtml(featured.symbol)}</span>
+            <span class="welcome-rec-exchange">${escapeHtml(featured.exchange || "")}</span>
+          </div>
+          <div class="welcome-rec-name">${escapeHtml(featured.name)}</div>
+        </div>
+      </div>
+      <div class="welcome-rec-headline">${escapeHtml(featured.summary || "")}</div>
+      <div class="welcome-rec-reason-row">
+        ${(featured.reasons || []).map((reason) => `<span class="welcome-rec-reason">${escapeHtml(reason)}</span>`).join("")}
+      </div>
+      <div class="welcome-rec-sparkline">${buildSparklineSvg(featured.series || [], "#38BDF8")}</div>
+      <div class="welcome-rec-featured-actions">
+        <button class="welcome-rec-button is-primary" data-action="analyze" data-symbol="${escapeHtml(featured.symbol)}">立即分析</button>
+        <button class="welcome-rec-button ${watched ? "is-watched" : "is-ghost"}" data-action="watch" data-symbol="${escapeHtml(featured.symbol)}">${watched ? "已加入觀察" : "加入觀察"}</button>
+      </div>
+      <div class="welcome-rec-ai-rationale">
+        <div class="welcome-rec-ai-kicker">Gemini 為什麼推薦這一支</div>
+        <p class="welcome-rec-ai-copy">${escapeHtml(featured.aiReason || featured.detail || "")}</p>
+      </div>
     </div>
   `;
 }
@@ -395,7 +383,7 @@ function renderHomepageRecommendations() {
     $("homepageHotRecommendations").innerHTML = buildHomepageLoadingState("正在同步市場熱度排行...");
     $("homepageThemeRecommendations").innerHTML = buildHomepageLoadingState("正在整理主題精選...");
   } else {
-    $("homepageFeaturedRecommendation").innerHTML = buildHomepageFeaturedCards();
+    $("homepageFeaturedRecommendation").innerHTML = buildHomepageFeaturedCard();
     $("homepageHotRecommendations").innerHTML = buildHomepageHotRows();
     $("homepageThemeRecommendations").innerHTML = buildHomepageThemeCards();
   }
