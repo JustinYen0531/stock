@@ -369,6 +369,25 @@ function scoreRecommendationSnapshots(snapshots) {
 }
 
 async function buildFeaturedGeminiReason(snapshot) {
+  const fallbackMarkdown = `## 起始
+${snapshot.name} 之所以會被放在今天首頁的第一張推薦，不是因為單一題材突然放大，而是它同時具備價格表現、資金關注與技術面訊號三個條件。以今天來看，${snapshot.symbol} 的單日變化來到 ${formatPct(snapshot.changePercent)}，已經足以代表它不只是安靜地跟著市場移動，而是真的開始吸引注意力。
+
+## 過程一
+先看市場氣氛，這檔股票目前最直接的吸引點在於 ${buildHeatReason(snapshot)}。這表示盤面資金不是完全分散的，而是有一部分正在往這檔股票集中，因此它更適合被拿來當作今天觀察情緒的起點。
+
+## 過程二
+再看技術面，現在最值得先留意的是 ${snapshot.adviceReasons.join("、")}。這幾個訊號如果是同時出現，通常代表走勢已經不只是單點反彈，而是正在形成可以被追蹤的結構，所以它會比一般熱門股更值得點進去細看。
+
+## 過程三
+如果你現在打開分析頁，最先應該對照的是 RSI、MACD 與均線彼此之間是否還維持同方向。因為首頁推薦的意義不只是告訴你哪一檔最熱，而是讓你能快速確認這個熱度背後，到底是短線噪音，還是技術面真的開始站穩。
+
+## 結尾
+總結來說，${snapshot.name} 今天被推薦，不是因為它剛好有故事，而是因為它在熱度、量能與技術面三個面向同時有畫面。把它放在首頁第一張，代表它最適合拿來當成今天市場節奏的觀察入口。`;
+
+  if (!GEMINI_API_KEY) {
+    return fallbackMarkdown;
+  }
+
   const prompt = `你是一位股票首頁編輯，請用繁體中文為今天首頁推薦的 ${snapshot.symbol}${snapshot.name ? `（${snapshot.name}）` : ""} 撰寫一段完整推薦敘述，並且一定要使用 Markdown 格式。
 
 請根據以下資料撰寫：
@@ -389,20 +408,7 @@ async function buildFeaturedGeminiReason(snapshot) {
     return await generateGeminiText(prompt, { temperature: 0.6, maxOutputTokens: 520 });
   } catch (error) {
     console.error("[Homepage Gemini Reason]", error.message);
-    return `## 起始
-${snapshot.name} 今天同時具備 ${buildHeatReason(snapshot)} 與技術面「${snapshot.adviceSignal}」訊號，因此值得被放在首頁最前面。
-
-## 過程一
-從市場節奏來看，這檔股票不只是有波動，量能也沒有掉下去，代表它不是單純被動跟漲，而是真的有資金在看。
-
-## 過程二
-技術面上，目前最值得先看的是 ${snapshot.adviceReasons.join("、")}，這些訊號放在一起時，會讓今天的走勢判讀更清楚。
-
-## 過程三
-如果現在點進分析頁，最先要對照的是 RSI、MACD 和均線彼此是否仍然朝同一個方向，確認這個推薦是不是還站得住腳。
-
-## 結尾
-也就是說，這檔不是只有題材熱，而是熱度、量能與技術面同時有畫面，所以適合當成今天先看的第一檔。`;
+    return fallbackMarkdown;
   }
 }
 
