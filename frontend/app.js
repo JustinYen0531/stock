@@ -971,13 +971,24 @@ function resetKnowledge() {
 }
 
 // ── 滑雪遊戲啟動 ──────────────────────────────────
+let lobbyHighDetailMode = false;
+
+function toggleLobbyDetailMode() {
+  lobbyHighDetailMode = !lobbyHighDetailMode;
+  const btn = document.getElementById('lobbyDetailToggle');
+  if (btn) {
+    btn.classList.toggle('active', lobbyHighDetailMode);
+    btn.querySelector('.detail-label').textContent = lobbyHighDetailMode ? '高細節：開啟' : '視覺細節';
+  }
+}
+
 function launchSkiGame() {
   if (!window.currentGameData) {
     alert('請先載入一支股票再開始滑雪！');
     return;
   }
   if (window.SkiGame) {
-    window.SkiGame.launch(window.currentGameData);
+    window.SkiGame.launch(window.currentGameData, { highDetail: lobbyHighDetailMode });
   }
 }
 
@@ -994,7 +1005,14 @@ function launchSkiGamePractice() {
   startPct = Math.max(0, Math.min(99, startPct));
   endPct   = Math.max(startPct + 1, Math.min(100, endPct));
   if (window.SkiGame) {
-    window.SkiGame.launch(window.currentGameData, { practice: true, steepness, hitboxSize, startPct, endPct });
+    window.SkiGame.launch(window.currentGameData, { 
+      practice: true, 
+      steepness, 
+      hitboxSize, 
+      startPct, 
+      endPct,
+      highDetail: lobbyHighDetailMode
+    });
   }
 }
 

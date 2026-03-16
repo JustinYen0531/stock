@@ -978,6 +978,13 @@
         // 確保 start < end
         if (practiceOpts.startPct >= practiceOpts.endPct) practiceOpts.endPct = Math.min(100, practiceOpts.startPct + 1);
       }
+
+      // 同步大廳傳入的高精度模式設定
+      highDetailMode = !!options.highDetail;
+      if (highDetailMode && stockData) {
+        loadThemeAssets(stockData.symbol);
+      }
+
       openModal();
       initGame();
     },
