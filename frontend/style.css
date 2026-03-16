@@ -101,6 +101,7 @@ body::before {
   flex: 1;
   min-width: 280px;
   max-width: 600px;
+  position: relative;
 }
 
 #symbolInput {
@@ -150,49 +151,12 @@ body::before {
 .btn-search:hover { opacity: 0.9; transform: translateY(-1px); }
 .btn-search:active { transform: translateY(0); }
 
-/* ── Stock Picker（分類選股） ─────────────────── */
-.stock-picker-wrapper { position: relative; flex-shrink: 0; }
-
-.stock-picker-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.9rem;
-  background: var(--bg-card2);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.stock-picker-toggle:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-glow);
-}
-.stock-picker-toggle.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-glow);
-}
-.picker-icon { font-size: 0.95rem; }
-.picker-arrow { font-size: 0.75rem; margin-left: 2px; transition: transform 0.25s; }
-.picker-arrow.open { transform: rotate(180deg); }
-
-/* Overlay panel */
 .stock-picker-panel {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  position: absolute;
+  top: calc(100% + 0.7rem);
+  left: 0;
+  width: 100%;
   z-index: 500;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 70px;
-  background: rgba(9, 14, 26, 0.7);
-  backdrop-filter: blur(6px);
   animation: pickerFadeIn 0.2s ease;
 }
 @keyframes pickerFadeIn {
@@ -201,9 +165,8 @@ body::before {
 }
 
 .picker-panel-inner {
-  width: 92%;
-  max-width: 900px;
-  max-height: calc(100vh - 100px);
+  width: 100%;
+  max-height: min(68vh, 560px);
   background: #0d1825;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
@@ -217,46 +180,6 @@ body::before {
   from { opacity: 0; transform: translateY(-16px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-
-/* Search row */
-.picker-search-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.picker-search {
-  flex: 1;
-  background: var(--bg-card2);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
-  padding: 0.55rem 1rem;
-  color: var(--text-primary);
-  font-size: 0.92rem;
-  outline: none;
-  font-family: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.picker-search:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-.picker-search::placeholder { color: var(--text-muted); }
-.picker-close-btn {
-  background: var(--bg-card2);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 1rem;
-  width: 32px; height: 32px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-.picker-close-btn:hover { color: var(--text-primary); border-color: var(--border-light); }
 
 /* Categories scroll */
 .picker-categories {
@@ -1673,7 +1596,7 @@ body::before {
 }
 @media (max-width: 600px) {
   .header-inner { gap: 0.75rem; }
-  .search-bar { min-width: unset; }
+  .search-bar { min-width: unset; max-width: none; }
   .stats-row { grid-template-columns: repeat(2, 1fr); }
   .welcome-title { font-size: 1.6rem; }
 }

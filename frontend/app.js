@@ -478,12 +478,16 @@ function initHomepageRecommendations() {
 // ── 快捷搜尋 ─────────────────────────────────────
 function quickSearch(symbol) {
   $("symbolInput").value = symbol;
+  closeStockPicker();
   loadStock();
 }
 
 // ── Enter 鍵觸發 ──────────────────────────────────
 $("symbolInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") loadStock();
+  if (e.key === "Enter") {
+    closeStockPicker();
+    loadStock();
+  }
 });
 
 // ── Tab 切換 ──────────────────────────────────────
@@ -1141,53 +1145,73 @@ function setNormalPreset() {
 // ── 分類股票選股器 ─────────────────────────────────
 let _pickerOpen = false;
 
-function toggleStockPicker() {
-  _pickerOpen = !_pickerOpen;
+function openStockPicker() {
   const panel = $('stockPickerPanel');
-  const toggle = $('stockPickerToggle');
-  const arrow = $('pickerArrow');
-
-  if (_pickerOpen) {
-    panel.classList.remove('hidden');
-    toggle.classList.add('active');
-    arrow.classList.add('open');
-    // Focus search box
-    setTimeout(() => { const s = $('pickerSearchInput'); if(s) s.focus(); }, 80);
-  } else {
-    panel.classList.add('hidden');
-    toggle.classList.remove('active');
-    arrow.classList.remove('open');
-    // Reset search
-    const s = $('pickerSearchInput');
-    if (s) { s.value = ''; filterPickerStocks(); }
-  }
+  if (!panel || _pickerOpen) return;
+  _pickerOpen = true;
+  panel.classList.remove('hidden');
 }
 
-// Close on backdrop click
+function closeStockPicker() {
+  const panel = $('stockPickerPanel');
+  if (!panel || !_pickerOpen) return;
+  _pickerOpen = false;
+  panel.classList.add('hidden');
+}
+
+function initStockPicker() {
+  const panel = $('stockPickerPanel');
+  const categories = $('pickerCategories');
+  const legacy = $('pickerCategoriesLegacy');
+  const input = $('symbolInput');
+  if (!panel || !categories || !legacy || !input) return;
+
+  categories.innerHTML = legacy.innerHTML;
+  const legacyPanel = $('stockPickerPanelLegacy');
+  if (legacyPanel) legacyPanel.remove();
+
+  input.addEventListener('focus', () => {
+    openStockPicker();
+    filterPickerStocks();
+  });
+
+  input.addEventListener('input', () => {
+    openStockPicker();
+    filterPickerStocks();
+  });
+}
+
 document.addEventListener('click', (e) => {
   if (!_pickerOpen) return;
   const panel = $('stockPickerPanel');
-  const inner = panel?.querySelector('.picker-panel-inner');
-  const toggle = $('stockPickerToggle');
-  if (inner && !inner.contains(e.target) && !toggle.contains(e.target)) {
-    toggleStockPicker();
+  const input = $('symbolInput');
+  const periodSelect = $('periodSelect');
+  const searchBtn = $('searchBtn');
+  if (
+    panel &&
+    !panel.contains(e.target) &&
+    input && !input.contains(e.target) &&
+    periodSelect && !periodSelect.contains(e.target) &&
+    searchBtn && !searchBtn.contains(e.target)
+  ) {
+    closeStockPicker();
   }
 });
 
 // Close on Escape
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && _pickerOpen) toggleStockPicker();
+  if (e.key === 'Escape' && _pickerOpen) closeStockPicker();
 });
 
 function pickStock(symbol) {
-  toggleStockPicker();
+  closeStockPicker();
   $('symbolInput').value = symbol;
   loadStock();
 }
 
 function filterPickerStocks() {
-  const q = ($('pickerSearchInput').value || '').toLowerCase().trim();
-  const categories = document.querySelectorAll('.picker-category');
+  const q = ($('symbolInput').value || '').toLowerCase().trim();
+  const categories = document.querySelectorAll('#stockPickerPanel .picker-category');
 
   categories.forEach(cat => {
     const btns = cat.querySelectorAll('.picker-stock-btn');
@@ -1202,3 +1226,10 @@ function filterPickerStocks() {
     cat.classList.toggle('all-hidden', !anyVisible);
   });
 }
+
+(function initStockPickerSurface() {
+  document.addEventListener("DOMContentLoaded", initStockPicker);
+  if (document.readyState !== "loading") {
+    initStockPicker();
+  }
+})();

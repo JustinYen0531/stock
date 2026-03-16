@@ -38,14 +38,12 @@
           <span id="searchBtnText">分析</span>
           <span id="searchSpinner" class="spinner hidden"></span>
         </button>
-      </div>
-      <!-- 分類股票選股器 -->
-      <div class="stock-picker-wrapper">
-        <button class="stock-picker-toggle" id="stockPickerToggle" onclick="toggleStockPicker()">
-          <span class="picker-icon">📂</span>
-          <span>股票瀏覽</span>
-          <span class="picker-arrow" id="pickerArrow">▾</span>
-        </button>
+        <div id="stockPickerPanel" class="stock-picker-panel hidden">
+          <div class="picker-panel-inner">
+            <div class="picker-categories" id="pickerCategories">
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -423,13 +421,13 @@
   </div>
 
   <!-- ═══ 分類股票選股面板 ═══ -->
-  <div id="stockPickerPanel" class="stock-picker-panel hidden">
+  <div id="stockPickerPanelLegacy" class="stock-picker-panel hidden">
     <div class="picker-panel-inner">
       <div class="picker-search-row">
-        <input id="pickerSearchInput" class="picker-search" type="text" placeholder="🔍 搜尋股票代碼或名稱..." oninput="filterPickerStocks()" autocomplete="off" />
-        <button class="picker-close-btn" onclick="toggleStockPicker()">✕</button>
+        <input id="pickerSearchInputLegacy" class="picker-search" type="text" placeholder="🔍 搜尋股票代碼或名稱..." autocomplete="off" />
+        <button class="picker-close-btn" type="button">✕</button>
       </div>
-      <div class="picker-categories" id="pickerCategories">
+      <div class="picker-categories" id="pickerCategoriesLegacy">
 
         <!-- 美國科技 -->
         <div class="picker-category">
