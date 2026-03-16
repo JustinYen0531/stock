@@ -395,6 +395,16 @@ ${snapshot.name} 今天被放在首頁主推薦，不是因為單一消息面突
 ## 結論
 總結來說，${snapshot.name} 會被推薦，不只是因為今天看起來很熱，而是因為它在 **熱度、技術、以及可讀性** 三個層次都同時有畫面。這讓它成為最適合放在首頁第一張、也最值得先打開來看的股票。`;
 
+  const isUsableFeaturedReason = (text) => {
+    const normalized = String(text || "").trim();
+    if (!normalized) return false;
+    const lines = normalized.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const paragraphCount = lines.filter((line) => !/^#{1,6}\s/.test(line) && line !== "---" && !/^\|.*\|$/.test(line)).length;
+    const hasDivider = normalized.includes("---");
+    const hasTable = /\|.+\|/.test(normalized);
+    return lines.length >= 8 && paragraphCount >= 3 && hasDivider && hasTable;
+  };
+
   if (!GEMINI_API_KEY) {
     return fallbackMarkdown;
   }
@@ -419,7 +429,8 @@ ${snapshot.name} 今天被放在首頁主推薦，不是因為單一消息面突
 8. 全文要像首頁推薦專欄，不要像聊天回覆，也不要加免責聲明。`;
 
   try {
-    return await generateGeminiText(prompt, { temperature: 0.6, maxOutputTokens: 520 });
+    const generated = await generateGeminiText(prompt, { temperature: 0.6, maxOutputTokens: 520 });
+    return isUsableFeaturedReason(generated) ? generated : fallbackMarkdown;
   } catch (error) {
     console.error("[Homepage Gemini Reason]", error.message);
     return fallbackMarkdown;
