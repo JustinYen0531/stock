@@ -399,7 +399,7 @@ async function loadHomepageRecommendations() {
   renderHomepageRecommendations();
 
   try {
-    const res = await fetch(`${API_BASE}/homepage-recommendations`);
+    const res = await fetch(`${API_BASE}/api/homepage-recommendations`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || "首頁推薦暫時抓取失敗");

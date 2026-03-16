@@ -596,7 +596,7 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
-app.get("/homepage-recommendations", async (req, res) => {
+async function handleHomepageRecommendations(req, res) {
   try {
     const payload = await getHomepageRecommendations(req.query.fresh === "1");
     res.json(payload);
@@ -604,7 +604,10 @@ app.get("/homepage-recommendations", async (req, res) => {
     console.error("[HOMEPAGE ERR]", e.message);
     res.status(500).json({ detail: `首頁推薦抓取失敗：${e.message}` });
   }
-});
+}
+
+app.get("/homepage-recommendations", handleHomepageRecommendations);
+app.get("/api/homepage-recommendations", handleHomepageRecommendations);
 
 app.get("/full/:symbol", async (req, res) => {
   const symbol = req.params.symbol.toUpperCase();
