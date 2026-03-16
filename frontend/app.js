@@ -980,17 +980,21 @@ function renderHomepageRecommendationMarkdown(text) {
       `;
     }
 
-    if (block.startsWith("### ")) {
-      return `<h5>${inline(block.slice(4).trim())}</h5>`;
-    }
-    if (block.startsWith("## ")) {
-      return `<h4>${inline(block.slice(3).trim())}</h4>`;
-    }
-    if (block.startsWith("# ")) {
-      return `<h3>${inline(block.slice(2).trim())}</h3>`;
-    }
-
-    return `<p>${inline(block).replace(/\n/g, "<br/>")}</p>`;
+    return lines.map((line) => {
+      if (line === "---") {
+        return "<hr/>";
+      }
+      if (line.startsWith("### ")) {
+        return `<h5>${inline(line.slice(4).trim())}</h5>`;
+      }
+      if (line.startsWith("## ")) {
+        return `<h4>${inline(line.slice(3).trim())}</h4>`;
+      }
+      if (line.startsWith("# ")) {
+        return `<h3>${inline(line.slice(2).trim())}</h3>`;
+      }
+      return `<p>${inline(line)}</p>`;
+    }).join("");
   }).join("");
 }
 
