@@ -369,9 +369,9 @@ function scoreRecommendationSnapshots(snapshots) {
 }
 
 async function buildFeaturedGeminiReason(snapshot) {
-  const prompt = `你是一位股票首頁編輯，請用繁體中文簡短說明為什麼今天首頁推薦 ${snapshot.symbol}${snapshot.name ? `（${snapshot.name}）` : ""}。
+  const prompt = `你是一位股票首頁編輯，請用繁體中文為今天首頁推薦的 ${snapshot.symbol}${snapshot.name ? `（${snapshot.name}）` : ""} 撰寫一段完整推薦敘述，並且一定要使用 Markdown 格式。
 
-請根據以下資料產生 2 句內容：
+請根據以下資料撰寫：
 - 單日漲跌幅：${formatPct(snapshot.changePercent)}
 - 5 日動能：${formatPct(snapshot.momentum5d)}
 - 量能脈衝：${snapshot.volumePulse.toFixed(1)}x
@@ -379,16 +379,30 @@ async function buildFeaturedGeminiReason(snapshot) {
 - 技術面理由：${snapshot.adviceReasons.join("、")}
 
 限制：
-1. 只輸出 2 句完整句子，不要條列。
-2. 第一 句講今天為什麼值得先看這檔。
-3. 第二 句講點進分析頁可以先關注什麼。
-4. 不要加免責聲明。`;
+1. 必須使用這 5 個二級標題：## 起始、## 過程一、## 過程二、## 過程三、## 結尾。
+2. 每個標題下都至少寫 1 小段完整敘述，不能只有一句片語。
+3. 內容要像首頁推薦文案，不要像研究報告，也不要條列。
+4. 起始講為什麼今天先看它；三段過程分別講市場氣氛、技術面、使用者點進分析頁會看到什麼；結尾做收束。
+5. 不要加免責聲明，不要輸出其他標題。`;
 
   try {
-    return await generateGeminiText(prompt, { temperature: 0.5, maxOutputTokens: 220 });
+    return await generateGeminiText(prompt, { temperature: 0.6, maxOutputTokens: 520 });
   } catch (error) {
     console.error("[Homepage Gemini Reason]", error.message);
-    return `${snapshot.name} 今天同時具備 ${buildHeatReason(snapshot)} 與技術面「${snapshot.adviceSignal}」訊號，所以值得優先查看。點進分析頁後，可以先對照 RSI、MACD 與均線是否持續支持這個方向。`;
+    return `## 起始
+${snapshot.name} 今天同時具備 ${buildHeatReason(snapshot)} 與技術面「${snapshot.adviceSignal}」訊號，因此值得被放在首頁最前面。
+
+## 過程一
+從市場節奏來看，這檔股票不只是有波動，量能也沒有掉下去，代表它不是單純被動跟漲，而是真的有資金在看。
+
+## 過程二
+技術面上，目前最值得先看的是 ${snapshot.adviceReasons.join("、")}，這些訊號放在一起時，會讓今天的走勢判讀更清楚。
+
+## 過程三
+如果現在點進分析頁，最先要對照的是 RSI、MACD 和均線彼此是否仍然朝同一個方向，確認這個推薦是不是還站得住腳。
+
+## 結尾
+也就是說，這檔不是只有題材熱，而是熱度、量能與技術面同時有畫面，所以適合當成今天先看的第一檔。`;
   }
 }
 

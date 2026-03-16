@@ -276,7 +276,7 @@ function buildHomepageFeaturedCard() {
       </div>
       <div class="welcome-rec-ai-rationale">
         <div class="welcome-rec-ai-kicker">Gemini 為什麼推薦這一支</div>
-        <p class="welcome-rec-ai-copy">${escapeHtml(featured.aiReason || featured.detail || "")}</p>
+        <div class="welcome-rec-ai-copy">${renderHomepageRecommendationMarkdown(featured.aiReason || featured.detail || "")}</div>
       </div>
     </div>
   `;
@@ -937,6 +937,30 @@ function simpleMarkdown(text) {
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/`(.+?)`/g, "<code>$1</code>")
     .replace(/\n/g, "<br/>");
+}
+
+function renderHomepageRecommendationMarkdown(text) {
+  const escaped = String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const inline = (value) => value
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`(.+?)`/g, "<code>$1</code>");
+
+  return escaped
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => {
+      if (block.startsWith("## ")) {
+        return `<h4>${inline(block.slice(3).trim())}</h4>`;
+      }
+      return `<p>${inline(block).replace(/\n/g, "<br/>")}</p>`;
+    })
+    .join("");
 }
 
 function setChatLoading(loading) {
