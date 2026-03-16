@@ -368,11 +368,70 @@ function scoreRecommendationSnapshots(snapshots) {
   });
 }
 
-function buildFeaturedRecommendation(snapshot) {
+async function buildFeaturedGeminiReason(snapshot) {
+  const fallbackMarkdown = `# 為什麼今天先看 ${snapshot.symbol}
+
+${snapshot.name} 今天被放在首頁主推薦，不是因為單一消息面突然放大，而是它在 **市場熱度、技術結構、以及實際可分析性** 這三個面向同時有內容。對首頁來說，這種股票最適合被放在第一張，因為使用者一點進去就能立刻看出今天市場節奏到底在哪裡。
+
+---
+
+## 市場熱度
+先從盤面熱度來看，${snapshot.name} 今天最直接的訊號就是 **${buildHeatReason(snapshot)}**。這代表它不是只有價格在移動，而是有資金與注意力同時往它身上集中，因此它更像是今天情緒的核心標的，而不是被動跟著指數起伏的陪跑股。
+
+## 技術結構
+再看技術面，現在最值得先留意的是 **${snapshot.adviceReasons.join("、")}**。當這些訊號同時出現時，通常表示走勢已經不只是短線雜訊，而是開始形成一個可以被追蹤、被驗證、也能被拆解的技術結構，所以它比一般熱門股更有分析價值。
+
+## 現在點進去最值得看什麼
+如果你現在打開分析頁，最應該先看的不是單一指標，而是 **RSI、MACD 與均線之間是否還維持同方向**。這會直接決定這個推薦是短線衝高後的噪音，還是仍然站在可延續的趨勢上，對使用者來說也最有立即判讀價值。
+
+---
+
+| 面向 | 目前重點 | 解讀 |
+| --- | --- | --- |
+| 市場熱度 | ${buildHeatReason(snapshot)} | 有注意力，也有資金流向 |
+| 技術結構 | ${snapshot.adviceSignal} | 技術面不是空白，而是可追蹤 |
+| 分析價值 | ${snapshot.adviceReasons[0] || "RSI / MACD / 均線"} | 點進去後可以立即驗證推薦是否站得住 |
+
+## 結論
+總結來說，${snapshot.name} 會被推薦，不只是因為今天看起來很熱，而是因為它在 **熱度、技術、以及可讀性** 三個層次都同時有畫面。這讓它成為最適合放在首頁第一張、也最值得先打開來看的股票。`;
+
+  if (!GEMINI_API_KEY) {
+    return fallbackMarkdown;
+  }
+
+  const prompt = `你是一位股票首頁編輯，請用繁體中文為今天首頁推薦的 ${snapshot.symbol}${snapshot.name ? `（${snapshot.name}）` : ""} 撰寫一段完整推薦敘述，並且一定要使用 Markdown 格式。
+
+請根據以下資料撰寫：
+- 單日漲跌幅：${formatPct(snapshot.changePercent)}
+- 5 日動能：${formatPct(snapshot.momentum5d)}
+- 量能脈衝：${snapshot.volumePulse.toFixed(1)}x
+- 技術面訊號：${snapshot.adviceSignal}
+- 技術面理由：${snapshot.adviceReasons.join("、")}
+
+限制：
+1. 一定要有一個 H1 標題，直接替這篇推薦文命名。
+2. 不要出現「過程一 / 過程二 / 過程三」這種字眼。
+3. 內容必須用三個面向解釋為什麼是這一支股票，建議面向為：市場熱度、技術結構、現在點進去最值得看什麼。
+4. 一定要有 --- 分隔線。
+5. 一定要有一個 Markdown 表格，至少三列，摘要三個面向。
+6. 一定要有 ## 結論 收尾。
+7. 段落內請自然使用 **粗體** 強調重點，不要只有純文字。
+8. 全文要像首頁推薦專欄，不要像聊天回覆，也不要加免責聲明。`;
+
+  try {
+    return await generateGeminiText(prompt, { temperature: 0.6, maxOutputTokens: 520 });
+  } catch (error) {
+    console.error("[Homepage Gemini Reason]", error.message);
+    return fallbackMarkdown;
+  }
+}
+
+async function buildFeaturedRecommendation(snapshot) {
   const primaryThemeId = snapshot.themeIds[0];
   const primaryTheme = HOMEPAGE_THEME_DEFS.find((theme) => theme.id === primaryThemeId);
   const changeLabel = snapshot.changePercent >= 0 ? `走勢轉強 ${formatPct(snapshot.changePercent)}` : `震盪擴大 ${formatPct(snapshot.changePercent)}`;
   const pulseLabel = snapshot.volumePulse >= 1.1 ? `量能 ${snapshot.volumePulse.toFixed(1)}x` : "量能穩定";
+  const aiReason = await buildFeaturedGeminiReason(snapshot);
 
   return {
     symbol: snapshot.symbol,
@@ -390,6 +449,7 @@ function buildFeaturedRecommendation(snapshot) {
       ...snapshot.adviceReasons,
       `熱度分數 ${snapshot.heatScore.toFixed(1)}`,
     ]),
+    aiReason,
     series: snapshot.series,
   };
 }
@@ -457,7 +517,7 @@ async function buildHomepageRecommendations() {
 
   const featuredPool = [...snapshots].sort((a, b) => b.featuredScore - a.featuredScore);
   const hotPool = [...snapshots].sort((a, b) => b.heatScore - a.heatScore);
-  const featured = buildFeaturedRecommendation(featuredPool[0]);
+  const featured = await buildFeaturedRecommendation(featuredPool[0]);
   const hot = buildHotRecommendations(hotPool);
   const themes = buildThemeRecommendations(hotPool);
 
@@ -501,6 +561,31 @@ async function getHomepageRecommendations(forceFresh = false) {
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
+async function generateGeminiText(prompt, { temperature = 0.7, maxOutputTokens = 8192 } = {}) {
+  if (!GEMINI_API_KEY) throw new Error("Gemini API key 未設定");
+
+  const response = await fetch(GEMINI_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature,
+        maxOutputTokens,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("[Gemini Error]", errText);
+    throw new Error("Gemini API 錯誤");
+  }
+
+  const data = await response.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "（無回應）";
+}
+
 app.post("/chat", async (req, res) => {
   const { message, context } = req.body;
   if (!message) return res.status(400).json({ error: "缺少 message" });
@@ -529,32 +614,7 @@ app.post("/chat", async (req, res) => {
   }
 
   try {
-    const response = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: systemContext + "\n\n用戶問題：" + message }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 8192,
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("[Gemini Error]", errText);
-      return res.status(500).json({ error: "Gemini API 錯誤" });
-    }
-
-    const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "（無回應）";
+    const text = await generateGeminiText(systemContext + "\n\n用戶問題：" + message);
     res.json({ reply: text });
 
   } catch (e) {
@@ -570,7 +630,7 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
-app.get("/homepage-recommendations", async (req, res) => {
+async function handleHomepageRecommendations(req, res) {
   try {
     const payload = await getHomepageRecommendations(req.query.fresh === "1");
     res.json(payload);
@@ -578,7 +638,10 @@ app.get("/homepage-recommendations", async (req, res) => {
     console.error("[HOMEPAGE ERR]", e.message);
     res.status(500).json({ detail: `首頁推薦抓取失敗：${e.message}` });
   }
-});
+}
+
+app.get("/homepage-recommendations", handleHomepageRecommendations);
+app.get("/api/homepage-recommendations", handleHomepageRecommendations);
 
 app.get("/full/:symbol", async (req, res) => {
   const symbol = req.params.symbol.toUpperCase();

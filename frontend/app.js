@@ -217,38 +217,66 @@ function getHomepageBackgroundStyle(symbol) {
   return `style="--stock-bg: url('${getHomepageBackgroundFile(symbol)}')"`;
 }
 
+function buildHomepageQuickEntries() {
+  const picks = [];
+  const seen = new Set();
+
+  const pushPick = (symbol, name) => {
+    if (!symbol || seen.has(symbol)) return;
+    seen.add(symbol);
+    picks.push({ symbol, name: name || symbol });
+  };
+
+  pushPick(homepageRecommendationData?.featured?.symbol, homepageRecommendationData?.featured?.name);
+  (homepageRecommendationData?.hot || []).forEach((item) => pushPick(item.symbol, item.name));
+  (homepageRecommendationData?.themes || []).forEach((theme) => {
+    (theme.picks || []).forEach((pick) => pushPick(pick.symbol, pick.name));
+  });
+
+  return picks
+    .slice(0, 10)
+    .map((item) => `
+      <button class="welcome-rec-quick-button homepage-stock-surface" ${getHomepageBackgroundStyle(item.symbol)} data-action="analyze" data-symbol="${escapeHtml(item.symbol)}">
+        <span class="welcome-rec-quick-symbol">${escapeHtml(item.symbol)}</span>
+        <span class="welcome-rec-quick-name">${escapeHtml(item.name)}</span>
+      </button>
+    `)
+    .join("");
+}
+
 function buildHomepageFeaturedCard() {
   const featured = homepageRecommendationData?.featured;
   if (!featured) {
     return `<div class="welcome-rec-feedback is-error">目前暫時沒有可用的主推薦，請稍後再試。</div>`;
   }
   const watched = isHomepageWatched(featured.symbol);
+
   return `
     <div class="welcome-rec-featured-shell homepage-stock-surface" ${getHomepageBackgroundStyle(featured.symbol)}>
       <div class="welcome-rec-featured-top">
         <div class="welcome-rec-symbol-group">
           <div class="welcome-rec-chip-row">
-            ${featured.chips.map((chip) => `<span class="welcome-rec-chip${chip.tone === "warning" ? " is-warning" : chip.tone === "success" ? " is-success" : ""}">${escapeHtml(chip.label)}</span>`).join("")}
+            ${(featured.chips || [{ label: "主推薦" }]).map((chip) => `<span class="welcome-rec-chip">${escapeHtml(chip.label)}</span>`).join("")}
           </div>
           <div class="welcome-rec-symbol-row">
             <span class="welcome-rec-symbol">${escapeHtml(featured.symbol)}</span>
-            <span class="welcome-rec-exchange">${escapeHtml(featured.exchange)}</span>
+            <span class="welcome-rec-exchange">${escapeHtml(featured.exchange || "")}</span>
           </div>
           <div class="welcome-rec-name">${escapeHtml(featured.name)}</div>
         </div>
       </div>
-      <div class="welcome-rec-headline">${escapeHtml(featured.summary)}</div>
+      <div class="welcome-rec-headline">${escapeHtml(featured.summary || "")}</div>
       <div class="welcome-rec-reason-row">
-        ${featured.reasons.map((reason) => `<span class="welcome-rec-reason">${escapeHtml(reason)}</span>`).join("")}
+        ${(featured.reasons || []).map((reason) => `<span class="welcome-rec-reason">${escapeHtml(reason)}</span>`).join("")}
       </div>
-      <div class="welcome-rec-sparkline">${buildSparklineSvg(featured.series, "#38BDF8")}</div>
+      <div class="welcome-rec-sparkline">${buildSparklineSvg(featured.series || [], "#38BDF8")}</div>
       <div class="welcome-rec-featured-actions">
         <button class="welcome-rec-button is-primary" data-action="analyze" data-symbol="${escapeHtml(featured.symbol)}">立即分析</button>
-        <button class="welcome-rec-button is-secondary" data-action="toggle-featured-detail">${homepageRecommendationState.featuredExpanded ? "收起理由" : "看理由"}</button>
         <button class="welcome-rec-button ${watched ? "is-watched" : "is-ghost"}" data-action="watch" data-symbol="${escapeHtml(featured.symbol)}">${watched ? "已加入觀察" : "加入觀察"}</button>
       </div>
-      <div class="welcome-rec-featured-detail" ${homepageRecommendationState.featuredExpanded ? "" : "hidden"}>
-        <p class="welcome-rec-detail-copy">${escapeHtml(featured.detail)}</p>
+      <div class="welcome-rec-ai-rationale">
+        <div class="welcome-rec-ai-kicker">Gemini 為什麼推薦這一支</div>
+        <div class="welcome-rec-ai-copy">${renderHomepageRecommendationMarkdown(featured.aiReason || featured.detail || "")}</div>
       </div>
     </div>
   `;
@@ -359,6 +387,7 @@ function renderHomepageRecommendations() {
     $("homepageHotRecommendations").innerHTML = buildHomepageHotRows();
     $("homepageThemeRecommendations").innerHTML = buildHomepageThemeCards();
   }
+  $("homepageQuickEntries").innerHTML = buildHomepageQuickEntries();
   $("homepageWatchCount").textContent = String(getHomepageWatchlist().length);
   updateHomepageRecommendationStatus();
 }
@@ -370,7 +399,7 @@ async function loadHomepageRecommendations() {
   renderHomepageRecommendations();
 
   try {
-    const res = await fetch(`${API_BASE}/homepage-recommendations`);
+    const res = await fetch(`${API_BASE}/api/homepage-recommendations`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || "首頁推薦暫時抓取失敗");
@@ -450,12 +479,16 @@ function initHomepageRecommendations() {
 // ── 快捷搜尋 ─────────────────────────────────────
 function quickSearch(symbol) {
   $("symbolInput").value = symbol;
+  closeStockPicker();
   loadStock();
 }
 
 // ── Enter 鍵觸發 ──────────────────────────────────
 $("symbolInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") loadStock();
+  if (e.key === "Enter") {
+    closeStockPicker();
+    loadStock();
+  }
 });
 
 // ── Tab 切換 ──────────────────────────────────────
@@ -565,6 +598,7 @@ function renderDashboard(data) {
     closes: ohlcv.map(d => d.Close),
     period: $("periodSelect").value,
   };
+  renderSkiDifficultyPreview();
 }
 
 // ── 投資建議渲染 ──────────────────────────────────
@@ -906,6 +940,60 @@ function simpleMarkdown(text) {
     .replace(/\n/g, "<br/>");
 }
 
+function renderHomepageRecommendationMarkdown(text) {
+  const escaped = String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const inline = (value) => value
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`(.+?)`/g, "<code>$1</code>");
+
+  const blocks = escaped
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  return blocks.map((block) => {
+    if (block === "---") {
+      return "<hr/>";
+    }
+
+    const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
+    const isTable = lines.length >= 2 && lines.every((line) => /^\|.*\|$/.test(line));
+    if (isTable) {
+      const rows = lines.map((line) => line.slice(1, -1).split("|").map((cell) => inline(cell.trim())));
+      const [header, divider, ...body] = rows;
+      const hasDivider = divider && divider.every((cell) => /^:?-{3,}:?$/.test(cell.replace(/<[^>]+>/g, "")));
+      const bodyRows = hasDivider ? body : rows.slice(1);
+      return `
+        <table>
+          <thead>
+            <tr>${header.map((cell) => `<th>${cell}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${bodyRows.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    if (block.startsWith("### ")) {
+      return `<h5>${inline(block.slice(4).trim())}</h5>`;
+    }
+    if (block.startsWith("## ")) {
+      return `<h4>${inline(block.slice(3).trim())}</h4>`;
+    }
+    if (block.startsWith("# ")) {
+      return `<h3>${inline(block.slice(2).trim())}</h3>`;
+    }
+
+    return `<p>${inline(block).replace(/\n/g, "<br/>")}</p>`;
+  }).join("");
+}
+
 function setChatLoading(loading) {
   const sendBtn = document.getElementById("chatSendBtn");
   const sendIcon = document.getElementById("chatSendIcon");
@@ -1038,6 +1126,55 @@ function updateSkiLaunchButton() {
   text.textContent = state.isNormal ? '開始！' : '練習模式';
 }
 
+function getSkiDifficultyDisplayLabel(label) {
+  const labels = {
+    easy: '簡單',
+    normal: '普通',
+    hard: '困難',
+    expert: '專家',
+    hell: '地獄',
+  };
+  return labels[label] || '未定';
+}
+
+function renderSkiDifficultyPreview() {
+  const scoreEl = document.getElementById('skiDifficultyScore');
+  const levelEl = document.getElementById('skiDifficultyLevel');
+  const metaEl = document.getElementById('skiDifficultyMeta');
+  const panelEl = document.getElementById('skiDifficultyPanel');
+  if (!scoreEl || !levelEl || !metaEl || !panelEl) return;
+
+  if (!window.currentGameData || !window.SkiGame?.previewDifficulty) {
+    scoreEl.textContent = '--';
+    levelEl.textContent = '尚未載入';
+    metaEl.textContent = '先查詢股票後，這裡會顯示目前滑雪地圖的難度係數。';
+    panelEl.dataset.level = 'unknown';
+    return;
+  }
+
+  const state = getSkiDifficultyState();
+  const preview = window.SkiGame.previewDifficulty(window.currentGameData, state.isNormal ? {} : {
+    practice: true,
+    steepness: state.steepness,
+    hitboxSize: state.hitboxSize,
+    startPct: state.startPct,
+    endPct: state.endPct,
+  });
+
+  if (!preview) {
+    scoreEl.textContent = '--';
+    levelEl.textContent = '無法計算';
+    metaEl.textContent = '目前資料不足，暫時無法建立滑雪難度。';
+    panelEl.dataset.level = 'unknown';
+    return;
+  }
+
+  scoreEl.textContent = String(preview.score);
+  levelEl.textContent = getSkiDifficultyDisplayLabel(preview.label);
+  metaEl.textContent = `${window.currentGameData.symbol} ・ ${state.isNormal ? '標準模式' : `${state.startPct}% - ${state.endPct}% 練習區間`} ・ 下坡風險 ${Math.round((preview.factors.downhillRisk || 0) * 100)}%`;
+  panelEl.dataset.level = preview.label;
+}
+
 function getSkiMedalState() {
   try {
     return JSON.parse(localStorage.getItem('skiMedals') || '{}');
@@ -1069,6 +1206,7 @@ function setPracticeRange(start, end) {
   if (s) s.value = start;
   if (e) e.value = end;
   updateSkiLaunchButton();
+  renderSkiDifficultyPreview();
 }
 
 // 滑桿初始化：讓 CSS --val 變數追蹤滑桿進度（填色效果）
@@ -1079,12 +1217,19 @@ function setPracticeRange(start, end) {
     el.addEventListener('input', () => {
       el.style.setProperty('--val', el.value);
       updateSkiLaunchButton();
+      renderSkiDifficultyPreview();
     });
   }
   function bindRange(el) {
     if (!el) return;
-    el.addEventListener('input', updateSkiLaunchButton);
-    el.addEventListener('change', updateSkiLaunchButton);
+    el.addEventListener('input', () => {
+      updateSkiLaunchButton();
+      renderSkiDifficultyPreview();
+    });
+    el.addEventListener('change', () => {
+      updateSkiLaunchButton();
+      renderSkiDifficultyPreview();
+    });
   }
   // DOM 可能還沒 ready，等一下
   document.addEventListener('DOMContentLoaded', () => {
@@ -1126,58 +1271,79 @@ function setNormalPreset() {
   if (rs) rs.value = 0;
   if (re) re.value = 100;
   updateSkiLaunchButton();
+  renderSkiDifficultyPreview();
 }
 
 // ── 分類股票選股器 ─────────────────────────────────
 let _pickerOpen = false;
 
-function toggleStockPicker() {
-  _pickerOpen = !_pickerOpen;
+function openStockPicker() {
   const panel = $('stockPickerPanel');
-  const toggle = $('stockPickerToggle');
-  const arrow = $('pickerArrow');
-
-  if (_pickerOpen) {
-    panel.classList.remove('hidden');
-    toggle.classList.add('active');
-    arrow.classList.add('open');
-    // Focus search box
-    setTimeout(() => { const s = $('pickerSearchInput'); if(s) s.focus(); }, 80);
-  } else {
-    panel.classList.add('hidden');
-    toggle.classList.remove('active');
-    arrow.classList.remove('open');
-    // Reset search
-    const s = $('pickerSearchInput');
-    if (s) { s.value = ''; filterPickerStocks(); }
-  }
+  if (!panel || _pickerOpen) return;
+  _pickerOpen = true;
+  panel.classList.remove('hidden');
 }
 
-// Close on backdrop click
+function closeStockPicker() {
+  const panel = $('stockPickerPanel');
+  if (!panel || !_pickerOpen) return;
+  _pickerOpen = false;
+  panel.classList.add('hidden');
+}
+
+function initStockPicker() {
+  const panel = $('stockPickerPanel');
+  const categories = $('pickerCategories');
+  const legacy = $('pickerCategoriesLegacy');
+  const input = $('symbolInput');
+  if (!panel || !categories || !legacy || !input) return;
+
+  categories.innerHTML = legacy.innerHTML;
+  const legacyPanel = $('stockPickerPanelLegacy');
+  if (legacyPanel) legacyPanel.remove();
+
+  input.addEventListener('focus', () => {
+    openStockPicker();
+    filterPickerStocks();
+  });
+
+  input.addEventListener('input', () => {
+    openStockPicker();
+    filterPickerStocks();
+  });
+}
+
 document.addEventListener('click', (e) => {
   if (!_pickerOpen) return;
   const panel = $('stockPickerPanel');
-  const inner = panel?.querySelector('.picker-panel-inner');
-  const toggle = $('stockPickerToggle');
-  if (inner && !inner.contains(e.target) && !toggle.contains(e.target)) {
-    toggleStockPicker();
+  const input = $('symbolInput');
+  const periodSelect = $('periodSelect');
+  const searchBtn = $('searchBtn');
+  if (
+    panel &&
+    !panel.contains(e.target) &&
+    input && !input.contains(e.target) &&
+    periodSelect && !periodSelect.contains(e.target) &&
+    searchBtn && !searchBtn.contains(e.target)
+  ) {
+    closeStockPicker();
   }
 });
 
 // Close on Escape
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && _pickerOpen) toggleStockPicker();
+  if (e.key === 'Escape' && _pickerOpen) closeStockPicker();
 });
 
 function pickStock(symbol) {
-  toggleStockPicker();
+  closeStockPicker();
   $('symbolInput').value = symbol;
   loadStock();
 }
 
 function filterPickerStocks() {
-  const q = ($('pickerSearchInput').value || '').toLowerCase().trim();
-  const categories = document.querySelectorAll('.picker-category');
+  const q = ($('symbolInput').value || '').toLowerCase().trim();
+  const categories = document.querySelectorAll('#stockPickerPanel .picker-category');
 
   categories.forEach(cat => {
     const btns = cat.querySelectorAll('.picker-stock-btn');
@@ -1192,3 +1358,10 @@ function filterPickerStocks() {
     cat.classList.toggle('all-hidden', !anyVisible);
   });
 }
+
+(function initStockPickerSurface() {
+  document.addEventListener("DOMContentLoaded", initStockPicker);
+  if (document.readyState !== "loading") {
+    initStockPicker();
+  }
+})();
