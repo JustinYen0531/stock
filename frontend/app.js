@@ -950,17 +950,47 @@ function renderHomepageRecommendationMarkdown(text) {
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/`(.+?)`/g, "<code>$1</code>");
 
-  return escaped
+  const blocks = escaped
     .split(/\n{2,}/)
     .map((block) => block.trim())
-    .filter(Boolean)
-    .map((block) => {
-      if (block.startsWith("## ")) {
-        return `<h4>${inline(block.slice(3).trim())}</h4>`;
-      }
-      return `<p>${inline(block).replace(/\n/g, "<br/>")}</p>`;
-    })
-    .join("");
+    .filter(Boolean);
+
+  return blocks.map((block) => {
+    if (block === "---") {
+      return "<hr/>";
+    }
+
+    const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
+    const isTable = lines.length >= 2 && lines.every((line) => /^\|.*\|$/.test(line));
+    if (isTable) {
+      const rows = lines.map((line) => line.slice(1, -1).split("|").map((cell) => inline(cell.trim())));
+      const [header, divider, ...body] = rows;
+      const hasDivider = divider && divider.every((cell) => /^:?-{3,}:?$/.test(cell.replace(/<[^>]+>/g, "")));
+      const bodyRows = hasDivider ? body : rows.slice(1);
+      return `
+        <table>
+          <thead>
+            <tr>${header.map((cell) => `<th>${cell}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${bodyRows.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    if (block.startsWith("### ")) {
+      return `<h5>${inline(block.slice(4).trim())}</h5>`;
+    }
+    if (block.startsWith("## ")) {
+      return `<h4>${inline(block.slice(3).trim())}</h4>`;
+    }
+    if (block.startsWith("# ")) {
+      return `<h3>${inline(block.slice(2).trim())}</h3>`;
+    }
+
+    return `<p>${inline(block).replace(/\n/g, "<br/>")}</p>`;
+  }).join("");
 }
 
 function setChatLoading(loading) {
