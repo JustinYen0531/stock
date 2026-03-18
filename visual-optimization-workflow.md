@@ -34,11 +34,12 @@
 *參考 [terrain-material-workflow.md](terrain-material-workflow.md) 執行。*
 
 1.  **[TEXTURE] 無縫材質生成**：
-    *   **指令**：生成符合產業類別的灰階無縫貼圖。
+    *   **指令**：`Create a high-quality grayscale seamless texture map of [Specific Element]. Flat 2D view, macro photography, tileable, monochromatic, high contrast.`
     *   **映射規則**：
-        *   `Tech` -> 晶圓、六角網格、二進位流。
-        *   `Finance` -> 大理石裂紋、微縮指數帶。
-        *   `Consumer` -> 瓦楞紙紋理、膠帶痕跡。
+        *   `Semiconductors/Chips` -> 晶圓、電路走線、二進位流。
+        *   `Software/Social` -> 節點網絡鏈接、虛擬毛玻璃、數據脈衝球體。
+        *   `Finance` -> 數位跳動指數、歐式石柱裂紋、ticker tape 浮水印。
+        *   `Logistics` -> 瓦楞紙紋理、撕裂封條、QR Code 拼貼、輸送帶。
 2.  **[EDGE] 山脊處理 (Edge Treatment)**：
     *   根據漲跌強弱定義 `edge_glow` 與 `rim_light`。
     *   **優化**：加上「硬邊幾何」或「積雪漸層」，消除向量線條的單薄感。
@@ -49,7 +50,8 @@
 *利用 Gemini 3.1 生成具備一致性的資產。*
 
 1.  **[VISTA] 遠景大氣景深圖**：
-    *   **Prompt 模板**：`[Biome Layout] + [Industry Props] + [Cinematic Lighting] + [Material Context]`。
+    *   **Prompt 模板**：`Cinematic 2D background for game, [Biome Layout] with [Industry Props], [Cinematic Lighting], 8k resolution, deep focus. NO UI. Horizontal seamless loop preferred.`
+    *   **技術限制**：若產出的圖片左右邊緣不對稱，前端必須使用 `Mirror Tiling` (鏡像拼接) 技術維持 100% 連貫。
     *   *目標*：建立宏大的世界視角。
 2.  **[LANDMARK] 特徵地標 Sprite**：
     *   依據 `Company Props` 生成具備品牌辨識度的關鍵物件（如結冰購物車、AI 核心）。
@@ -67,6 +69,21 @@
 2.  **數據驅動演化 (Data-Driven Evolution)**：
     *   成交量 -> 紋理亮度與密度。
     *   波動率 -> 材質破碎度與 Glitch 強度。
+
+---
+
+## 模組 5：特製組件生成 (The Component Forge)
+*將低細節模式的通用方框轉化為具備「實體感」的品牌資產。*
+
+1.  **[PROP] 客製化物件產出**：
+    *   **Prompt 模板**：`[Asset Type] for [Company/Industry], [Material Details], glowing [Brand Color], hyper-detailed tech asset, isometric view, high-contrast, centered, white background.`
+    *   **物件分類**：
+        *   `Core` (核心物件)：放置於地形轉折點或終點，如 GPU、伺服器塔、金庫。
+        *   `Node` (節點物件)：取代對畫框或漂浮元素，如數據球體、物流封條。
+2.  **資產規範**：
+    *   背景必須為純白或透明，便於程式裁切。
+    *   視角統一使用 `Isometric` 或 `Side View` 維持透視一致。
+    *   發光強度應根據 `Data-Driven Evolution` 連動。
 
 ---
 
