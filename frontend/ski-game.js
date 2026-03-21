@@ -356,6 +356,7 @@
   // ── 視覺細節狀態 ──
   let highDetailMode = false;
   let themeAssets = { vista: null, texture: null };
+  let cachedPatterns = { terrain: null, detail: null, hd: null, hdSrc: null, themeSrc: null };
   const themeBackgroundCache = new Map();
   const terrainPatternCache = new Map();
   const terrainDetailCache = new Map();
@@ -913,6 +914,8 @@
     activeThemeBackground = ensureThemeBackground(stockData?.symbol);
     ensureThemeManifest();
     activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
+    // 主題切換時清除 Pattern 快取，強制下一幀重建
+    cachedPatterns = { terrain: null, detail: null, hd: null, hdSrc: null, themeSrc: null };
     for (const prop of activeTerrainTheme?.props || []) ensurePropSprite(prop);
     for (const hero of activeTerrainTheme?.heroProps || []) ensurePropSprite(hero.prop);
     for (const placement of activeTerrainTheme?.placements || []) ensurePropSprite(placement.prop);
@@ -2294,23 +2297,31 @@
     ctx.fillStyle = baseGrad;
     ctx.fillRect(-60, terrainYMin - 80, W + 120, H - terrainYMin + 140);
 
-    const pattern = ctx.createPattern(getTerrainPatternTile(theme), 'repeat');
-    if (pattern) {
+    // ── Pattern 疊加（快取版，不再每幀重建 createPattern）──
+    const themeSrcKey = activeTerrainTheme ? activeTerrainTheme.pattern + ':' + activeTerrainTheme.variant : null;
+    if (cachedPatterns.themeSrc !== themeSrcKey) {
+      const tTile = getTerrainPatternTile(theme);
+      const dTile = getTerrainDetailTile(theme);
+      cachedPatterns.terrain = tTile ? ctx.createPattern(tTile, 'repeat') : null;
+      cachedPatterns.detail  = dTile ? ctx.createPattern(dTile, 'repeat') : null;
+      cachedPatterns.themeSrc = themeSrcKey;
+    }
+
+    if (cachedPatterns.terrain) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
       ctx.globalAlpha = clamp(0.45 + (theme.textureDensity - 0.7) * 0.22, 0.45, 0.75);
-      ctx.fillStyle = pattern;
+      ctx.fillStyle = cachedPatterns.terrain;
       ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 240);
       ctx.restore();
     }
 
-    const detailPattern = ctx.createPattern(getTerrainDetailTile(theme), 'repeat');
-    if (detailPattern) {
+    if (cachedPatterns.detail) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.08 + theme.stats.volatility * 2.8)) % 384), -18);
       ctx.globalCompositeOperation = 'overlay';
       ctx.globalAlpha = clamp(0.38 + (theme.textureDensity - 0.7) * 0.18, 0.38, 0.62);
-      ctx.fillStyle = detailPattern;
+      ctx.fillStyle = cachedPatterns.detail;
       ctx.fillRect(-768, terrainYMin - 180, W + 1536, H - terrainYMin + 320);
       ctx.restore();
     }
@@ -2346,12 +2357,16 @@
     // ── 高細節：材質疊加模式 (Overlay Texture) ──
     if (highDetailMode && themeAssets.texture) {
       ctx.save();
-      const hdPattern = ctx.createPattern(themeAssets.texture, 'repeat');
+      // hd Pattern 同樣只在圖片換掉時重建
+      if (cachedPatterns.hdSrc !== themeAssets.texture) {
+        cachedPatterns.hd = ctx.createPattern(themeAssets.texture, 'repeat');
+        cachedPatterns.hdSrc = themeAssets.texture;
+      }
       const xOffset = -((terrainScrollX * 0.3) % 512);
       ctx.translate(xOffset, 0);
       ctx.globalCompositeOperation = 'overlay';
       ctx.globalAlpha = 0.55;
-      ctx.fillStyle = hdPattern;
+      ctx.fillStyle = cachedPatterns.hd;
       ctx.fillRect(-512, terrainYMin - 80, W + 1024, H - terrainYMin + 160);
       ctx.restore();
     }
