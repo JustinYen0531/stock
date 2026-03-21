@@ -1422,13 +1422,10 @@
   }
 
   function getThemeTextureOverlaySource() {
-    const symbol = stockData?.symbol;
-    const isGOOG = symbol === 'GOOGL' || symbol === 'GOOG';
     if (themeAssets.textureVideo && themeAssets.textureVideo.readyState >= 2) {
       const tile = updateThemeTextureVideoTile(themeAssets.textureVideo);
       if (tile) return tile;
     }
-    if (isGOOG) return null;
     return themeAssets.texture;
   }
 
@@ -2798,7 +2795,7 @@
       
       // 使用 source-over 確保紋理清晰顯示，不受底色影響
       ctx.globalCompositeOperation = 'source-over'; 
-      ctx.globalAlpha = isGOOGTerrain ? 0.68 : 0.85;
+      ctx.globalAlpha = isGOOGTerrain ? 0.9 : 0.85;
       if (hdPattern) {
         ctx.fillStyle = hdPattern;
         ctx.fillRect(-W * 2, terrainYMin - 200, W * 4, H * 2 + 400);
