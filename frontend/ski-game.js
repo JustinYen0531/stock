@@ -2371,7 +2371,7 @@
       const xOffset = -((terrainScrollX * 0.3) % 512);
       ctx.translate(xOffset, 0);
       ctx.globalCompositeOperation = 'overlay';
-      ctx.globalAlpha = 0.46; // 調回適度的透明度，恢復六角形紋理細節
+      ctx.globalAlpha = 0.15; // 大幅調低透明度，避免畫面太亂
       ctx.fillStyle = cachedPatterns.hd;
       ctx.fillRect(-512, terrainYMin - 80, W + 1024, H - terrainYMin + 160);
       ctx.restore();
