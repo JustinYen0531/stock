@@ -1733,14 +1733,26 @@
     ctx.fillRect(-20, -20, W + 40, H + 40); 
 
     // ── 高細節：遠景 Vista (Parallax) ──
-    if (highDetailMode && themeAssets.vista) {
-      const scrollRatio = 0.15; // 慢速位移
+    const vistaDrawn = highDetailMode && !!themeAssets.vista;
+    if (vistaDrawn) {
+      const scrollRatio = 0.15;
       const scrollX = (terrainScrollX * scrollRatio) % W;
+      ctx.save();
+      ctx.globalAlpha = 0.96;
       ctx.drawImage(themeAssets.vista, -scrollX, 0, W, H);
       ctx.drawImage(themeAssets.vista, W - scrollX, 0, W, H);
+      // 底部暗幕，讓地形與背景有自然融合
+      const veil = ctx.createLinearGradient(0, H * 0.5, 0, H);
+      veil.addColorStop(0, 'rgba(5,10,20,0)');
+      veil.addColorStop(1, 'rgba(5,10,20,0.55)');
+      ctx.fillStyle = veil;
+      ctx.globalAlpha = 1;
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
     }
 
-    const usedThemeBackground = drawThemeBackground(W, H);
+    // Vista 已顯示時跳過 themeBackground 避免被蓋住
+    const usedThemeBackground = vistaDrawn ? false : drawThemeBackground(W, H);
 
     if (!usedThemeBackground) {
       // 星星背景
