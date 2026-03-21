@@ -1299,7 +1299,9 @@
 
     const vistaVideoCandidates = themeDir === 'GOOGL'
       ? [
+          `/static/assets/themes/${themeDir}/Subtle_Briefing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
           `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
+          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2`,
         ]
       : [
           `/static/assets/themes/${themeDir}/vista.mp4`,
@@ -1315,7 +1317,9 @@
 
     const textureVideoCandidates = themeDir === 'GOOGL'
       ? [
+          `/static/assets/themes/${themeDir}/Subtle_Briefing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
           `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
+          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2`,
         ]
       : [
           `/static/assets/themes/${themeDir}/texture.mp4`,
@@ -2783,7 +2787,7 @@
     ctx.fill(fillPath);
 
     // ── 高細節：材質疊加模式 (Overlay Texture) ──
-    const overlayTexture = !isGOOGTerrain && highDetailMode ? getThemeTextureOverlaySource() : null;
+    const overlayTexture = highDetailMode ? getThemeTextureOverlaySource() : null;
     if (overlayTexture) {
       ctx.save();
       ctx.clip(fillPath);
@@ -2794,7 +2798,7 @@
       
       // 使用 source-over 確保紋理清晰顯示，不受底色影響
       ctx.globalCompositeOperation = 'source-over'; 
-      ctx.globalAlpha = 0.85;
+      ctx.globalAlpha = isGOOGTerrain ? 0.68 : 0.85;
       if (hdPattern) {
         ctx.fillStyle = hdPattern;
         ctx.fillRect(-W * 2, terrainYMin - 200, W * 4, H * 2 + 400);
