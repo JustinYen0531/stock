@@ -210,11 +210,40 @@ function buildSparklineSvg(series, color) {
 }
 
 function getHomepageBackgroundFile(symbol) {
-  return `/static/assets/homepage-backgrounds/${String(symbol || "").replace(/[^A-Za-z0-9]+/g, "_")}.svg`;
+  const s = String(symbol || "").toUpperCase();
+  // 已優化的主流股優先使用高細節 VISTA
+  if (['NVDA', 'AMZN', 'META', 'MSFT', 'GOOGL', 'GOOG', 'INTC'].includes(s)) {
+    let themeDir = s;
+    if (s === 'GOOG' || s === 'GOOGL') themeDir = 'GOOGL';
+    if (s === 'INTC') themeDir = 'intel';
+    return `/static/assets/themes/${themeDir}/vista.png`;
+  }
+  return `/static/assets/homepage-backgrounds/${s.replace(/[^A-Za-z0-9]+/g, "_")}.svg`;
 }
 
 function getHomepageBackgroundStyle(symbol) {
   return `style="--stock-bg: url('${getHomepageBackgroundFile(symbol)}')"`;
+}
+
+function getHomepageBackgroundVideoFile(symbol) {
+  const s = String(symbol || "").toUpperCase();
+  if (s === "GOOGL" || s === "GOOG") {
+    return "/static/assets/themes/GOOGL/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4";
+  }
+  return "";
+}
+
+function renderHomepageBackgroundMedia(symbol) {
+  const videoSrc = getHomepageBackgroundVideoFile(symbol);
+  if (!videoSrc) return "";
+  const poster = getHomepageBackgroundFile(symbol);
+  return `
+    <span class="homepage-stock-video-wrap" aria-hidden="true">
+      <video class="homepage-stock-video" autoplay muted loop playsinline preload="auto" poster="${escapeHtml(poster)}">
+        <source src="${escapeHtml(videoSrc)}" type="video/mp4">
+      </video>
+    </span>
+  `;
 }
 
 function buildHomepageQuickEntries() {
@@ -237,6 +266,7 @@ function buildHomepageQuickEntries() {
     .slice(0, 10)
     .map((item) => `
       <button class="welcome-rec-quick-button homepage-stock-surface" ${getHomepageBackgroundStyle(item.symbol)} data-action="analyze" data-symbol="${escapeHtml(item.symbol)}">
+        ${renderHomepageBackgroundMedia(item.symbol)}
         <span class="welcome-rec-quick-symbol">${escapeHtml(item.symbol)}</span>
         <span class="welcome-rec-quick-name">${escapeHtml(item.name)}</span>
       </button>
@@ -253,6 +283,7 @@ function buildHomepageFeaturedCard() {
 
   return `
     <div class="welcome-rec-featured-shell homepage-stock-surface" ${getHomepageBackgroundStyle(featured.symbol)}>
+      ${renderHomepageBackgroundMedia(featured.symbol)}
       <div class="welcome-rec-featured-top">
         <div class="welcome-rec-symbol-group">
           <div class="welcome-rec-chip-row">
@@ -293,6 +324,7 @@ function buildHomepageHotRows() {
       const expanded = homepageRecommendationState.hotExpanded === index;
       return `
         <article class="welcome-rec-hot-row homepage-stock-surface" ${getHomepageBackgroundStyle(item.symbol)} data-action="analyze" data-symbol="${escapeHtml(item.symbol)}">
+          ${renderHomepageBackgroundMedia(item.symbol)}
           <div class="welcome-rec-hot-top">
             <div class="welcome-rec-hot-main">
               <div class="welcome-rec-hot-meta">
@@ -332,6 +364,7 @@ function buildHomepageThemeCards() {
       const coverSymbol = theme.picks?.[0]?.symbol || "";
       return `
         <article class="welcome-rec-theme-card homepage-stock-surface" ${getHomepageBackgroundStyle(coverSymbol)}>
+          ${renderHomepageBackgroundMedia(coverSymbol)}
           <div class="welcome-rec-theme-top" data-action="toggle-theme-detail" data-theme-id="${escapeHtml(theme.id)}">
             <span class="welcome-rec-theme-icon">${escapeHtml(theme.icon)}</span>
             <div class="welcome-rec-theme-main">
@@ -345,6 +378,7 @@ function buildHomepageThemeCards() {
                 const watched = isHomepageWatched(pick.symbol);
                 return `
                   <div class="welcome-rec-pick-chip homepage-stock-surface" ${getHomepageBackgroundStyle(pick.symbol)}>
+                    ${renderHomepageBackgroundMedia(pick.symbol)}
                     <div>
                       <div class="welcome-rec-pick-symbol">${escapeHtml(pick.symbol)}</div>
                       <div class="welcome-rec-pick-name">${escapeHtml(pick.name)}</div>

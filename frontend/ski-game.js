@@ -356,13 +356,47 @@
 
   // ── 視覺細節狀態 ──
   let highDetailMode = false;
-  let themeAssets = { vista: null, texture: null, gpu_core: null, neural_node: null };
+  let themeAssets = createEmptyThemeAssets();
   const themeBackgroundCache = new Map();
   const terrainPatternCache = new Map();
   const terrainDetailCache = new Map();
   const propSpriteCache = new Map();
   let themeManifestMap = null;
   let themeManifestPromise = null;
+
+  function createEmptyThemeAssets() {
+    return {
+      vista: null,
+      vistaVideo: null,
+      texture: null,
+      textureVideo: null,
+      textureVideoTile: null,
+      textureVideoCtx: null,
+      textureVideoTime: -1,
+      gpu_core: null,
+      neural_node: null,
+    };
+  }
+
+  function stopThemeTextureVideo() {
+    const video = themeAssets.textureVideo;
+    if (!video) return;
+    video.pause();
+    video.currentTime = 0;
+  }
+
+  function stopThemeVistaVideo() {
+    const video = themeAssets.vistaVideo;
+    if (!video) return;
+    video.pause();
+    video.currentTime = 0;
+  }
+
+  function resetThemeAssets() {
+    stopThemeVistaVideo();
+    stopThemeTextureVideo();
+    themeAssets = createEmptyThemeAssets();
+  }
 
   // 動態取得當前 hitbox 高度
   // hitboxSize 1√100 → 映射到 40√100px
@@ -1109,7 +1143,10 @@
         btn.querySelector('.detail-label').textContent = highDetailMode ? '高細節模式：開啟' : '低細節模式';
       }
       if (highDetailMode && stockData) {
-         loadThemeAssets(stockData.symbol);
+        refreshThemeAssets();
+      } else {
+        stopThemeVistaVideo();
+        stopThemeTextureVideo();
       }
     }
   };
@@ -1189,6 +1226,8 @@
     gameState = 'idle';
     activeMapDifficulty = null;
     particles = [];
+    stopThemeVistaVideo();
+    stopThemeTextureVideo();
     unbindInput();
     window.removeEventListener('resize', resizeCanvas);
     document.getElementById('skiGameModal')?.classList.add('hidden');
@@ -1238,27 +1277,54 @@
 
   function loadThemeAssets(symbol) {
     let themeDir = null;
-    if (symbol === 'INTC') themeDir = 'intel';
-    if (symbol === 'META' || symbol === 'NVDA' || symbol === 'MSFT' || symbol === 'GOOGL' || symbol === 'GOOG') themeDir = 'GOOGL'; // 統一使用 GOOGL 資產夾
-    if (symbol === 'META') themeDir = 'META';
-    if (symbol === 'NVDA') themeDir = 'NVDA';
-    if (symbol === 'MSFT') themeDir = 'MSFT';
-    if (symbol === 'INTC') themeDir = 'intel';
+    const s = normalizeThemeSymbol(symbol);
+
+    if (s === 'INTC') themeDir = 'intel';
+    else if (s === 'AMZN') themeDir = 'AMZN';
+    else if (s === 'META') themeDir = 'META';
+    else if (s === 'NVDA') themeDir = 'NVDA';
+    else if (s === 'MSFT') themeDir = 'MSFT';
+    else if (s === 'GOOGL' || s === 'GOOG') themeDir = 'GOOGL';
 
     if (!themeDir) {
-      themeAssets = { vista: null, texture: null, gpu_core: null, neural_node: null };
+      resetThemeAssets();
       return;
     }
 
-    const vistaImg = new Image();
-    vistaImg.src = `/static/assets/themes/${themeDir}/vista.png`;
-    vistaImg.onload = () => themeAssets.vista = vistaImg;
+    if (themeDir !== 'GOOGL') {
+      const vistaImg = new Image();
+      vistaImg.src = `/static/assets/themes/${themeDir}/vista.png`;
+      vistaImg.onload = () => { themeAssets.vista = vistaImg; };
+    }
 
-    const textureImg = new Image();
-    textureImg.src = `/static/assets/themes/${themeDir}/texture.png`;
-    textureImg.onload = () => themeAssets.texture = textureImg;
+    const vistaVideoCandidates = themeDir === 'GOOGL'
+      ? [
+          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
+        ]
+      : [
+          `/static/assets/themes/${themeDir}/vista.mp4`,
+          `/static/assets/themes/${themeDir}/vista.webm`,
+        ];
+    loadThemeVistaVideo(vistaVideoCandidates);
 
-    if (symbol === 'NVDA') {
+    if (themeDir !== 'GOOGL') {
+      const textureImg = new Image();
+      textureImg.src = `/static/assets/themes/${themeDir}/texture.png`;
+      textureImg.onload = () => { themeAssets.texture = textureImg; };
+    }
+
+    const textureVideoCandidates = themeDir === 'GOOGL'
+      ? [
+          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
+        ]
+      : [
+          `/static/assets/themes/${themeDir}/texture.mp4`,
+          `/static/assets/themes/${themeDir}/texture.webm`,
+        ];
+    loadThemeTextureVideo(textureVideoCandidates);
+
+    // 專屬地標資產
+    if (s === 'NVDA') {
       const gpuImg = new Image();
       gpuImg.src = `/static/assets/themes/NVDA/gpu_core.png`;
       gpuImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(gpuImg); };
@@ -1267,8 +1333,7 @@
       nodeImg.src = `/static/assets/themes/NVDA/neural_node.png`;
       nodeImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(nodeImg); };
     }
-
-    if (symbol === 'META') {
+    else if (s === 'META') {
       const communityImg = new Image();
       communityImg.src = `/static/assets/themes/META/community_node.png`;
       communityImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(communityImg); };
@@ -1277,8 +1342,7 @@
       bubbleImg.src = `/static/assets/themes/META/social_bubble.png`;
       bubbleImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(bubbleImg); };
     }
-
-    if (symbol === 'MSFT') {
+    else if (s === 'MSFT') {
       const windowImg = new Image();
       windowImg.src = `/static/assets/themes/MSFT/window_icon.png`;
       windowImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(windowImg); };
@@ -1287,8 +1351,7 @@
       cloudImg.src = `/static/assets/themes/MSFT/cloud_icon.png`;
       cloudImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(cloudImg); };
     }
-
-    if (symbol === 'GOOGL' || symbol === 'GOOG') {
+    else if (s === 'GOOGL' || s === 'GOOG') {
       const searchImg = new Image();
       searchImg.src = `/static/assets/themes/GOOGL/search_node.png`;
       searchImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(searchImg); };
@@ -1297,6 +1360,123 @@
       sparkleImg.src = `/static/assets/themes/GOOGL/ai_sparkle.png`;
       sparkleImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(sparkleImg); };
     }
+  }
+
+  function loadThemeTextureVideo(candidates) {
+    if (!Array.isArray(candidates) || candidates.length === 0) return;
+
+    const video = document.createElement('video');
+    video.muted = true;
+    video.loop = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.crossOrigin = 'anonymous';
+
+    let candidateIndex = 0;
+    const tryNext = () => {
+      if (candidateIndex >= candidates.length) return;
+      video.src = candidates[candidateIndex++];
+      video.load();
+    };
+
+    video.addEventListener('loadeddata', () => {
+      themeAssets.textureVideo = video;
+      themeAssets.textureVideoTime = -1;
+      video.play().catch(() => {});
+    });
+
+    video.addEventListener('error', tryNext);
+    tryNext();
+  }
+
+  function loadThemeVistaVideo(candidates) {
+    if (!Array.isArray(candidates) || candidates.length === 0) return;
+
+    const video = document.createElement('video');
+    video.muted = true;
+    video.loop = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.crossOrigin = 'anonymous';
+
+    let candidateIndex = 0;
+    const tryNext = () => {
+      if (candidateIndex >= candidates.length) return;
+      video.src = candidates[candidateIndex++];
+      video.load();
+    };
+
+    video.addEventListener('loadeddata', () => {
+      themeAssets.vistaVideo = video;
+      video.play().catch(() => {});
+    });
+
+    video.addEventListener('error', tryNext);
+    tryNext();
+  }
+
+  function getThemeTextureOverlaySource() {
+    const symbol = stockData?.symbol;
+    const isGOOG = symbol === 'GOOGL' || symbol === 'GOOG';
+    if (themeAssets.textureVideo && themeAssets.textureVideo.readyState >= 2) {
+      const tile = updateThemeTextureVideoTile(themeAssets.textureVideo);
+      if (tile) return tile;
+    }
+    if (isGOOG) return null;
+    return themeAssets.texture;
+  }
+
+  function updateThemeTextureVideoTile(video) {
+    const videoW = video.videoWidth || 0;
+    const videoH = video.videoHeight || 0;
+    if (!videoW || !videoH) return null;
+
+    const targetW = Math.max(96, Math.min(320, videoW));
+    const targetH = Math.max(96, Math.round(targetW * (videoH / videoW)));
+    const tileW = targetW * 2;
+    const tileH = targetH * 2;
+
+    if (!themeAssets.textureVideoTile || themeAssets.textureVideoTile.width !== tileW || themeAssets.textureVideoTile.height !== tileH) {
+      const tileCanvas = document.createElement('canvas');
+      tileCanvas.width = tileW;
+      tileCanvas.height = tileH;
+      themeAssets.textureVideoTile = tileCanvas;
+      themeAssets.textureVideoCtx = tileCanvas.getContext('2d');
+      themeAssets.textureVideoTime = -1;
+    }
+
+    if (Math.abs((themeAssets.textureVideoTime ?? -1) - video.currentTime) < 0.016) {
+      return themeAssets.textureVideoTile;
+    }
+
+    const tileCtx = themeAssets.textureVideoCtx;
+    tileCtx.clearRect(0, 0, tileW, tileH);
+    tileCtx.imageSmoothingEnabled = true;
+
+    tileCtx.drawImage(video, 0, 0, targetW, targetH);
+
+    tileCtx.save();
+    tileCtx.translate(tileW, 0);
+    tileCtx.scale(-1, 1);
+    tileCtx.drawImage(video, 0, 0, targetW, targetH);
+    tileCtx.restore();
+
+    tileCtx.save();
+    tileCtx.translate(0, tileH);
+    tileCtx.scale(1, -1);
+    tileCtx.drawImage(video, 0, 0, targetW, targetH);
+    tileCtx.restore();
+
+    tileCtx.save();
+    tileCtx.translate(tileW, tileH);
+    tileCtx.scale(-1, -1);
+    tileCtx.drawImage(video, 0, 0, targetW, targetH);
+    tileCtx.restore();
+
+    themeAssets.textureVideoTime = video.currentTime;
+    return themeAssets.textureVideoTile;
   }
 
   function resizeCanvas() {
@@ -1383,7 +1563,7 @@
   function refreshThemeAssets() {
     if (!stockData) return;
     // 每次重啟遊戲先清空舊資產，避免上一局的圖片殘留
-    themeAssets = { vista: null, texture: null, gpu_core: null, neural_node: null };
+    resetThemeAssets();
     if (highDetailMode) {
       loadThemeAssets(stockData.symbol);
     }
@@ -1436,6 +1616,12 @@
     // 僅在資產尚未載入時才刷新（launch() 已提前觸發，這裡不清空以免中斷異步載入）
     if (!themeAssets.vista && !themeAssets.texture) {
       refreshThemeAssets();
+    }
+    if (highDetailMode && themeAssets.vistaVideo) {
+      themeAssets.vistaVideo.play().catch(() => {});
+    }
+    if (highDetailMode && themeAssets.textureVideo) {
+      themeAssets.textureVideo.play().catch(() => {});
     }
     buildTerrain();
 
@@ -1938,29 +2124,40 @@
     ctx.save();
     ctx.translate(shakeX, shakeY); // 套用震動
 
-    if (highDetailMode && themeAssets.vista && themeAssets.vista.complete) {
+    const vistaMedia = highDetailMode && themeAssets.vistaVideo && themeAssets.vistaVideo.readyState >= 2
+      ? themeAssets.vistaVideo
+      : (highDetailMode && themeAssets.vista && themeAssets.vista.complete ? themeAssets.vista : null);
+
+    if (vistaMedia) {
       // ── 高細節：遠景 Vista (Parallax + Mirror Seamless Loop) ──
-      const img = themeAssets.vista;
+      const img = vistaMedia;
       const isMETA = stockData?.symbol === 'META';
       const isMSFT = stockData?.symbol === 'MSFT';
       const isGOOG = stockData?.symbol === 'GOOGL' || stockData?.symbol === 'GOOG';
+      const isAMZN = stockData?.symbol === 'AMZN';
+      const sourceW = img.videoWidth || img.width;
+      const sourceH = img.videoHeight || img.height;
       
       // 根據主題進行背景裁切優化
       let sy = 0;
-      let sh = img.height;
+      let sh = sourceH;
       if (isMETA) {
-        sy = img.height * 0.38;
-        sh = img.height * 0.42;
+        sy = sourceH * 0.38;
+        sh = sourceH * 0.42;
       } else if (isMSFT) {
-        sy = img.height * 0.1;
-        sh = img.height * 0.7;
+        sy = sourceH * 0.1;
+        sh = sourceH * 0.7;
       } else if (isGOOG) {
         // Google 背景：取中間區塊，展現繽紛的幾何律動
-        sy = img.height * 0.25;
-        sh = img.height * 0.5;
+        sy = sourceH * 0.25;
+        sh = sourceH * 0.5;
+      } else if (isAMZN) {
+        // Amazon 背景：聚焦在物流中心的中下層，展現繁忙的傳送帶與包裹感
+        sy = sourceH * 0.2;
+        sh = sourceH * 0.75;
       }
       
-      const imgRatio = img.width / sh;
+      const imgRatio = sourceW / sh;
       const drawH = H;
       const drawW = drawH * imgRatio;
       
@@ -1976,9 +2173,9 @@
         if (Math.abs(tileIndex) % 2 === 1) {
           ctx.translate(x + drawW, 0);
           ctx.scale(-1, 1);
-          ctx.drawImage(img, 0, sy, img.width, sh, 0, 0, drawW, drawH);
+          ctx.drawImage(img, 0, sy, sourceW, sh, 0, 0, drawW, drawH);
         } else {
-          ctx.drawImage(img, 0, sy, img.width, sh, x, 0, drawW, drawH);
+          ctx.drawImage(img, 0, sy, sourceW, sh, x, 0, drawW, drawH);
         }
         ctx.restore();
         tileIndex++;
@@ -2526,6 +2723,7 @@
   function drawTerrainFill(theme, fillPath, W, H) {
     ctx.save();
     ctx.clip(fillPath);
+    const isGOOGTerrain = theme.symbol === 'GOOGL' || theme.symbol === 'GOOG';
 
     const baseGrad = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
     baseGrad.addColorStop(0, withAlpha(theme.palette.base, 0.94));
@@ -2534,7 +2732,7 @@
     ctx.fillStyle = baseGrad;
     ctx.fillRect(-60, terrainYMin - 80, W + 120, H - terrainYMin + 140);
 
-    const pattern = ctx.createPattern(getTerrainPatternTile(theme), 'repeat');
+    const pattern = isGOOGTerrain ? null : ctx.createPattern(getTerrainPatternTile(theme), 'repeat');
     if (pattern) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
@@ -2544,7 +2742,7 @@
       ctx.restore();
     }
 
-    const detailPattern = ctx.createPattern(getTerrainDetailTile(theme), 'repeat');
+    const detailPattern = isGOOGTerrain ? null : ctx.createPattern(getTerrainDetailTile(theme), 'repeat');
     if (detailPattern) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.08 + theme.stats.volatility * 2.8)) % 384), -18);
@@ -2555,7 +2753,7 @@
       ctx.restore();
     }
 
-    if (theme.variant === 'volatile' || theme.variant === 'crash') {
+    if (!isGOOGTerrain && (theme.variant === 'volatile' || theme.variant === 'crash')) {
       ctx.save();
       ctx.strokeStyle = withAlpha(theme.glowColor, theme.variant === 'crash' ? 0.16 : 0.1);
       ctx.lineWidth = theme.variant === 'crash' ? 3 : 2;
@@ -2585,10 +2783,11 @@
     ctx.fill(fillPath);
 
     // ── 高細節：材質疊加模式 (Overlay Texture) ──
-    if (highDetailMode && themeAssets.texture) {
+    const overlayTexture = !isGOOGTerrain && highDetailMode ? getThemeTextureOverlaySource() : null;
+    if (overlayTexture) {
       ctx.save();
       ctx.clip(fillPath);
-      const hdPattern = ctx.createPattern(themeAssets.texture, 'repeat');
+      const hdPattern = ctx.createPattern(overlayTexture, 'repeat');
       
       const xOffset = -(terrainScrollX * 0.5) % 512; 
       ctx.translate(xOffset, 0); 
@@ -2596,17 +2795,20 @@
       // 使用 source-over 確保紋理清晰顯示，不受底色影響
       ctx.globalCompositeOperation = 'source-over'; 
       ctx.globalAlpha = 0.85;
-      ctx.fillStyle = hdPattern;
-      ctx.fillRect(-W * 2, terrainYMin - 200, W * 4, H * 2 + 400);
+      if (hdPattern) {
+        ctx.fillStyle = hdPattern;
+        ctx.fillRect(-W * 2, terrainYMin - 200, W * 4, H * 2 + 400);
+      }
 
-      // META/NVDA/MSFT/GOOGL 專屬亮光濾鏡
-      if (stockData && (['META', 'NVDA', 'MSFT', 'GOOGL', 'GOOG'].includes(stockData.symbol))) {
+      // META/NVDA/MSFT/GOOGL/AMZN 專屬亮光濾鏡
+      if (stockData && (['META', 'NVDA', 'MSFT', 'GOOGL', 'GOOG', 'AMZN'].includes(stockData.symbol))) {
         const isNVDA = stockData.symbol === 'NVDA';
         const isMSFT = stockData.symbol === 'MSFT';
         const isGOOG = stockData.symbol === 'GOOGL' || stockData.symbol === 'GOOG';
+        const isAMZN = stockData.symbol === 'AMZN';
         
         ctx.globalCompositeOperation = 'screen';
-        ctx.globalAlpha = isNVDA ? 0.6 : 0.7;
+        ctx.globalAlpha = isNVDA ? 0.6 : (isAMZN ? 0.55 : 0.7);
         const grad = ctx.createLinearGradient(0, terrainYMin, 0, H);
         
         if (isNVDA) {
@@ -2621,6 +2823,10 @@
           grad.addColorStop(0.3, 'rgba(234, 67, 53, 0.25)'); // Red
           grad.addColorStop(0.6, 'rgba(251, 188, 5, 0.2)');  // Yellow
           grad.addColorStop(1, 'rgba(52, 168, 83, 0.4)');    // Green
+        } else if (isAMZN) {
+          // Amazon 經典橘色光澤
+          grad.addColorStop(0, 'rgba(255, 153, 0, 0.45)'); 
+          grad.addColorStop(1, 'rgba(35, 47, 62, 0.85)');
         } else {
           grad.addColorStop(0, 'rgba(0, 150, 255, 0.5)'); 
           grad.addColorStop(1, 'rgba(10, 20, 40, 0.9)');
@@ -2637,10 +2843,10 @@
   }
 
   function drawTerrainPropSprite(kind, x, y, size, theme, alphaScale = 1) {
-    // ── 高細節模式：NVDA/META/MSFT/GOOGL 專屬客製化動態組件 ──
-    if (highDetailMode && (['NVDA', 'META', 'MSFT', 'GOOGL', 'GOOG'].includes(theme.symbol))) {
+    // ── 高細節模式：NVDA/META/MSFT/GOOGL/AMZN 專屬客製化動態組件 ──
+    if (highDetailMode && (['NVDA', 'META', 'MSFT', 'GOOGL', 'GOOG', 'AMZN'].includes(theme.symbol))) {
       let hdImg = null;
-      const isCore = kind.includes('monolith') || kind.includes('core') || kind.includes('chip') || kind.includes('portal') || kind.includes('window') || kind.includes('campus') || kind.includes('bridge') || kind.includes('search') || kind.includes('data');
+      const isCore = kind.includes('monolith') || kind.includes('core') || kind.includes('chip') || kind.includes('portal') || kind.includes('window') || kind.includes('campus') || kind.includes('bridge') || kind.includes('search') || kind.includes('data') || kind.includes('delivery') || kind.includes('warehouse') || kind.includes('prime');
       
       if (isCore && themeAssets.gpu_core) hdImg = themeAssets.gpu_core;
       else if (themeAssets.neural_node) hdImg = themeAssets.neural_node;
@@ -2657,8 +2863,9 @@
         ctx.scale(pulse, pulse);
         
         // 核心發光
+        const isAMZN = theme.symbol === 'AMZN';
         const glow = ctx.createRadialGradient(0, 0, size * 0.1, 0, 0, size * 1.1);
-        glow.addColorStop(0, 'rgba(118, 185, 0, 0.45)');
+        glow.addColorStop(0, isAMZN ? 'rgba(255, 153, 0, 0.45)' : 'rgba(118, 185, 0, 0.45)');
         glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = glow;
         ctx.beginPath();
