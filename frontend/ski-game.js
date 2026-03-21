@@ -1299,6 +1299,7 @@
 
     const vistaVideoCandidates = themeDir === 'GOOGL'
       ? [
+          `/static/assets/themes/${themeDir}/Google背景.mp4?v=3`,
           `/static/assets/themes/${themeDir}/Subtle_Briefing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
           `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
           `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2`,
@@ -1317,6 +1318,7 @@
 
     const textureVideoCandidates = themeDir === 'GOOGL'
       ? [
+          `/static/assets/themes/${themeDir}/Google紋理.mp4?v=3`,
           `/static/assets/themes/${themeDir}/Subtle_Briefing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
           `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
           `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2`,
