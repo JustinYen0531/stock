@@ -1738,12 +1738,18 @@
     // ── 高細節：遠景 Vista (Parallax) ──
     const vistaDrawn = highDetailMode && !!themeAssets.vista;
     if (vistaDrawn) {
-      const scrollRatio = 0.15;
-      const scrollX = (terrainScrollX * scrollRatio) % W;
+      const scrollRatioX = 0.35; // 提高水平視差速度讓動態更明顯
+      const scrollRatioY = 0.15; // 新增垂直視差，跟隨地形起伏
+      
+      const scrollX = (terrainScrollX * scrollRatioX) % W;
+      // 根據鏡頭垂直偏移量，產生背景的上下錯位立體感
+      const vistaOffsetY = terrainCameraOffsetY * scrollRatioY;
+
       ctx.save();
       ctx.globalAlpha = 0.96;
-      ctx.drawImage(themeAssets.vista, -scrollX, 0, W, H);
-      ctx.drawImage(themeAssets.vista, W - scrollX, 0, W, H);
+      ctx.drawImage(themeAssets.vista, -scrollX, vistaOffsetY, W, H);
+      ctx.drawImage(themeAssets.vista, W - scrollX, vistaOffsetY, W, H);
+      
       // 底部暗幕，讓地形與背景有自然融合
       const veil = ctx.createLinearGradient(0, H * 0.5, 0, H);
       veil.addColorStop(0, 'rgba(5,10,20,0)');
@@ -1754,15 +1760,13 @@
       ctx.restore();
     }
 
-    // Vista 已顯示時跳過 themeBackground 避免被蓋住
-    const usedThemeBackground = vistaDrawn ? false : drawThemeBackground(W, H);
-
-    if (!usedThemeBackground) {
-      // 星星背景
-      drawStars(W, H);
-
-      // 遠景山脈
-      drawMountains(W, H);
+    // Vista 已顯示時跳過 themeBackground、stars 與 mountains，避免遮擋
+    if (!vistaDrawn) {
+      const usedThemeBackground = drawThemeBackground(W, H);
+      if (!usedThemeBackground) {
+        drawStars(W, H);
+        drawMountains(W, H);
+      }
     }
 
     // 地形線
