@@ -2729,9 +2729,15 @@
     const isGOOGTerrain = theme.symbol === 'GOOGL' || theme.symbol === 'GOOG';
 
     const baseGrad = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
-    baseGrad.addColorStop(0, withAlpha(theme.palette.base, 0.94));
-    baseGrad.addColorStop(0.58, withAlpha(theme.palette.mid, 0.82));
-    baseGrad.addColorStop(1, withAlpha(theme.palette.shadow, 0.92));
+    if (isGOOGTerrain) {
+      baseGrad.addColorStop(0, 'rgba(54, 74, 98, 0.86)');
+      baseGrad.addColorStop(0.52, 'rgba(74, 96, 122, 0.76)');
+      baseGrad.addColorStop(1, 'rgba(28, 40, 54, 0.84)');
+    } else {
+      baseGrad.addColorStop(0, withAlpha(theme.palette.base, 0.94));
+      baseGrad.addColorStop(0.58, withAlpha(theme.palette.mid, 0.82));
+      baseGrad.addColorStop(1, withAlpha(theme.palette.shadow, 0.92));
+    }
     ctx.fillStyle = baseGrad;
     ctx.fillRect(-60, terrainYMin - 80, W + 120, H - terrainYMin + 140);
 
@@ -2772,7 +2778,7 @@
 
     const depthMask = ctx.createLinearGradient(0, terrainYMin - 10, 0, H);
     depthMask.addColorStop(0, 'rgba(0,0,0,0)');
-    depthMask.addColorStop(1, withAlpha(theme.palette.shadow, 0.46));
+    depthMask.addColorStop(1, isGOOGTerrain ? 'rgba(12,18,26,0.22)' : withAlpha(theme.palette.shadow, 0.46));
     ctx.fillStyle = depthMask;
     ctx.fillRect(-20, terrainYMin - 10, W + 40, H - terrainYMin + 40);
 
@@ -2795,26 +2801,25 @@
         const video = themeAssets.textureVideo;
         const sourceW = video.videoWidth || W;
         const sourceH = video.videoHeight || H;
-        const drawH = Math.max(H * 0.68, sourceH * 0.5);
+        const drawH = Math.max(H * 0.78, sourceH * 0.56);
         const drawW = drawH * (sourceW / Math.max(1, sourceH));
         const driftX = -((terrainScrollX * 0.18) % Math.max(drawW, 1));
-        const drawY = terrainYMin - H * 0.04;
-        const textureBandBottom = Math.min(H, terrainYMin + H * 0.42);
+        const drawY = terrainYMin - H * 0.06;
+        const textureBandBottom = Math.min(H, terrainYMin + H * 0.56);
 
-        ctx.globalAlpha = 0.94;
+        ctx.globalAlpha = 1;
         for (let i = -1; i <= 2; i++) {
           ctx.drawImage(video, driftX + i * drawW, drawY, drawW, drawH);
         }
 
-        // 只保留山體上半段的影片紋理，避免下方影片底色形成整塊色帶。
         ctx.globalCompositeOperation = 'destination-in';
-        const textureFade = ctx.createLinearGradient(0, terrainYMin - 40, 0, textureBandBottom);
-        textureFade.addColorStop(0, 'rgba(255,255,255,0.98)');
-        textureFade.addColorStop(0.4, 'rgba(255,255,255,0.92)');
-        textureFade.addColorStop(0.78, 'rgba(255,255,255,0.32)');
+        const textureFade = ctx.createLinearGradient(0, terrainYMin - 50, 0, textureBandBottom);
+        textureFade.addColorStop(0, 'rgba(255,255,255,1)');
+        textureFade.addColorStop(0.55, 'rgba(255,255,255,0.96)');
+        textureFade.addColorStop(0.84, 'rgba(255,255,255,0.52)');
         textureFade.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = textureFade;
-        ctx.fillRect(-W, terrainYMin - 60, W * 3, textureBandBottom - terrainYMin + 100);
+        ctx.fillRect(-W, terrainYMin - 80, W * 3, textureBandBottom - terrainYMin + 130);
       } else {
         const hdPattern = ctx.createPattern(overlayTexture, 'repeat');
         const xOffset = -(terrainScrollX * 0.5) % 512;
