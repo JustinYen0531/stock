@@ -71,6 +71,8 @@
       vistaVideos: ['vista.mp4', 'vista.webm'],
       textureVideos: ['texture.mp4', 'texture.webm'],
       vistaCrop: null,
+      vistaOpacity: 1,
+      vistaSoftOverlay: null,
     },
     specialAssets: null,
     visuals: null,
@@ -131,6 +133,8 @@
           'Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2',
         ],
         vistaCrop: { y: 0.25, height: 0.5 },
+        vistaOpacity: 0.52,
+        vistaSoftOverlay: 'rgba(245,248,252,0.34)',
       },
       specialAssets: {
         gpu_core: 'search_node.png',
@@ -150,6 +154,8 @@
           'rgba(0,0,0,0.06)',
         ],
         terrainDepthMaskEnd: 'rgba(0,0,0,0.05)',
+        terrainTextureOpacity: 0.58,
+        terrainSheenOpacity: 0.03,
       },
       terrainTextureMode: 'video_full_mountain',
     },
@@ -2226,6 +2232,7 @@
       let offset = -(totalScroll % drawW);
       
       ctx.save();
+      ctx.globalAlpha = themeProfile?.media?.vistaOpacity ?? 1;
       for (let x = offset; x < W; x += drawW) {
         ctx.save();
         if (Math.abs(tileIndex) % 2 === 1) {
@@ -2237,6 +2244,10 @@
         }
         ctx.restore();
         tileIndex++;
+      }
+      if (themeProfile?.media?.vistaSoftOverlay) {
+        ctx.fillStyle = themeProfile.media.vistaSoftOverlay;
+        ctx.fillRect(-20, -20, W + 40, H + 40);
       }
       ctx.restore();
     } else {
@@ -2841,7 +2852,8 @@
     ctx.fillRect(-20, terrainYMin - 10, W + 40, H - terrainYMin + 40);
 
     const sheen = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
-    sheen.addColorStop(0, withAlpha(theme.palette.snow, 0.18));
+    const terrainSheenOpacity = themeVisuals.terrainSheenOpacity ?? 0.18;
+    sheen.addColorStop(0, withAlpha(theme.palette.snow, terrainSheenOpacity));
     sheen.addColorStop(0.24, 'rgba(255,255,255,0)');
     sheen.addColorStop(0.66, withAlpha(theme.palette.glow, 0.08));
     sheen.addColorStop(1, 'rgba(255,255,255,0)');
@@ -2865,7 +2877,7 @@
         const drawY = terrainYMin - H * 0.08;
         const textureBandBottom = H + 20;
 
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = themeVisuals.terrainTextureOpacity ?? 1;
         for (let i = -1; i <= 2; i++) {
           ctx.drawImage(video, driftX + i * drawW, drawY, drawW, drawH);
         }
