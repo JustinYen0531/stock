@@ -63,6 +63,97 @@
     "霓虹傳媒": { base: '#34184e', mid: '#6b21a8', glow: '#f0abfc', accent: '#e879f9', shadow: '#130817', snow: '#faf5ff', pattern: 'neon', edge: 'glitch' },
     "default": { base: '#20405f', mid: '#305d85', glow: '#93c5fd', accent: '#60a5fa', shadow: '#08111b', snow: '#eff6ff', pattern: 'ice', edge: 'ice' },
   };
+  const THEME_PROFILE_DEFAULT = {
+    assetDir: null,
+    media: {
+      vistaImage: true,
+      textureImage: true,
+      vistaVideos: ['vista.mp4', 'vista.webm'],
+      textureVideos: ['texture.mp4', 'texture.webm'],
+      vistaCrop: null,
+    },
+    specialAssets: null,
+    visuals: null,
+    terrainTextureMode: 'pattern',
+  };
+  const THEME_PROFILES = {
+    INTC: {
+      assetDir: 'intel',
+    },
+    AMZN: {
+      assetDir: 'AMZN',
+      media: {
+        vistaCrop: { y: 0.2, height: 0.75 },
+      },
+    },
+    META: {
+      assetDir: 'META',
+      specialAssets: {
+        gpu_core: 'community_node.png',
+        neural_node: 'social_bubble.png',
+      },
+      media: {
+        vistaCrop: { y: 0.38, height: 0.42 },
+      },
+    },
+    NVDA: {
+      assetDir: 'NVDA',
+      specialAssets: {
+        gpu_core: 'gpu_core.png',
+        neural_node: 'neural_node.png',
+      },
+    },
+    MSFT: {
+      assetDir: 'MSFT',
+      specialAssets: {
+        gpu_core: 'window_icon.png',
+        neural_node: 'cloud_icon.png',
+      },
+      media: {
+        vistaCrop: { y: 0.1, height: 0.7 },
+      },
+    },
+    GOOGL: {
+      assetDir: 'GOOGL',
+      media: {
+        vistaImage: false,
+        textureImage: false,
+        vistaVideos: [
+          'Google背景.mp4?v=3',
+          'Subtle_Briefing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2',
+          'Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2',
+          'Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2',
+        ],
+        textureVideos: [
+          'Google紋理.mp4?v=3',
+          'Subtle_Briefing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2',
+          'Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2',
+          'Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2',
+        ],
+        vistaCrop: { y: 0.25, height: 0.5 },
+      },
+      specialAssets: {
+        gpu_core: 'search_node.png',
+        neural_node: 'ai_sparkle.png',
+      },
+      visuals: {
+        ridgeOuter: 'rgba(244, 249, 255, 0.92)',
+        ridgeInner: 'rgba(146, 212, 255, 0.95)',
+        ridgeGlow: 'rgba(199, 233, 255, 0.95)',
+        propGlow: 'rgba(255, 255, 255, 0.82)',
+        propHalo: 'rgba(255, 255, 255, 0.3)',
+        propFill: 'rgba(245, 248, 255, 0.9)',
+        propStroke: 'rgba(255, 255, 255, 0.92)',
+        terrainBaseStops: [
+          'rgba(255,255,255,0.02)',
+          'rgba(255,255,255,0.03)',
+          'rgba(0,0,0,0.06)',
+        ],
+        terrainDepthMaskEnd: 'rgba(0,0,0,0.05)',
+      },
+      terrainTextureMode: 'video_full_mountain',
+    },
+  };
   const TSMC_HERO_PACK = [
     { prop: 'tsmc-wafer-gate', band: 0.22, depthRatio: 0.16, size: 184, anchor: 'hero' },
     { prop: 'tsmc-fab-spine', band: 0.76, depthRatio: 0.44, size: 176, anchor: 'hero' },
@@ -643,6 +734,27 @@
     return `rgb(${Math.round(lerp(a.r, b.r, f))},${Math.round(lerp(a.g, b.g, f))},${Math.round(lerp(a.b, b.b, f))})`;
   }
 
+  function getThemeProfile(symbol) {
+    const normalized = normalizeThemeSymbol(symbol);
+    const alias = normalized === 'GOOG' ? 'GOOGL' : normalized;
+    const profile = THEME_PROFILES[alias];
+    if (!profile) return null;
+    return {
+      ...THEME_PROFILE_DEFAULT,
+      ...profile,
+      media: {
+        ...THEME_PROFILE_DEFAULT.media,
+        ...(profile.media || {}),
+      },
+      visuals: profile.visuals || null,
+      specialAssets: profile.specialAssets || null,
+    };
+  }
+
+  function buildThemeAssetUrl(assetDir, fileName) {
+    return `/static/assets/themes/${assetDir}/${fileName}`;
+  }
+
   function ensureThemeBackground(symbol) {
     const key = normalizeThemeSymbol(symbol);
     if (!key) return null;
@@ -1034,18 +1146,8 @@
   }
 
   function getThemeVisualWorkflow(theme) {
-    const symbol = normalizeThemeSymbol(theme?.symbol);
-    if (symbol === 'GOOGL' || symbol === 'GOOG') {
-      return {
-        ridgeOuter: 'rgba(244, 249, 255, 0.92)',
-        ridgeInner: 'rgba(146, 212, 255, 0.95)',
-        ridgeGlow: 'rgba(199, 233, 255, 0.95)',
-        propGlow: 'rgba(255, 255, 255, 0.82)',
-        propHalo: 'rgba(255, 255, 255, 0.3)',
-        propFill: 'rgba(245, 248, 255, 0.9)',
-        propStroke: 'rgba(255, 255, 255, 0.92)',
-      };
-    }
+    const profile = getThemeProfile(theme?.symbol);
+    if (profile?.visuals) return profile.visuals;
     return {
       ridgeOuter: withAlpha(theme?.palette?.snow || '#ffffff', 0.55),
       ridgeInner: theme?.glowColor || '#93c5fd',
@@ -1300,95 +1402,39 @@
   }
 
   function loadThemeAssets(symbol) {
-    let themeDir = null;
     const s = normalizeThemeSymbol(symbol);
+    const profile = getThemeProfile(s);
+    const themeDir = profile?.assetDir;
 
-    if (s === 'INTC') themeDir = 'intel';
-    else if (s === 'AMZN') themeDir = 'AMZN';
-    else if (s === 'META') themeDir = 'META';
-    else if (s === 'NVDA') themeDir = 'NVDA';
-    else if (s === 'MSFT') themeDir = 'MSFT';
-    else if (s === 'GOOGL' || s === 'GOOG') themeDir = 'GOOGL';
-
-    if (!themeDir) {
+    if (!profile || !themeDir) {
       resetThemeAssets();
       return;
     }
 
-    if (themeDir !== 'GOOGL') {
+    if (profile.media.vistaImage) {
       const vistaImg = new Image();
-      vistaImg.src = `/static/assets/themes/${themeDir}/vista.png`;
+      vistaImg.src = buildThemeAssetUrl(themeDir, 'vista.png');
       vistaImg.onload = () => { themeAssets.vista = vistaImg; };
     }
 
-    const vistaVideoCandidates = themeDir === 'GOOGL'
-      ? [
-          `/static/assets/themes/${themeDir}/Google背景.mp4?v=3`,
-          `/static/assets/themes/${themeDir}/Subtle_Briefing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
-          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
-          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2`,
-        ]
-      : [
-          `/static/assets/themes/${themeDir}/vista.mp4`,
-          `/static/assets/themes/${themeDir}/vista.webm`,
-        ];
+    const vistaVideoCandidates = profile.media.vistaVideos.map((fileName) => buildThemeAssetUrl(themeDir, fileName));
     loadThemeVistaVideo(vistaVideoCandidates);
 
-    if (themeDir !== 'GOOGL') {
+    if (profile.media.textureImage) {
       const textureImg = new Image();
-      textureImg.src = `/static/assets/themes/${themeDir}/texture.png`;
+      textureImg.src = buildThemeAssetUrl(themeDir, 'texture.png');
       textureImg.onload = () => { themeAssets.texture = textureImg; };
     }
 
-    const textureVideoCandidates = themeDir === 'GOOGL'
-      ? [
-          `/static/assets/themes/${themeDir}/Google紋理.mp4?v=3`,
-          `/static/assets/themes/${themeDir}/Subtle_Briefing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
-          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
-          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2`,
-        ]
-      : [
-          `/static/assets/themes/${themeDir}/texture.mp4`,
-          `/static/assets/themes/${themeDir}/texture.webm`,
-        ];
+    const textureVideoCandidates = profile.media.textureVideos.map((fileName) => buildThemeAssetUrl(themeDir, fileName));
     loadThemeTextureVideo(textureVideoCandidates);
 
-    // 專屬地標資產
-    if (s === 'NVDA') {
-      const gpuImg = new Image();
-      gpuImg.src = `/static/assets/themes/NVDA/gpu_core.png`;
-      gpuImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(gpuImg); };
-      
-      const nodeImg = new Image();
-      nodeImg.src = `/static/assets/themes/NVDA/neural_node.png`;
-      nodeImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(nodeImg); };
-    }
-    else if (s === 'META') {
-      const communityImg = new Image();
-      communityImg.src = `/static/assets/themes/META/community_node.png`;
-      communityImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(communityImg); };
-      
-      const bubbleImg = new Image();
-      bubbleImg.src = `/static/assets/themes/META/social_bubble.png`;
-      bubbleImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(bubbleImg); };
-    }
-    else if (s === 'MSFT') {
-      const windowImg = new Image();
-      windowImg.src = `/static/assets/themes/MSFT/window_icon.png`;
-      windowImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(windowImg); };
-      
-      const cloudImg = new Image();
-      cloudImg.src = `/static/assets/themes/MSFT/cloud_icon.png`;
-      cloudImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(cloudImg); };
-    }
-    else if (s === 'GOOGL' || s === 'GOOG') {
-      const searchImg = new Image();
-      searchImg.src = `/static/assets/themes/GOOGL/search_node.png`;
-      searchImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(searchImg); };
-      
-      const sparkleImg = new Image();
-      sparkleImg.src = `/static/assets/themes/GOOGL/ai_sparkle.png`;
-      sparkleImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(sparkleImg); };
+    if (profile.specialAssets) {
+      for (const [assetKey, fileName] of Object.entries(profile.specialAssets)) {
+        const themedImg = new Image();
+        themedImg.src = buildThemeAssetUrl(themeDir, fileName);
+        themedImg.onload = () => { themeAssets[assetKey] = processWhiteToTransparent(themedImg); };
+      }
     }
   }
 
@@ -2158,30 +2204,15 @@
     if (vistaMedia) {
       // ── 高細節：遠景 Vista (Parallax + Mirror Seamless Loop) ──
       const img = vistaMedia;
-      const isMETA = stockData?.symbol === 'META';
-      const isMSFT = stockData?.symbol === 'MSFT';
-      const isGOOG = stockData?.symbol === 'GOOGL' || stockData?.symbol === 'GOOG';
-      const isAMZN = stockData?.symbol === 'AMZN';
+      const themeProfile = getThemeProfile(stockData?.symbol);
       const sourceW = img.videoWidth || img.width;
       const sourceH = img.videoHeight || img.height;
       
-      // 根據主題進行背景裁切優化
       let sy = 0;
       let sh = sourceH;
-      if (isMETA) {
-        sy = sourceH * 0.38;
-        sh = sourceH * 0.42;
-      } else if (isMSFT) {
-        sy = sourceH * 0.1;
-        sh = sourceH * 0.7;
-      } else if (isGOOG) {
-        // Google 背景：取中間區塊，展現繽紛的幾何律動
-        sy = sourceH * 0.25;
-        sh = sourceH * 0.5;
-      } else if (isAMZN) {
-        // Amazon 背景：聚焦在物流中心的中下層，展現繁忙的傳送帶與包裹感
-        sy = sourceH * 0.2;
-        sh = sourceH * 0.75;
+      if (themeProfile?.media?.vistaCrop) {
+        sy = sourceH * themeProfile.media.vistaCrop.y;
+        sh = sourceH * themeProfile.media.vistaCrop.height;
       }
       
       const imgRatio = sourceW / sh;
@@ -2751,12 +2782,15 @@
     ctx.save();
     ctx.clip(fillPath);
     const isGOOGTerrain = theme.symbol === 'GOOGL' || theme.symbol === 'GOOG';
+    const themeProfile = getThemeProfile(theme.symbol);
+    const terrainTextureMode = themeProfile?.terrainTextureMode || 'pattern';
+    const themeVisuals = getThemeVisualWorkflow(theme);
 
     const baseGrad = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
-    if (isGOOGTerrain) {
-      baseGrad.addColorStop(0, 'rgba(255,255,255,0.02)');
-      baseGrad.addColorStop(0.52, 'rgba(255,255,255,0.03)');
-      baseGrad.addColorStop(1, 'rgba(0,0,0,0.06)');
+    if (themeVisuals.terrainBaseStops) {
+      baseGrad.addColorStop(0, themeVisuals.terrainBaseStops[0]);
+      baseGrad.addColorStop(0.52, themeVisuals.terrainBaseStops[1]);
+      baseGrad.addColorStop(1, themeVisuals.terrainBaseStops[2]);
     } else {
       baseGrad.addColorStop(0, withAlpha(theme.palette.base, 0.94));
       baseGrad.addColorStop(0.58, withAlpha(theme.palette.mid, 0.82));
@@ -2802,7 +2836,7 @@
 
     const depthMask = ctx.createLinearGradient(0, terrainYMin - 10, 0, H);
     depthMask.addColorStop(0, 'rgba(0,0,0,0)');
-    depthMask.addColorStop(1, isGOOGTerrain ? 'rgba(0,0,0,0.05)' : withAlpha(theme.palette.shadow, 0.46));
+    depthMask.addColorStop(1, themeVisuals.terrainDepthMaskEnd || withAlpha(theme.palette.shadow, 0.46));
     ctx.fillStyle = depthMask;
     ctx.fillRect(-20, terrainYMin - 10, W + 40, H - terrainYMin + 40);
 
@@ -2821,7 +2855,7 @@
       ctx.save();
       ctx.clip(fillPath);
       ctx.globalCompositeOperation = 'source-over';
-      if (isGOOGTerrain && themeAssets.textureVideo && themeAssets.textureVideo.readyState >= 2) {
+      if (terrainTextureMode === 'video_full_mountain' && themeAssets.textureVideo && themeAssets.textureVideo.readyState >= 2) {
         const video = themeAssets.textureVideo;
         const sourceW = video.videoWidth || W;
         const sourceH = video.videoHeight || H;
