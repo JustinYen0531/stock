@@ -2282,7 +2282,7 @@
     if (pattern) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
-      ctx.globalAlpha = clamp(0.16 + (theme.textureDensity - 0.7) * 0.14, 0.16, 0.32);
+      ctx.globalAlpha = clamp(0.45 + (theme.textureDensity - 0.7) * 0.22, 0.45, 0.75);
       ctx.fillStyle = pattern;
       ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 240);
       ctx.restore();
@@ -2292,8 +2292,8 @@
     if (detailPattern) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.08 + theme.stats.volatility * 2.8)) % 384), -18);
-      ctx.globalCompositeOperation = 'screen';
-      ctx.globalAlpha = clamp(0.16 + (theme.textureDensity - 0.7) * 0.15, 0.16, 0.3);
+      ctx.globalCompositeOperation = 'overlay';
+      ctx.globalAlpha = clamp(0.38 + (theme.textureDensity - 0.7) * 0.18, 0.38, 0.62);
       ctx.fillStyle = detailPattern;
       ctx.fillRect(-768, terrainYMin - 180, W + 1536, H - terrainYMin + 320);
       ctx.restore();
