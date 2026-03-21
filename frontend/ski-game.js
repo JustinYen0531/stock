@@ -2730,9 +2730,9 @@
 
     const baseGrad = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
     if (isGOOGTerrain) {
-      baseGrad.addColorStop(0, 'rgba(54, 74, 98, 0.86)');
-      baseGrad.addColorStop(0.52, 'rgba(74, 96, 122, 0.76)');
-      baseGrad.addColorStop(1, 'rgba(28, 40, 54, 0.84)');
+      baseGrad.addColorStop(0, 'rgba(255,255,255,0.02)');
+      baseGrad.addColorStop(0.52, 'rgba(255,255,255,0.03)');
+      baseGrad.addColorStop(1, 'rgba(0,0,0,0.06)');
     } else {
       baseGrad.addColorStop(0, withAlpha(theme.palette.base, 0.94));
       baseGrad.addColorStop(0.58, withAlpha(theme.palette.mid, 0.82));
@@ -2778,7 +2778,7 @@
 
     const depthMask = ctx.createLinearGradient(0, terrainYMin - 10, 0, H);
     depthMask.addColorStop(0, 'rgba(0,0,0,0)');
-    depthMask.addColorStop(1, isGOOGTerrain ? 'rgba(12,18,26,0.22)' : withAlpha(theme.palette.shadow, 0.46));
+    depthMask.addColorStop(1, isGOOGTerrain ? 'rgba(0,0,0,0.05)' : withAlpha(theme.palette.shadow, 0.46));
     ctx.fillStyle = depthMask;
     ctx.fillRect(-20, terrainYMin - 10, W + 40, H - terrainYMin + 40);
 
@@ -2801,11 +2801,11 @@
         const video = themeAssets.textureVideo;
         const sourceW = video.videoWidth || W;
         const sourceH = video.videoHeight || H;
-        const drawH = Math.max(H * 0.78, sourceH * 0.56);
+        const drawH = Math.max(H * 1.02, sourceH * 0.78);
         const drawW = drawH * (sourceW / Math.max(1, sourceH));
-        const driftX = -((terrainScrollX * 0.18) % Math.max(drawW, 1));
-        const drawY = terrainYMin - H * 0.06;
-        const textureBandBottom = Math.min(H, terrainYMin + H * 0.56);
+        const driftX = -((terrainScrollX * 0.14) % Math.max(drawW, 1));
+        const drawY = terrainYMin - H * 0.08;
+        const textureBandBottom = H + 20;
 
         ctx.globalAlpha = 1;
         for (let i = -1; i <= 2; i++) {
@@ -2815,11 +2815,11 @@
         ctx.globalCompositeOperation = 'destination-in';
         const textureFade = ctx.createLinearGradient(0, terrainYMin - 50, 0, textureBandBottom);
         textureFade.addColorStop(0, 'rgba(255,255,255,1)');
-        textureFade.addColorStop(0.55, 'rgba(255,255,255,0.96)');
-        textureFade.addColorStop(0.84, 'rgba(255,255,255,0.52)');
-        textureFade.addColorStop(1, 'rgba(255,255,255,0)');
+        textureFade.addColorStop(0.7, 'rgba(255,255,255,0.98)');
+        textureFade.addColorStop(0.92, 'rgba(255,255,255,0.9)');
+        textureFade.addColorStop(1, 'rgba(255,255,255,0.82)');
         ctx.fillStyle = textureFade;
-        ctx.fillRect(-W, terrainYMin - 80, W * 3, textureBandBottom - terrainYMin + 130);
+        ctx.fillRect(-W, terrainYMin - 80, W * 3, textureBandBottom - terrainYMin + 80);
       } else {
         const hdPattern = ctx.createPattern(overlayTexture, 'repeat');
         const xOffset = -(terrainScrollX * 0.5) % 512;
