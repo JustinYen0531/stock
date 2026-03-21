@@ -3769,6 +3769,33 @@
     });
   }
 
+  function drawOutlinedText(text, x, y, options = {}) {
+    const {
+      fillStyle = '#f8fafc',
+      strokeStyle = 'rgba(0, 0, 0, 0.72)',
+      lineWidth = 4,
+      paintOrder = 'stroke-fill',
+    } = options;
+
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.miterLimit = 2;
+    if (paintOrder === 'fill-stroke') {
+      ctx.fillStyle = fillStyle;
+      ctx.fillText(text, x, y);
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.strokeText(text, x, y);
+    } else {
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.strokeText(text, x, y);
+      ctx.fillStyle = fillStyle;
+      ctx.fillText(text, x, y);
+    }
+    ctx.restore();
+  }
+
   function drawHUD(W, H) {
     ctx.save();
     const dangerRatio = getDangerRatio();
@@ -3810,11 +3837,17 @@
 
     ctx.textAlign = 'center';
     ctx.font = '700 26px JetBrains Mono, monospace';
-    ctx.fillStyle = '#e8f0fe';
-    ctx.fillText(getElapsedSeconds().toFixed(2), W / 2, 34);
+    drawOutlinedText(getElapsedSeconds().toFixed(2), W / 2, 34, {
+      fillStyle: '#e8f0fe',
+      strokeStyle: 'rgba(0, 0, 0, 0.82)',
+      lineWidth: 5,
+    });
     ctx.font = '600 11px Inter, sans-serif';
-    ctx.fillStyle = 'rgba(148,163,184,0.85)';
-    ctx.fillText(`目標期限 ${getQualifyingSeconds().toFixed(2)}s`, W / 2, 52);
+    drawOutlinedText(`目標期限 ${getQualifyingSeconds().toFixed(2)}s`, W / 2, 52, {
+      fillStyle: 'rgba(191,219,254,0.95)',
+      strokeStyle: 'rgba(0, 0, 0, 0.78)',
+      lineWidth: 3,
+    });
 
     const accelActive = (rightKeyDown || rightMouseDown) && !(leftKeyDown || leftMouseDown);
     const brakeActive = (leftKeyDown || leftMouseDown) && !(rightKeyDown || rightMouseDown);
@@ -3884,14 +3917,20 @@
 
     ctx.textAlign = 'left';
     ctx.font = '700 18px Inter, sans-serif';
-    ctx.fillStyle = '#f8fafc';
     ctx.textBaseline = 'middle';
-    ctx.fillText('路程進度', routeRowX, routeBarY + routeBarH / 2);
+    drawOutlinedText('路程進度', routeRowX, routeBarY + routeBarH / 2, {
+      fillStyle: '#f8fafc',
+      strokeStyle: 'rgba(0, 0, 0, 0.75)',
+      lineWidth: 4,
+    });
 
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillText(`${Math.floor(prog * 100)}%`, routeBarX + topHudW + barLabelGap + routeValueW, routeBarY + routeBarH / 2);
+    drawOutlinedText(`${Math.floor(prog * 100)}%`, routeBarX + topHudW + barLabelGap + routeValueW, routeBarY + routeBarH / 2, {
+      fillStyle: '#38bdf8',
+      strokeStyle: 'rgba(0, 0, 0, 0.75)',
+      lineWidth: 4,
+    });
 
     // 時間條底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
@@ -3916,13 +3955,19 @@
 
     ctx.textAlign = 'left';
     ctx.font = 'bold 20px Inter, sans-serif';
-    ctx.fillStyle = timeRatio <= 0.3 ? '#f87171' : '#f8fafc';
-    ctx.fillText('時間值', smallRowX, timeBarY + hbH / 2);
+    drawOutlinedText('時間值', smallRowX, timeBarY + hbH / 2, {
+      fillStyle: timeRatio <= 0.3 ? '#f87171' : '#f8fafc',
+      strokeStyle: 'rgba(0, 0, 0, 0.78)',
+      lineWidth: 4,
+    });
 
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
-    ctx.fillStyle = timeColor;
-    ctx.fillText(`🕒 ${Math.floor(timeRatio * 100)}%`, hbx + hbW + barLabelGap + smallValueW, timeBarY + hbH / 2);
+    drawOutlinedText(`🕒 ${Math.floor(timeRatio * 100)}%`, hbx + hbW + barLabelGap + smallValueW, timeBarY + hbH / 2, {
+      fillStyle: timeColor,
+      strokeStyle: 'rgba(0, 0, 0, 0.78)',
+      lineWidth: 4,
+    });
 
     // 準確率條底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
@@ -3953,13 +3998,19 @@
     // 準確率文字與百分比
     ctx.textAlign = 'left';
     ctx.font = 'bold 20px Inter, sans-serif';
-    ctx.fillStyle = accuracyPct <= 78 ? '#f87171' : '#f8fafc';
-    ctx.fillText('準確值', smallRowX, hby + hbH / 2);
+    drawOutlinedText('準確值', smallRowX, hby + hbH / 2, {
+      fillStyle: accuracyPct <= 78 ? '#f87171' : '#f8fafc',
+      strokeStyle: 'rgba(0, 0, 0, 0.78)',
+      lineWidth: 4,
+    });
     
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
-    ctx.fillStyle = heatColor;
-    ctx.fillText(`⚡ ${accuracyPct.toFixed(0)}%`, hbx + hbW + barLabelGap + smallValueW, hby + hbH / 2);
+    drawOutlinedText(`⚡ ${accuracyPct.toFixed(0)}%`, hbx + hbW + barLabelGap + smallValueW, hby + hbH / 2, {
+      fillStyle: heatColor,
+      strokeStyle: 'rgba(0, 0, 0, 0.78)',
+      lineWidth: 4,
+    });
 
     if (isBoosting) {
       ctx.textAlign = 'center';
