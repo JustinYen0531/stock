@@ -2877,6 +2877,7 @@
     // ── 高細節模式：NVDA/META/MSFT/GOOGL/AMZN 專屬客製化動態組件 ──
     if (highDetailMode && (['NVDA', 'META', 'MSFT', 'GOOGL', 'GOOG', 'AMZN'].includes(theme.symbol))) {
       let hdImg = null;
+      const isGOOGTheme = theme.symbol === 'GOOGL' || theme.symbol === 'GOOG';
       const isCore = kind.includes('monolith') || kind.includes('core') || kind.includes('chip') || kind.includes('portal') || kind.includes('window') || kind.includes('campus') || kind.includes('bridge') || kind.includes('search') || kind.includes('data') || kind.includes('delivery') || kind.includes('warehouse') || kind.includes('prime');
       
       if (isCore && themeAssets.gpu_core) hdImg = themeAssets.gpu_core;
@@ -2896,7 +2897,7 @@
         // 核心發光
         const isAMZN = theme.symbol === 'AMZN';
         const glow = ctx.createRadialGradient(0, 0, size * 0.1, 0, 0, size * 1.1);
-        glow.addColorStop(0, isAMZN ? 'rgba(255, 153, 0, 0.45)' : 'rgba(118, 185, 0, 0.45)');
+        glow.addColorStop(0, isGOOGTheme ? 'rgba(255, 255, 255, 0.52)' : (isAMZN ? 'rgba(255, 153, 0, 0.45)' : 'rgba(118, 185, 0, 0.45)'));
         glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = glow;
         ctx.beginPath();
@@ -2911,8 +2912,9 @@
       }
     }
 
-    const fill = withAlpha(theme.palette.accent, 0.88 * alphaScale);
-    const stroke = withAlpha(theme.palette.glow, 0.9 * alphaScale);
+    const isGOOGTheme = theme.symbol === 'GOOGL' || theme.symbol === 'GOOG';
+    const fill = isGOOGTheme ? `rgba(245,248,255,${0.9 * alphaScale})` : withAlpha(theme.palette.accent, 0.88 * alphaScale);
+    const stroke = isGOOGTheme ? `rgba(255,255,255,${0.92 * alphaScale})` : withAlpha(theme.palette.glow, 0.9 * alphaScale);
     const dark = withAlpha(theme.palette.shadow, 0.92 * alphaScale);
     const spriteEntry = ensurePropSprite(kind);
     ctx.save();
@@ -2920,13 +2922,13 @@
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     const halo = ctx.createRadialGradient(0, 0, size * 0.06, 0, 0, size * 0.72);
-    halo.addColorStop(0, withAlpha(theme.palette.glow, 0.26 * alphaScale));
+    halo.addColorStop(0, isGOOGTheme ? `rgba(255,255,255,${0.28 * alphaScale})` : withAlpha(theme.palette.glow, 0.26 * alphaScale));
     halo.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = halo;
     ctx.beginPath();
     ctx.arc(0, 0, size * 0.72, 0, Math.PI * 2);
     ctx.fill();
-    ctx.shadowColor = withAlpha(theme.palette.glow, 0.8 * alphaScale);
+    ctx.shadowColor = isGOOGTheme ? `rgba(255,255,255,${0.82 * alphaScale})` : withAlpha(theme.palette.glow, 0.8 * alphaScale);
     ctx.shadowBlur = Math.max(6, size * 0.22);
 
     if (spriteEntry?.status === 'ready' && spriteEntry.img?.naturalWidth) {
