@@ -1737,8 +1737,8 @@
     ctx.fillStyle = bg;
     ctx.fillRect(-20, -20, W + 40, H + 40); 
 
-    // ── 主題 Vista 背景（有圖就顯示，不依賴 highDetailMode）──
-    const vistaDrawn = !!themeAssets.vista;
+    // ── 高細節：遠景 Vista (Parallax) ──
+    const vistaDrawn = highDetailMode && !!themeAssets.vista;
     if (vistaDrawn) {
       const scrollRatioX = 0.35; // 提高水平視差速度讓動態更明顯
       const scrollRatioY = 0.15; // 新增垂直視差，跟隨地形起伏
@@ -1752,10 +1752,10 @@
       ctx.drawImage(themeAssets.vista, -scrollX, vistaOffsetY, W, H);
       ctx.drawImage(themeAssets.vista, W - scrollX, vistaOffsetY, W, H);
       
-      // 底部暗幕，讓地形與背景有自然融合
-      const veil = ctx.createLinearGradient(0, H * 0.5, 0, H);
+      // 底部漸層暗幕，優化與地形的融合
+      const veil = ctx.createLinearGradient(0, H * 0.45, 0, H);
       veil.addColorStop(0, 'rgba(5,10,20,0)');
-      veil.addColorStop(1, 'rgba(5,10,20,0.55)');
+      veil.addColorStop(1, 'rgba(7,12,24,0.42)');
       ctx.fillStyle = veil;
       ctx.globalAlpha = 1;
       ctx.fillRect(0, 0, W, H);
@@ -2371,7 +2371,7 @@
       const xOffset = -((terrainScrollX * 0.3) % 512);
       ctx.translate(xOffset, 0);
       ctx.globalCompositeOperation = 'overlay';
-      ctx.globalAlpha = 0.55;
+      ctx.globalAlpha = 0.15; // 大幅調低透明度，避免畫面太亂
       ctx.fillStyle = cachedPatterns.hd;
       ctx.fillRect(-512, terrainYMin - 80, W + 1024, H - terrainYMin + 160);
       ctx.restore();
