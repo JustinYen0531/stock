@@ -1033,6 +1033,30 @@
     };
   }
 
+  function getThemeVisualWorkflow(theme) {
+    const symbol = normalizeThemeSymbol(theme?.symbol);
+    if (symbol === 'GOOGL' || symbol === 'GOOG') {
+      return {
+        ridgeOuter: 'rgba(244, 249, 255, 0.92)',
+        ridgeInner: 'rgba(146, 212, 255, 0.95)',
+        ridgeGlow: 'rgba(199, 233, 255, 0.95)',
+        propGlow: 'rgba(255, 255, 255, 0.82)',
+        propHalo: 'rgba(255, 255, 255, 0.3)',
+        propFill: 'rgba(245, 248, 255, 0.9)',
+        propStroke: 'rgba(255, 255, 255, 0.92)',
+      };
+    }
+    return {
+      ridgeOuter: withAlpha(theme?.palette?.snow || '#ffffff', 0.55),
+      ridgeInner: theme?.glowColor || '#93c5fd',
+      ridgeGlow: theme?.glowColor || '#93c5fd',
+      propGlow: withAlpha(theme?.palette?.glow || '#93c5fd', 0.8),
+      propHalo: withAlpha(theme?.palette?.glow || '#93c5fd', 0.26),
+      propFill: withAlpha(theme?.palette?.accent || '#60a5fa', 0.88),
+      propStroke: withAlpha(theme?.palette?.glow || '#93c5fd', 0.9),
+    };
+  }
+
   function refreshThemeAssets() {
     activeThemeBackground = ensureThemeBackground(stockData?.symbol);
     ensureThemeManifest();
@@ -2874,6 +2898,7 @@
   }
 
   function drawTerrainPropSprite(kind, x, y, size, theme, alphaScale = 1) {
+    const visual = getThemeVisualWorkflow(theme);
     // ── 高細節模式：NVDA/META/MSFT/GOOGL/AMZN 專屬客製化動態組件 ──
     if (highDetailMode && (['NVDA', 'META', 'MSFT', 'GOOGL', 'GOOG', 'AMZN'].includes(theme.symbol))) {
       let hdImg = null;
@@ -2897,7 +2922,7 @@
         // 核心發光
         const isAMZN = theme.symbol === 'AMZN';
         const glow = ctx.createRadialGradient(0, 0, size * 0.1, 0, 0, size * 1.1);
-        glow.addColorStop(0, isGOOGTheme ? 'rgba(255, 255, 255, 0.52)' : (isAMZN ? 'rgba(255, 153, 0, 0.45)' : 'rgba(118, 185, 0, 0.45)'));
+        glow.addColorStop(0, isGOOGTheme ? visual.propGlow.replace(/0\.82\)/, '0.52)') : (isAMZN ? 'rgba(255, 153, 0, 0.45)' : 'rgba(118, 185, 0, 0.45)'));
         glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = glow;
         ctx.beginPath();
@@ -2913,8 +2938,8 @@
     }
 
     const isGOOGTheme = theme.symbol === 'GOOGL' || theme.symbol === 'GOOG';
-    const fill = isGOOGTheme ? `rgba(245,248,255,${0.9 * alphaScale})` : withAlpha(theme.palette.accent, 0.88 * alphaScale);
-    const stroke = isGOOGTheme ? `rgba(255,255,255,${0.92 * alphaScale})` : withAlpha(theme.palette.glow, 0.9 * alphaScale);
+    const fill = isGOOGTheme ? `rgba(245,248,255,${0.9 * alphaScale})` : visual.propFill.replace(/0\.88\)/, `${0.88 * alphaScale})`);
+    const stroke = isGOOGTheme ? `rgba(255,255,255,${0.92 * alphaScale})` : visual.propStroke.replace(/0\.9\)/, `${0.9 * alphaScale})`);
     const dark = withAlpha(theme.palette.shadow, 0.92 * alphaScale);
     const spriteEntry = ensurePropSprite(kind);
     ctx.save();
@@ -2922,13 +2947,13 @@
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     const halo = ctx.createRadialGradient(0, 0, size * 0.06, 0, 0, size * 0.72);
-    halo.addColorStop(0, isGOOGTheme ? `rgba(255,255,255,${0.28 * alphaScale})` : withAlpha(theme.palette.glow, 0.26 * alphaScale));
+    halo.addColorStop(0, isGOOGTheme ? `rgba(255,255,255,${0.28 * alphaScale})` : visual.propHalo.replace(/0\.26\)/, `${0.26 * alphaScale})`));
     halo.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = halo;
     ctx.beginPath();
     ctx.arc(0, 0, size * 0.72, 0, Math.PI * 2);
     ctx.fill();
-    ctx.shadowColor = isGOOGTheme ? `rgba(255,255,255,${0.82 * alphaScale})` : withAlpha(theme.palette.glow, 0.8 * alphaScale);
+    ctx.shadowColor = isGOOGTheme ? `rgba(255,255,255,${0.82 * alphaScale})` : visual.propGlow.replace(/0\.8\)/, `${0.8 * alphaScale})`);
     ctx.shadowBlur = Math.max(6, size * 0.22);
 
     if (spriteEntry?.status === 'ready' && spriteEntry.img?.naturalWidth) {
@@ -3372,17 +3397,18 @@
   }
 
   function drawTerrainEdge(theme, ridgePath) {
+    const visual = getThemeVisualWorkflow(theme);
     const dangerRatio = getDangerRatio();
     const warningColor = dangerRatio > 0
       ? `rgb(${Math.floor(96 + dangerRatio * 159)},${Math.floor(165 - dangerRatio * 165)},${Math.floor(250 - dangerRatio * 200)})`
-      : theme.glowColor;
+      : visual.ridgeGlow;
 
     ctx.save();
     ctx.lineJoin = (theme.edgeStyle === 'temple' || theme.edgeStyle === 'hard') ? 'miter' : 'round';
     ctx.lineCap = 'round';
 
-    ctx.strokeStyle = withAlpha(theme.palette.snow, 0.55);
-    ctx.lineWidth = 13;
+    ctx.strokeStyle = visual.ridgeOuter;
+    ctx.lineWidth = theme.symbol === 'GOOGL' || theme.symbol === 'GOOG' ? 15 : 13;
     ctx.shadowBlur = 0;
     ctx.stroke(ridgePath);
 
@@ -3403,10 +3429,10 @@
       ctx.translate(0, -2);
     }
 
-    ctx.strokeStyle = warningColor;
-    ctx.lineWidth = 3.1;
+    ctx.strokeStyle = theme.symbol === 'GOOGL' || theme.symbol === 'GOOG' ? visual.ridgeInner : warningColor;
+    ctx.lineWidth = theme.symbol === 'GOOGL' || theme.symbol === 'GOOG' ? 4.2 : 3.1;
     ctx.shadowColor = warningColor;
-    ctx.shadowBlur = 16 + dangerRatio * 12;
+    ctx.shadowBlur = (theme.symbol === 'GOOGL' || theme.symbol === 'GOOG' ? 20 : 16) + dangerRatio * 12;
     ctx.stroke(ridgePath);
     ctx.restore();
   }
