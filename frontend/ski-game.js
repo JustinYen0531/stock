@@ -1098,21 +1098,25 @@
 
   // ── 主題資產加載 ──
   function loadThemeAssets(symbol) {
-    let themeDir = null;
     const sym = (symbol || '').toUpperCase();
-    if (sym === 'INTC') themeDir = 'intel';
-    else if (sym === 'GOOGL' || sym === 'GOOGLE') themeDir = 'google';
+    // 直接用股票代號當目錄名，或特殊映射
+    const dirMap = { 'INTC': 'intel' };
+    const validSyms = ['GOOGL', 'AMZN', 'META', 'MSFT', 'NVDA', 'INTC'];
+    if (!validSyms.includes(sym)) return;
 
-    if (!themeDir) return;
+    const themeDir = dirMap[sym] || sym; // INTC → intel，其餘直接用代號
 
     const vistaImg = new Image();
     vistaImg.src = `/static/assets/themes/${themeDir}/vista.png`;
-    vistaImg.onload = () => themeAssets.vista = vistaImg;
+    vistaImg.onload = () => { themeAssets.vista = vistaImg; };
+    vistaImg.onerror = () => console.warn(`[theme] vista 載入失敗: ${vistaImg.src}`);
 
     const textureImg = new Image();
     textureImg.src = `/static/assets/themes/${themeDir}/texture.png`;
-    textureImg.onload = () => themeAssets.texture = textureImg;
+    textureImg.onload = () => { themeAssets.texture = textureImg; };
+    textureImg.onerror = () => console.warn(`[theme] texture 載入失敗: ${textureImg.src}`);
   }
+
 
   function resizeCanvas() {
     if (!canvas) return;
