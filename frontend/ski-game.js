@@ -915,10 +915,8 @@
     ensureThemeManifest();
     activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
 
-    // 同步高細節資產（Google/Intel）
-    if (highDetailMode && stockData?.symbol) {
-      loadThemeAssets(stockData.symbol);
-    }
+    // 永遠嘗試載入主題資產（GOOGL/INTC 有資產的才會真的去抓圖）
+    loadThemeAssets(stockData?.symbol);
 
     // 主題切換時清除 Pattern 快取
     cachedPatterns = { terrain: null, detail: null, hd: null, hdSrc: null, themeSrc: null };
@@ -1735,8 +1733,8 @@
     ctx.fillStyle = bg;
     ctx.fillRect(-20, -20, W + 40, H + 40); 
 
-    // ── 高細節：遠景 Vista (Parallax) ──
-    const vistaDrawn = highDetailMode && !!themeAssets.vista;
+    // ── 主題 Vista 背景（有圖就顯示，不依賴 highDetailMode）──
+    const vistaDrawn = !!themeAssets.vista;
     if (vistaDrawn) {
       const scrollRatioX = 0.35; // 提高水平視差速度讓動態更明顯
       const scrollRatioY = 0.15; // 新增垂直視差，跟隨地形起伏
