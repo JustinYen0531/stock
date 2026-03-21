@@ -2326,17 +2326,17 @@
     sheen.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.globalCompositeOperation = 'screen';
     ctx.fillStyle = sheen;
+    ctx.fillRect(-20, terrainYMin - 30, W + 40, H - terrainYMin + 60);
     // ── 高細節：材質疊加模式 (Overlay Texture) ──
     if (highDetailMode && themeAssets.texture) {
       ctx.save();
-      ctx.clip(fillPath);
       const hdPattern = ctx.createPattern(themeAssets.texture, 'repeat');
-      const xOffset = -terrainScrollX % 512; 
-      ctx.translate(xOffset, 0); 
-      
-      ctx.globalCompositeOperation = 'overlay'; 
+      const xOffset = -((terrainScrollX * 0.3) % 512);
+      ctx.translate(xOffset, 0);
+      ctx.globalCompositeOperation = 'overlay';
+      ctx.globalAlpha = 0.55;
       ctx.fillStyle = hdPattern;
-      ctx.fill();
+      ctx.fillRect(-512, terrainYMin - 80, W + 1024, H - terrainYMin + 160);
       ctx.restore();
     }
 
