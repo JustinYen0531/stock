@@ -2795,36 +2795,37 @@
         const video = themeAssets.textureVideo;
         const sourceW = video.videoWidth || W;
         const sourceH = video.videoHeight || H;
-        const drawH = Math.max(H * 0.95, sourceH * 0.7);
+        const drawH = Math.max(H * 0.42, sourceH * 0.34);
         const drawW = drawH * (sourceW / Math.max(1, sourceH));
         const driftX = -((terrainScrollX * 0.18) % Math.max(drawW, 1));
-        const drawY = terrainYMin - H * 0.08;
+        const drawY = terrainYMin - H * 0.02;
+        const textureBandBottom = Math.min(H, terrainYMin + H * 0.24);
 
-        ctx.globalAlpha = 0.96;
+        ctx.globalAlpha = 0.88;
         for (let i = -1; i <= 2; i++) {
           ctx.drawImage(video, driftX + i * drawW, drawY, drawW, drawH);
         }
 
-        // 讓 Google 山體紋理在下半部逐漸淡出，避免影片底色形成整塊長方形。
+        // 只保留靠近山脊的一段紋理帶，避免影片底色延伸成整塊色帶。
         ctx.globalCompositeOperation = 'destination-in';
-        const textureFade = ctx.createLinearGradient(0, terrainYMin - 40, 0, H);
-        textureFade.addColorStop(0, 'rgba(255,255,255,0.96)');
-        textureFade.addColorStop(0.5, 'rgba(255,255,255,0.82)');
-        textureFade.addColorStop(0.78, 'rgba(255,255,255,0.28)');
+        const textureFade = ctx.createLinearGradient(0, terrainYMin - 24, 0, textureBandBottom);
+        textureFade.addColorStop(0, 'rgba(255,255,255,0.92)');
+        textureFade.addColorStop(0.35, 'rgba(255,255,255,0.88)');
+        textureFade.addColorStop(0.72, 'rgba(255,255,255,0.24)');
         textureFade.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = textureFade;
-        ctx.fillRect(-W, terrainYMin - 120, W * 3, H * 2);
+        ctx.fillRect(-W, terrainYMin - 40, W * 3, textureBandBottom - terrainYMin + 60);
 
         ctx.globalCompositeOperation = 'screen';
-        ctx.globalAlpha = 0.34;
-        const googGlow = ctx.createLinearGradient(0, terrainYMin, 0, H);
-        googGlow.addColorStop(0, 'rgba(255,255,255,0.28)');
-        googGlow.addColorStop(0.18, 'rgba(66,133,244,0.18)');
-        googGlow.addColorStop(0.48, 'rgba(234,67,53,0.16)');
-        googGlow.addColorStop(0.74, 'rgba(251,188,5,0.14)');
-        googGlow.addColorStop(1, 'rgba(52,168,83,0.18)');
+        ctx.globalAlpha = 0.22;
+        const googGlow = ctx.createLinearGradient(0, terrainYMin - 10, 0, textureBandBottom);
+        googGlow.addColorStop(0, 'rgba(255,255,255,0.18)');
+        googGlow.addColorStop(0.22, 'rgba(66,133,244,0.14)');
+        googGlow.addColorStop(0.5, 'rgba(234,67,53,0.12)');
+        googGlow.addColorStop(0.76, 'rgba(251,188,5,0.10)');
+        googGlow.addColorStop(1, 'rgba(52,168,83,0)');
         ctx.fillStyle = googGlow;
-        ctx.fillRect(-W, terrainYMin - 120, W * 3, H * 2);
+        ctx.fillRect(-W, terrainYMin - 24, W * 3, textureBandBottom - terrainYMin + 40);
       } else {
         const hdPattern = ctx.createPattern(overlayTexture, 'repeat');
         const xOffset = -(terrainScrollX * 0.5) % 512;
