@@ -2805,6 +2805,16 @@
           ctx.drawImage(video, driftX + i * drawW, drawY, drawW, drawH);
         }
 
+        // 讓 Google 山體紋理在下半部逐漸淡出，避免影片底色形成整塊長方形。
+        ctx.globalCompositeOperation = 'destination-in';
+        const textureFade = ctx.createLinearGradient(0, terrainYMin - 40, 0, H);
+        textureFade.addColorStop(0, 'rgba(255,255,255,0.96)');
+        textureFade.addColorStop(0.5, 'rgba(255,255,255,0.82)');
+        textureFade.addColorStop(0.78, 'rgba(255,255,255,0.28)');
+        textureFade.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = textureFade;
+        ctx.fillRect(-W, terrainYMin - 120, W * 3, H * 2);
+
         ctx.globalCompositeOperation = 'screen';
         ctx.globalAlpha = 0.34;
         const googGlow = ctx.createLinearGradient(0, terrainYMin, 0, H);
