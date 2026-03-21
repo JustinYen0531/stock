@@ -356,13 +356,47 @@
 
   // ── 視覺細節狀態 ──
   let highDetailMode = false;
-  let themeAssets = { vista: null, texture: null };
+  let themeAssets = createEmptyThemeAssets();
   const themeBackgroundCache = new Map();
   const terrainPatternCache = new Map();
   const terrainDetailCache = new Map();
   const propSpriteCache = new Map();
   let themeManifestMap = null;
   let themeManifestPromise = null;
+
+  function createEmptyThemeAssets() {
+    return {
+      vista: null,
+      vistaVideo: null,
+      texture: null,
+      textureVideo: null,
+      textureVideoTile: null,
+      textureVideoCtx: null,
+      textureVideoTime: -1,
+      gpu_core: null,
+      neural_node: null,
+    };
+  }
+
+  function stopThemeTextureVideo() {
+    const video = themeAssets.textureVideo;
+    if (!video) return;
+    video.pause();
+    video.currentTime = 0;
+  }
+
+  function stopThemeVistaVideo() {
+    const video = themeAssets.vistaVideo;
+    if (!video) return;
+    video.pause();
+    video.currentTime = 0;
+  }
+
+  function resetThemeAssets() {
+    stopThemeVistaVideo();
+    stopThemeTextureVideo();
+    themeAssets = createEmptyThemeAssets();
+  }
 
   // 動態取得當前 hitbox 高度
   // hitboxSize 1√100 → 映射到 40√100px
@@ -902,136 +936,71 @@
     const viewportH = canvas?.height || terrainYMax || 720;
     const mountainFloorY = Math.max(terrainYMax + 110, viewportH - 28);
     const baseProps = props.length ? props : ['signal-beam', 'chip', 'coin', 'parcel'];
-    const anchors = getTerrainFeatureAnchors(Math.max(5, Math.min(8, baseProps.length + 4)));
-    const count = clamp(Math.round((baseProps.length || 3) * (2.5 + stats.volatility * 22)), 12, 22);
     const placements = [];
-    const anchorStrength = [...anchors].sort((a, b) => b.prominence - a.prominence);
-    const heroAnchorSet = new Set(anchorStrength.slice(0, Math.min(3, Math.max(2, Math.round(baseProps.length / 2)))).map((item) => item.worldX));
 
-    for (let i = 0; i < anchors.length; i++) {
-      const anchor = anchors[i];
-      const isHero = heroAnchorSet.has(anchor.worldX);
-      const availableDepth = Math.max(80, mountainFloorY - anchor.ridgeY - 24);
-      placements.push({
-        prop: baseProps[i % baseProps.length],
-        worldX: anchor.worldX,
-        ridgeY: anchor.ridgeY,
-        depth: isHero ? availableDepth * (0.14 + rng() * 0.14) : 0,
-        size: isHero ? 128 + rng() * 54 : 70 + rng() * 30,
-        anchor: isHero ? 'hero' : 'ridge',
-        alpha: isHero ? 0.46 + rng() * 0.12 : 0.96,
-      });
-
-      const flankCount = isHero ? 3 : 2;
-      for (let j = 0; j < flankCount; j++) {
-        const direction = j % 2 === 0 ? -1 : 1;
-        const offset = direction * (34 + rng() * 74) + (j > 1 ? direction * (46 + rng() * 54) : 0);
-        const worldX = clamp(anchor.worldX + offset, totalX * 0.06, totalX * 0.95);
-        const flankRidgeY = getLineYAt(worldX);
-        const flankAvailableDepth = Math.max(76, mountainFloorY - flankRidgeY - 22);
-        const depthRatio = j === 0 ? 0.22 + rng() * 0.18 : 0.46 + rng() * 0.24;
+    // --- 1. 均勻分佈層 (Uniform Distribution) ---
+    // 增加基礎組件的數量，並讓它們在賽道上平均展開
+    const totalCount = 35 + Math.round(stats.volatility * 30);
+    const step = totalX / totalCount;
+    
+    for (let i = 0; i < totalCount; i++) {
+        const baseWorldX = i * step + (rng() * 0.4 * step);
+        const worldX = clamp(baseWorldX, totalX * 0.05, totalX * 0.95);
+        const ridgeY = getLineYAt(worldX);
+        const availableDepth = Math.max(80, mountainFloorY - ridgeY - 20);
+        
+        // 隨機分配深度與大小，營造景深
+        const layerRoll = rng();
+        let layerType = 'mid';
+        if (layerRoll > 0.85) layerType = 'ridge';
+        else if (layerRoll < 0.25) layerType = 'deep';
+        
         placements.push({
-          prop: baseProps[(i + j + 1) % baseProps.length],
-          worldX,
-          ridgeY: flankRidgeY,
-          depth: flankAvailableDepth * depthRatio,
-          size: j === 0 ? 56 + rng() * 28 : 50 + rng() * 26,
-          anchor: j === 0 ? 'interior' : 'deep',
-          alpha: j === 0 ? 0.84 + rng() * 0.12 : 0.58 + rng() * 0.16,
+            prop: baseProps[i % baseProps.length],
+            worldX,
+            ridgeY,
+            depth: layerType === 'ridge' ? 0 
+                  : layerType === 'deep' ? availableDepth * (0.5 + rng() * 0.3)
+                  : availableDepth * (0.15 + rng() * 0.25),
+            size: layerType === 'ridge' ? 65 + rng() * 30 : 50 + rng() * 25,
+            anchor: layerType,
+            alpha: layerType === 'deep' ? 0.6 + rng() * 0.2 : 0.85 + rng() * 0.15
         });
-      }
     }
 
-    for (let i = 0; i < count; i++) {
-      const band = (i + 1) / (count + 1);
-      const anchor = anchors.length ? anchors[i % anchors.length] : null;
-      const bandBase = anchor
-        ? anchor.worldX / totalX + (rng() - 0.5) * 0.08
-        : band + (rng() - 0.5) * 0.09;
-      const worldX = totalX * clamp(bandBase, 0.08, 0.95);
-      const ridgeY = getLineYAt(worldX);
-      const availableDepth = Math.max(72, mountainFloorY - ridgeY - 24);
-      let layerType = 'interior';
-      const layerRoll = rng();
-      if (i % 6 === 0) layerType = 'ridge';
-      else if (layerRoll > 0.68) layerType = 'deep';
-      else if (layerRoll > 0.36) layerType = 'mid';
-      placements.push({
-        prop: baseProps[i % baseProps.length],
-        worldX,
-        ridgeY,
-        depth:
-          layerType === 'ridge' ? 0
-          : layerType === 'mid' ? availableDepth * (0.34 + rng() * 0.18)
-          : layerType === 'deep' ? availableDepth * (0.56 + rng() * 0.22)
-          : availableDepth * (0.16 + rng() * 0.18),
-        size:
-          layerType === 'ridge' ? 60 + rng() * 36
-          : layerType === 'deep' ? 48 + rng() * 24
-          : 46 + rng() * 30,
-        anchor: layerType,
-        alpha:
-          layerType === 'ridge' ? 0.88 + rng() * 0.08
-          : layerType === 'deep' ? 0.56 + rng() * 0.16
-          : 0.72 + rng() * 0.16,
-      });
+    // --- 2. 英雄標誌物 (Hero Landmarks) ---
+    // 保留少數重要轉折點的特大型建物
+    const anchors = getTerrainFeatureAnchors(5);
+    for (const anchor of anchors) {
+        const ridgeY = getLineYAt(anchor.worldX);
+        const availableDepth = Math.max(100, mountainFloorY - ridgeY - 30);
+        placements.push({
+            prop: baseProps[Math.floor(rng() * baseProps.length)],
+            worldX: anchor.worldX,
+            ridgeY,
+            depth: availableDepth * (0.1 + rng() * 0.1),
+            size: 140 + rng() * 50,
+            anchor: 'hero',
+            alpha: 0.5 + rng() * 0.2
+        });
     }
 
-    const lowerBandCount = clamp(Math.round(baseProps.length * (1.6 + stats.volatility * 12)), 6, 12);
-    for (let i = 0; i < lowerBandCount; i++) {
-      const band = (i + 0.6) / (lowerBandCount + 0.4);
-      const anchor = anchors.length ? anchors[(i * 2 + 1) % anchors.length] : null;
-      const worldX = anchor
-        ? clamp(anchor.worldX + (rng() - 0.5) * 96, totalX * 0.06, totalX * 0.95)
-        : totalX * clamp(band + (rng() - 0.5) * 0.11, 0.06, 0.95);
+    // --- 3. 股票專屬英雄件 (Stock Specific Heroes) ---
+    for (const spec of heroSpecs) {
+      const worldX = totalX * clamp(spec.band + (rng() - 0.5) * 0.05, 0.1, 0.9);
       const ridgeY = getLineYAt(worldX);
-      const availableDepth = Math.max(80, mountainFloorY - ridgeY - 18);
-      const lowerRatio = 0.66 + rng() * 0.22;
-      placements.push({
-        prop: baseProps[(i + 2) % baseProps.length],
-        worldX,
-        ridgeY,
-        depth: availableDepth * lowerRatio,
-        size: 42 + rng() * 24,
-        anchor: 'lower-band',
-        alpha: 0.54 + rng() * 0.16,
-      });
-    }
-
-    for (let i = 0; i < heroSpecs.length; i++) {
-      const spec = heroSpecs[i];
-      const worldX = totalX * clamp(spec.band + (rng() - 0.5) * 0.04, 0.08, 0.92);
-      const ridgeY = getLineYAt(worldX);
-      const availableDepth = Math.max(96, mountainFloorY - ridgeY - 20);
+      const availableDepth = Math.max(90, mountainFloorY - ridgeY - 20);
       placements.push({
         prop: spec.prop,
         worldX,
         ridgeY,
         depth: availableDepth * spec.depthRatio,
-        size: spec.size * (0.92 + rng() * 0.12),
+        size: spec.size * (0.95 + rng() * 0.1),
         anchor: spec.anchor || 'hero',
-        alpha: 0.5 + rng() * 0.12,
+        alpha: 0.6 + rng() * 0.15
       });
     }
 
-    const heroCount = Math.min(3, Math.max(2, Math.round((baseProps.length || 2) / 2)));
-    for (let i = 0; i < heroCount; i++) {
-      const anchor = anchorStrength[i];
-      const band = heroCount === 1 ? 0.58 : 0.2 + i * (0.56 / Math.max(1, heroCount - 1));
-      const worldX = anchor
-        ? clamp(anchor.worldX + (rng() - 0.5) * 36, totalX * 0.14, totalX * 0.9)
-        : totalX * clamp(band + (rng() - 0.5) * 0.05, 0.14, 0.9);
-      const ridgeY = getLineYAt(worldX);
-      placements.push({
-        prop: baseProps[(i * 2 + 1) % baseProps.length],
-        worldX,
-        ridgeY,
-        depth: Math.max(72, mountainFloorY - ridgeY - 36) * (0.22 + rng() * 0.16),
-        size: 138 + rng() * 56,
-        anchor: 'hero',
-        alpha: 0.4 + rng() * 0.12,
-      });
-    }
     return placements;
   }
 
@@ -1120,8 +1089,7 @@
   ══════════════════════════════════════════════════ */
   window.SkiGame = {
     launch(data, options = {}) {
-      stockData    = data; // { symbol, closes: [], dates: [], period }
-      refreshThemeAssets();
+      stockData    = data; // { symbol, closes: [], dates:[], period }
       practiceMode = !!options.practice;
       if (practiceMode) {
         practiceOpts = {
@@ -1134,11 +1102,9 @@
         if (practiceOpts.startPct >= practiceOpts.endPct) practiceOpts.endPct = Math.min(100, practiceOpts.startPct + 1);
       }
 
-      // 同步大廳傳入的高精度模式設定
+      // 先設定模式，再載入資產（避免 refreshThemeAssets 用到舊的 highDetailMode）
       highDetailMode = !!options.highDetail;
-      if (highDetailMode && stockData) {
-        loadThemeAssets(stockData.symbol);
-      }
+      refreshThemeAssets(); // 統一在這裡呼叫一次，不再重複
 
       openModal();
       initGame();
@@ -1177,7 +1143,10 @@
         btn.querySelector('.detail-label').textContent = highDetailMode ? '高細節模式：開啟' : '低細節模式';
       }
       if (highDetailMode && stockData) {
-         loadThemeAssets(stockData.symbol);
+        refreshThemeAssets();
+      } else {
+        stopThemeVistaVideo();
+        stopThemeTextureVideo();
       }
     }
   };
@@ -1257,6 +1226,8 @@
     gameState = 'idle';
     activeMapDifficulty = null;
     particles = [];
+    stopThemeVistaVideo();
+    stopThemeTextureVideo();
     unbindInput();
     window.removeEventListener('resize', resizeCanvas);
     document.getElementById('skiGameModal')?.classList.add('hidden');
@@ -1278,17 +1249,234 @@
   }
 
   // ── 主題資產加載 ──
+  function processWhiteToTransparent(img) {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = img.width;
+    tempCanvas.height = img.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(img, 0, 0);
+    
+    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i], g = data[i+1], b = data[i+2];
+      // 使用歐幾里得距離判定「白色誤差」，讓邊緣去背更精準
+      // 距離 (255, 255, 255) 越近的像素透明度越低
+      const diff = Math.sqrt(Math.pow(255-r, 2) + Math.pow(255-g, 2) + Math.pow(255-b, 2));
+      
+      if (diff < 45) { // 接近純白的範圍
+        data[i+3] = 0;
+      } else if (diff < 80) { // 邊緣過渡區
+        data[i+3] = ((diff - 45) / 35) * 255;
+      }
+    }
+    tempCtx.putImageData(imageData, 0, 0);
+    return tempCanvas;
+  }
+
   function loadThemeAssets(symbol) {
-    const themeDir = symbol === 'INTC' ? 'intel' : null; 
-    if (!themeDir) return;
+    let themeDir = null;
+    const s = normalizeThemeSymbol(symbol);
 
-    const vistaImg = new Image();
-    vistaImg.src = `/static/assets/themes/${themeDir}/vista.png`;
-    vistaImg.onload = () => themeAssets.vista = vistaImg;
+    if (s === 'INTC') themeDir = 'intel';
+    else if (s === 'AMZN') themeDir = 'AMZN';
+    else if (s === 'META') themeDir = 'META';
+    else if (s === 'NVDA') themeDir = 'NVDA';
+    else if (s === 'MSFT') themeDir = 'MSFT';
+    else if (s === 'GOOGL' || s === 'GOOG') themeDir = 'GOOGL';
 
-    const textureImg = new Image();
-    textureImg.src = `/static/assets/themes/${themeDir}/texture.png`;
-    textureImg.onload = () => themeAssets.texture = textureImg;
+    if (!themeDir) {
+      resetThemeAssets();
+      return;
+    }
+
+    if (themeDir !== 'GOOGL') {
+      const vistaImg = new Image();
+      vistaImg.src = `/static/assets/themes/${themeDir}/vista.png`;
+      vistaImg.onload = () => { themeAssets.vista = vistaImg; };
+    }
+
+    const vistaVideoCandidates = themeDir === 'GOOGL'
+      ? [
+          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
+        ]
+      : [
+          `/static/assets/themes/${themeDir}/vista.mp4`,
+          `/static/assets/themes/${themeDir}/vista.webm`,
+        ];
+    loadThemeVistaVideo(vistaVideoCandidates);
+
+    if (themeDir !== 'GOOGL') {
+      const textureImg = new Image();
+      textureImg.src = `/static/assets/themes/${themeDir}/texture.png`;
+      textureImg.onload = () => { themeAssets.texture = textureImg; };
+    }
+
+    const textureVideoCandidates = themeDir === 'GOOGL'
+      ? [
+          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
+        ]
+      : [
+          `/static/assets/themes/${themeDir}/texture.mp4`,
+          `/static/assets/themes/${themeDir}/texture.webm`,
+        ];
+    loadThemeTextureVideo(textureVideoCandidates);
+
+    // 專屬地標資產
+    if (s === 'NVDA') {
+      const gpuImg = new Image();
+      gpuImg.src = `/static/assets/themes/NVDA/gpu_core.png`;
+      gpuImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(gpuImg); };
+      
+      const nodeImg = new Image();
+      nodeImg.src = `/static/assets/themes/NVDA/neural_node.png`;
+      nodeImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(nodeImg); };
+    }
+    else if (s === 'META') {
+      const communityImg = new Image();
+      communityImg.src = `/static/assets/themes/META/community_node.png`;
+      communityImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(communityImg); };
+      
+      const bubbleImg = new Image();
+      bubbleImg.src = `/static/assets/themes/META/social_bubble.png`;
+      bubbleImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(bubbleImg); };
+    }
+    else if (s === 'MSFT') {
+      const windowImg = new Image();
+      windowImg.src = `/static/assets/themes/MSFT/window_icon.png`;
+      windowImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(windowImg); };
+      
+      const cloudImg = new Image();
+      cloudImg.src = `/static/assets/themes/MSFT/cloud_icon.png`;
+      cloudImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(cloudImg); };
+    }
+    else if (s === 'GOOGL' || s === 'GOOG') {
+      const searchImg = new Image();
+      searchImg.src = `/static/assets/themes/GOOGL/search_node.png`;
+      searchImg.onload = () => { themeAssets.gpu_core = processWhiteToTransparent(searchImg); };
+      
+      const sparkleImg = new Image();
+      sparkleImg.src = `/static/assets/themes/GOOGL/ai_sparkle.png`;
+      sparkleImg.onload = () => { themeAssets.neural_node = processWhiteToTransparent(sparkleImg); };
+    }
+  }
+
+  function loadThemeTextureVideo(candidates) {
+    if (!Array.isArray(candidates) || candidates.length === 0) return;
+
+    const video = document.createElement('video');
+    video.muted = true;
+    video.loop = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.crossOrigin = 'anonymous';
+
+    let candidateIndex = 0;
+    const tryNext = () => {
+      if (candidateIndex >= candidates.length) return;
+      video.src = candidates[candidateIndex++];
+      video.load();
+    };
+
+    video.addEventListener('loadeddata', () => {
+      themeAssets.textureVideo = video;
+      themeAssets.textureVideoTime = -1;
+      video.play().catch(() => {});
+    });
+
+    video.addEventListener('error', tryNext);
+    tryNext();
+  }
+
+  function loadThemeVistaVideo(candidates) {
+    if (!Array.isArray(candidates) || candidates.length === 0) return;
+
+    const video = document.createElement('video');
+    video.muted = true;
+    video.loop = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.crossOrigin = 'anonymous';
+
+    let candidateIndex = 0;
+    const tryNext = () => {
+      if (candidateIndex >= candidates.length) return;
+      video.src = candidates[candidateIndex++];
+      video.load();
+    };
+
+    video.addEventListener('loadeddata', () => {
+      themeAssets.vistaVideo = video;
+      video.play().catch(() => {});
+    });
+
+    video.addEventListener('error', tryNext);
+    tryNext();
+  }
+
+  function getThemeTextureOverlaySource() {
+    const symbol = stockData?.symbol;
+    const isGOOG = symbol === 'GOOGL' || symbol === 'GOOG';
+    if (themeAssets.textureVideo && themeAssets.textureVideo.readyState >= 2) {
+      const tile = updateThemeTextureVideoTile(themeAssets.textureVideo);
+      if (tile) return tile;
+    }
+    if (isGOOG) return null;
+    return themeAssets.texture;
+  }
+
+  function updateThemeTextureVideoTile(video) {
+    const videoW = video.videoWidth || 0;
+    const videoH = video.videoHeight || 0;
+    if (!videoW || !videoH) return null;
+
+    const targetW = Math.max(96, Math.min(320, videoW));
+    const targetH = Math.max(96, Math.round(targetW * (videoH / videoW)));
+    const tileW = targetW * 2;
+    const tileH = targetH * 2;
+
+    if (!themeAssets.textureVideoTile || themeAssets.textureVideoTile.width !== tileW || themeAssets.textureVideoTile.height !== tileH) {
+      const tileCanvas = document.createElement('canvas');
+      tileCanvas.width = tileW;
+      tileCanvas.height = tileH;
+      themeAssets.textureVideoTile = tileCanvas;
+      themeAssets.textureVideoCtx = tileCanvas.getContext('2d');
+      themeAssets.textureVideoTime = -1;
+    }
+
+    if (Math.abs((themeAssets.textureVideoTime ?? -1) - video.currentTime) < 0.016) {
+      return themeAssets.textureVideoTile;
+    }
+
+    const tileCtx = themeAssets.textureVideoCtx;
+    tileCtx.clearRect(0, 0, tileW, tileH);
+    tileCtx.imageSmoothingEnabled = true;
+
+    tileCtx.drawImage(video, 0, 0, targetW, targetH);
+
+    tileCtx.save();
+    tileCtx.translate(tileW, 0);
+    tileCtx.scale(-1, 1);
+    tileCtx.drawImage(video, 0, 0, targetW, targetH);
+    tileCtx.restore();
+
+    tileCtx.save();
+    tileCtx.translate(0, tileH);
+    tileCtx.scale(1, -1);
+    tileCtx.drawImage(video, 0, 0, targetW, targetH);
+    tileCtx.restore();
+
+    tileCtx.save();
+    tileCtx.translate(tileW, tileH);
+    tileCtx.scale(-1, -1);
+    tileCtx.drawImage(video, 0, 0, targetW, targetH);
+    tileCtx.restore();
+
+    themeAssets.textureVideoTime = video.currentTime;
+    return themeAssets.textureVideoTile;
   }
 
   function resizeCanvas() {
@@ -1371,6 +1559,16 @@
     if (stockData) stockData.activeMapDifficulty = activeMapDifficulty;
   }
 
+  /* ── 主題資產刷新（這是之前被呼叫但不存在的函數，現在補上） ── */
+  function refreshThemeAssets() {
+    if (!stockData) return;
+    // 每次重啟遊戲先清空舊資產，避免上一局的圖片殘留
+    resetThemeAssets();
+    if (highDetailMode) {
+      loadThemeAssets(stockData.symbol);
+    }
+  }
+
   /* ── 初始化遊戲 ──────────────────────────────────── */
   function initGame() {
     cancelAnimationFrame(animId);
@@ -1415,7 +1613,16 @@
     isVerticalCameraFollowing = false;
     terrainCameraFloorOffsetY = -Infinity;
 
-    refreshThemeAssets();
+    // 僅在資產尚未載入時才刷新（launch() 已提前觸發，這裡不清空以免中斷異步載入）
+    if (!themeAssets.vista && !themeAssets.texture) {
+      refreshThemeAssets();
+    }
+    if (highDetailMode && themeAssets.vistaVideo) {
+      themeAssets.vistaVideo.play().catch(() => {});
+    }
+    if (highDetailMode && themeAssets.textureVideo) {
+      themeAssets.textureVideo.play().catch(() => {});
+    }
     buildTerrain();
 
     // 計算理論最高分 (假設每幀都是完美狀態 x10)
@@ -1917,30 +2124,79 @@
     ctx.save();
     ctx.translate(shakeX, shakeY); // 套用震動
 
-    // 背景漸層（夜間雪山）
-    const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0,   '#0a0f1e');
-    bg.addColorStop(0.5, '#0d1829');
-    bg.addColorStop(1,   '#111f35');
-    ctx.fillStyle = bg;
-    ctx.fillRect(-20, -20, W + 40, H + 40); 
+    const vistaMedia = highDetailMode && themeAssets.vistaVideo && themeAssets.vistaVideo.readyState >= 2
+      ? themeAssets.vistaVideo
+      : (highDetailMode && themeAssets.vista && themeAssets.vista.complete ? themeAssets.vista : null);
 
-    // ── 高細節：遠景 Vista (Parallax) ──
-    if (highDetailMode && themeAssets.vista) {
-      const scrollRatio = 0.15; // 慢速位移
-      const scrollX = (terrainScrollX * scrollRatio) % W;
-      ctx.drawImage(themeAssets.vista, -scrollX, 0, W, H);
-      ctx.drawImage(themeAssets.vista, W - scrollX, 0, W, H);
-    }
+    if (vistaMedia) {
+      // ── 高細節：遠景 Vista (Parallax + Mirror Seamless Loop) ──
+      const img = vistaMedia;
+      const isMETA = stockData?.symbol === 'META';
+      const isMSFT = stockData?.symbol === 'MSFT';
+      const isGOOG = stockData?.symbol === 'GOOGL' || stockData?.symbol === 'GOOG';
+      const isAMZN = stockData?.symbol === 'AMZN';
+      const sourceW = img.videoWidth || img.width;
+      const sourceH = img.videoHeight || img.height;
+      
+      // 根據主題進行背景裁切優化
+      let sy = 0;
+      let sh = sourceH;
+      if (isMETA) {
+        sy = sourceH * 0.38;
+        sh = sourceH * 0.42;
+      } else if (isMSFT) {
+        sy = sourceH * 0.1;
+        sh = sourceH * 0.7;
+      } else if (isGOOG) {
+        // Google 背景：取中間區塊，展現繽紛的幾何律動
+        sy = sourceH * 0.25;
+        sh = sourceH * 0.5;
+      } else if (isAMZN) {
+        // Amazon 背景：聚焦在物流中心的中下層，展現繁忙的傳送帶與包裹感
+        sy = sourceH * 0.2;
+        sh = sourceH * 0.75;
+      }
+      
+      const imgRatio = sourceW / sh;
+      const drawH = H;
+      const drawW = drawH * imgRatio;
+      
+      const scrollRatio = 0.12; 
+      const totalScroll = terrainScrollX * scrollRatio;
+      
+      let tileIndex = Math.floor(totalScroll / drawW);
+      let offset = -(totalScroll % drawW);
+      
+      ctx.save();
+      for (let x = offset; x < W; x += drawW) {
+        ctx.save();
+        if (Math.abs(tileIndex) % 2 === 1) {
+          ctx.translate(x + drawW, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(img, 0, sy, sourceW, sh, 0, 0, drawW, drawH);
+        } else {
+          ctx.drawImage(img, 0, sy, sourceW, sh, x, 0, drawW, drawH);
+        }
+        ctx.restore();
+        tileIndex++;
+      }
+      ctx.restore();
+    } else {
+      // ── 原本的低細節模式背景 ──
+      // 背景漸層（夜間雪山）
+      const bg = ctx.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0,   '#0a0f1e');
+      bg.addColorStop(0.5, '#0d1829');
+      bg.addColorStop(1,   '#111f35');
+      ctx.fillStyle = bg;
+      ctx.fillRect(-20, -20, W + 40, H + 40); 
 
-    const usedThemeBackground = drawThemeBackground(W, H);
-
-    if (!usedThemeBackground) {
-      // 星星背景
-      drawStars(W, H);
-
-      // 遠景山脈
-      drawMountains(W, H);
+      // 主題遠景與星星山脈
+      const usedThemeBackground = drawThemeBackground(W, H);
+      if (!usedThemeBackground) {
+        drawStars(W, H);
+        drawMountains(W, H);
+      }
     }
 
     // 地形線
@@ -2467,6 +2723,7 @@
   function drawTerrainFill(theme, fillPath, W, H) {
     ctx.save();
     ctx.clip(fillPath);
+    const isGOOGTerrain = theme.symbol === 'GOOGL' || theme.symbol === 'GOOG';
 
     const baseGrad = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
     baseGrad.addColorStop(0, withAlpha(theme.palette.base, 0.94));
@@ -2475,7 +2732,7 @@
     ctx.fillStyle = baseGrad;
     ctx.fillRect(-60, terrainYMin - 80, W + 120, H - terrainYMin + 140);
 
-    const pattern = ctx.createPattern(getTerrainPatternTile(theme), 'repeat');
+    const pattern = isGOOGTerrain ? null : ctx.createPattern(getTerrainPatternTile(theme), 'repeat');
     if (pattern) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
@@ -2485,7 +2742,7 @@
       ctx.restore();
     }
 
-    const detailPattern = ctx.createPattern(getTerrainDetailTile(theme), 'repeat');
+    const detailPattern = isGOOGTerrain ? null : ctx.createPattern(getTerrainDetailTile(theme), 'repeat');
     if (detailPattern) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.08 + theme.stats.volatility * 2.8)) % 384), -18);
@@ -2496,7 +2753,7 @@
       ctx.restore();
     }
 
-    if (theme.variant === 'volatile' || theme.variant === 'crash') {
+    if (!isGOOGTerrain && (theme.variant === 'volatile' || theme.variant === 'crash')) {
       ctx.save();
       ctx.strokeStyle = withAlpha(theme.glowColor, theme.variant === 'crash' ? 0.16 : 0.1);
       ctx.lineWidth = theme.variant === 'crash' ? 3 : 2;
@@ -2523,17 +2780,62 @@
     sheen.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.globalCompositeOperation = 'screen';
     ctx.fillStyle = sheen;
+    ctx.fill(fillPath);
+
     // ── 高細節：材質疊加模式 (Overlay Texture) ──
-    if (highDetailMode && themeAssets.texture) {
+    const overlayTexture = !isGOOGTerrain && highDetailMode ? getThemeTextureOverlaySource() : null;
+    if (overlayTexture) {
       ctx.save();
       ctx.clip(fillPath);
-      const hdPattern = ctx.createPattern(themeAssets.texture, 'repeat');
-      const xOffset = -terrainScrollX % 512; 
+      const hdPattern = ctx.createPattern(overlayTexture, 'repeat');
+      
+      const xOffset = -(terrainScrollX * 0.5) % 512; 
       ctx.translate(xOffset, 0); 
       
-      ctx.globalCompositeOperation = 'overlay'; 
-      ctx.fillStyle = hdPattern;
-      ctx.fill();
+      // 使用 source-over 確保紋理清晰顯示，不受底色影響
+      ctx.globalCompositeOperation = 'source-over'; 
+      ctx.globalAlpha = 0.85;
+      if (hdPattern) {
+        ctx.fillStyle = hdPattern;
+        ctx.fillRect(-W * 2, terrainYMin - 200, W * 4, H * 2 + 400);
+      }
+
+      // META/NVDA/MSFT/GOOGL/AMZN 專屬亮光濾鏡
+      if (stockData && (['META', 'NVDA', 'MSFT', 'GOOGL', 'GOOG', 'AMZN'].includes(stockData.symbol))) {
+        const isNVDA = stockData.symbol === 'NVDA';
+        const isMSFT = stockData.symbol === 'MSFT';
+        const isGOOG = stockData.symbol === 'GOOGL' || stockData.symbol === 'GOOG';
+        const isAMZN = stockData.symbol === 'AMZN';
+        
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = isNVDA ? 0.6 : (isAMZN ? 0.55 : 0.7);
+        const grad = ctx.createLinearGradient(0, terrainYMin, 0, H);
+        
+        if (isNVDA) {
+          grad.addColorStop(0, 'rgba(118, 185, 0, 0.45)'); 
+          grad.addColorStop(1, 'rgba(10, 30, 10, 0.9)');
+        } else if (isMSFT) {
+          grad.addColorStop(0, 'rgba(0, 164, 239, 0.35)'); 
+          grad.addColorStop(1, 'rgba(240, 245, 255, 0.6)');
+        } else if (isGOOG) {
+          // Google 繽紛四色漸層 (藍、紅、黃、綠)
+          grad.addColorStop(0, 'rgba(66, 133, 244, 0.3)');  // Blue
+          grad.addColorStop(0.3, 'rgba(234, 67, 53, 0.25)'); // Red
+          grad.addColorStop(0.6, 'rgba(251, 188, 5, 0.2)');  // Yellow
+          grad.addColorStop(1, 'rgba(52, 168, 83, 0.4)');    // Green
+        } else if (isAMZN) {
+          // Amazon 經典橘色光澤
+          grad.addColorStop(0, 'rgba(255, 153, 0, 0.45)'); 
+          grad.addColorStop(1, 'rgba(35, 47, 62, 0.85)');
+        } else {
+          grad.addColorStop(0, 'rgba(0, 150, 255, 0.5)'); 
+          grad.addColorStop(1, 'rgba(10, 20, 40, 0.9)');
+        }
+        
+        ctx.fillStyle = grad;
+        ctx.fillRect(-W * 2, terrainYMin - 200, W * 4, H * 2 + 400);
+      }
+
       ctx.restore();
     }
 
@@ -2541,6 +2843,43 @@
   }
 
   function drawTerrainPropSprite(kind, x, y, size, theme, alphaScale = 1) {
+    // ── 高細節模式：NVDA/META/MSFT/GOOGL/AMZN 專屬客製化動態組件 ──
+    if (highDetailMode && (['NVDA', 'META', 'MSFT', 'GOOGL', 'GOOG', 'AMZN'].includes(theme.symbol))) {
+      let hdImg = null;
+      const isCore = kind.includes('monolith') || kind.includes('core') || kind.includes('chip') || kind.includes('portal') || kind.includes('window') || kind.includes('campus') || kind.includes('bridge') || kind.includes('search') || kind.includes('data') || kind.includes('delivery') || kind.includes('warehouse') || kind.includes('prime');
+      
+      if (isCore && themeAssets.gpu_core) hdImg = themeAssets.gpu_core;
+      else if (themeAssets.neural_node) hdImg = themeAssets.neural_node;
+
+      if (hdImg) {
+        ctx.save();
+        ctx.translate(x, y);
+        
+        // 動態：浮動 bobbing + 呼吸 pulse
+        const time = Date.now() * 0.0025;
+        const bob = Math.sin(time + x * 0.005) * 12;
+        const pulse = 1 + Math.sin(time * 0.7) * 0.06;
+        ctx.translate(0, bob);
+        ctx.scale(pulse, pulse);
+        
+        // 核心發光
+        const isAMZN = theme.symbol === 'AMZN';
+        const glow = ctx.createRadialGradient(0, 0, size * 0.1, 0, 0, size * 1.1);
+        glow.addColorStop(0, isAMZN ? 'rgba(255, 153, 0, 0.45)' : 'rgba(118, 185, 0, 0.45)');
+        glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 1.1, 0, Math.PI * 2);
+        ctx.fill();
+        
+        const pad = size * 0.65;
+        ctx.drawImage(hdImg, -pad, -pad, pad * 2, pad * 2);
+        
+        ctx.restore();
+        return;
+      }
+    }
+
     const fill = withAlpha(theme.palette.accent, 0.88 * alphaScale);
     const stroke = withAlpha(theme.palette.glow, 0.9 * alphaScale);
     const dark = withAlpha(theme.palette.shadow, 0.92 * alphaScale);
@@ -2972,7 +3311,8 @@
   function drawTerrainProps(theme, fillPath, W, H) {
     if (!theme?.placements?.length) return;
     ctx.save();
-    ctx.clip(fillPath);
+    // 移除在高細節模式下對客製化組件的 fillPath 裁切，讓它們可以跨越山脊顯示
+    if (!highDetailMode) ctx.clip(fillPath);
     for (const placement of theme.placements) {
       if (placement.anchor === 'ridge') continue;
       const screenX = placement.worldX - terrainScrollX;
