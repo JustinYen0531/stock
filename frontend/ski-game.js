@@ -1299,7 +1299,9 @@
 
     const vistaVideoCandidates = themeDir === 'GOOGL'
       ? [
+          `/static/assets/themes/${themeDir}/Subtle_Briefing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
           `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
+          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2`,
         ]
       : [
           `/static/assets/themes/${themeDir}/vista.mp4`,
@@ -1315,7 +1317,9 @@
 
     const textureVideoCandidates = themeDir === 'GOOGL'
       ? [
+          `/static/assets/themes/${themeDir}/Subtle_Briefing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
           `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4?v=2`,
+          `/static/assets/themes/${themeDir}/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed1257825121.mp4?v=2`,
         ]
       : [
           `/static/assets/themes/${themeDir}/texture.mp4`,
@@ -1418,13 +1422,10 @@
   }
 
   function getThemeTextureOverlaySource() {
-    const symbol = stockData?.symbol;
-    const isGOOG = symbol === 'GOOGL' || symbol === 'GOOG';
     if (themeAssets.textureVideo && themeAssets.textureVideo.readyState >= 2) {
       const tile = updateThemeTextureVideoTile(themeAssets.textureVideo);
       if (tile) return tile;
     }
-    if (isGOOG) return null;
     return themeAssets.texture;
   }
 
@@ -2783,21 +2784,44 @@
     ctx.fill(fillPath);
 
     // ── 高細節：材質疊加模式 (Overlay Texture) ──
-    const overlayTexture = !isGOOGTerrain && highDetailMode ? getThemeTextureOverlaySource() : null;
+    const overlayTexture = highDetailMode ? getThemeTextureOverlaySource() : null;
     if (overlayTexture) {
       ctx.save();
       ctx.clip(fillPath);
-      const hdPattern = ctx.createPattern(overlayTexture, 'repeat');
-      
-      const xOffset = -(terrainScrollX * 0.5) % 512; 
-      ctx.translate(xOffset, 0); 
-      
-      // 使用 source-over 確保紋理清晰顯示，不受底色影響
-      ctx.globalCompositeOperation = 'source-over'; 
-      ctx.globalAlpha = 0.85;
-      if (hdPattern) {
-        ctx.fillStyle = hdPattern;
-        ctx.fillRect(-W * 2, terrainYMin - 200, W * 4, H * 2 + 400);
+      ctx.globalCompositeOperation = 'source-over';
+      if (isGOOGTerrain && themeAssets.textureVideo && themeAssets.textureVideo.readyState >= 2) {
+        const video = themeAssets.textureVideo;
+        const sourceW = video.videoWidth || W;
+        const sourceH = video.videoHeight || H;
+        const drawH = Math.max(H * 0.95, sourceH * 0.7);
+        const drawW = drawH * (sourceW / Math.max(1, sourceH));
+        const driftX = -((terrainScrollX * 0.18) % Math.max(drawW, 1));
+        const drawY = terrainYMin - H * 0.08;
+
+        ctx.globalAlpha = 0.96;
+        for (let i = -1; i <= 2; i++) {
+          ctx.drawImage(video, driftX + i * drawW, drawY, drawW, drawH);
+        }
+
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = 0.34;
+        const googGlow = ctx.createLinearGradient(0, terrainYMin, 0, H);
+        googGlow.addColorStop(0, 'rgba(255,255,255,0.28)');
+        googGlow.addColorStop(0.18, 'rgba(66,133,244,0.18)');
+        googGlow.addColorStop(0.48, 'rgba(234,67,53,0.16)');
+        googGlow.addColorStop(0.74, 'rgba(251,188,5,0.14)');
+        googGlow.addColorStop(1, 'rgba(52,168,83,0.18)');
+        ctx.fillStyle = googGlow;
+        ctx.fillRect(-W, terrainYMin - 120, W * 3, H * 2);
+      } else {
+        const hdPattern = ctx.createPattern(overlayTexture, 'repeat');
+        const xOffset = -(terrainScrollX * 0.5) % 512;
+        ctx.translate(xOffset, 0);
+        ctx.globalAlpha = 0.85;
+        if (hdPattern) {
+          ctx.fillStyle = hdPattern;
+          ctx.fillRect(-W * 2, terrainYMin - 200, W * 4, H * 2 + 400);
+        }
       }
 
       // META/NVDA/MSFT/GOOGL/AMZN 專屬亮光濾鏡
