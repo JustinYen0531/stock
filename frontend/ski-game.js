@@ -1097,7 +1097,11 @@
 
   // ── 主題資產加載 ──
   function loadThemeAssets(symbol) {
-    const themeDir = symbol === 'INTC' ? 'intel' : null; 
+    let themeDir = null;
+    const sym = (symbol || '').toUpperCase();
+    if (sym === 'INTC') themeDir = 'intel';
+    else if (sym === 'GOOGL' || sym === 'GOOGLE') themeDir = 'google';
+
     if (!themeDir) return;
 
     const vistaImg = new Image();
