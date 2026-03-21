@@ -418,6 +418,7 @@
   let terrainScrollX = 0; // 目前已捲過多少 px
   let activeCloses = [];
   let activeDates = [];
+  let activeMapDifficulty = null;
   let priceMin = 0;
   let priceMax = 1;
   let terrainYMin = 0;
@@ -954,6 +955,9 @@
   }
 
   function getPeriodConfig() {
+    if (window.SkiDifficulty?.getPeriodConfigFor) {
+      return window.SkiDifficulty.getPeriodConfigFor(stockData?.period, practiceMode, practiceOpts);
+    }
     const base = PERIOD_TUNING[stockData?.period] || PERIOD_TUNING["6mo"];
     if (!practiceMode) return base;
     // steepness 1~100 → 地形高度 0.08~1.0 倍，斜率加速 0.05~1.0 倍
@@ -992,6 +996,15 @@
       initGame();
     },
     close: closeGame,
+    getDifficulty() {
+      return activeMapDifficulty;
+    },
+    previewDifficulty(data, options = {}) {
+      if (window.SkiDifficulty?.previewDifficulty) {
+        return window.SkiDifficulty.previewDifficulty(data, options);
+      }
+      return null;
+    },
     toggleDetail() {
       highDetailMode = !highDetailMode;
       const btn = document.querySelector('.ski-detail-toggle');
@@ -1180,12 +1193,24 @@
     terrainYMax = yMax;
     terrainCameraFloorOffsetY = -(H * CAMERA_FLOOR_MARGIN_RATIO);
 
-    terrainPoints = closes.map((c, i) => ({
-      x: i * segW,
-      y: yMax - ((c - minP) / range) * (yMax - yMin),
-    }));
-    activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
-  }
+      terrainPoints = closes.map((c, i) => ({
+        x: i * segW,
+        y: yMax - ((c - minP) / range) * (yMax - yMin),
+      }));
+      activeMapDifficulty = window.SkiDifficulty?.calculateDifficulty
+        ? window.SkiDifficulty.calculateDifficulty({
+            closes,
+            period: stockData?.period,
+            practiceMode,
+            practiceOpts,
+            width: W,
+            height: H,
+            config,
+          })
+        : null;
+      if (stockData) stockData.activeMapDifficulty = activeMapDifficulty;
+      activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
+    }
 
   /* ── 初始化遊戲 ──────────────────────────────────── */
   function initGame() {

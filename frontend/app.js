@@ -1172,7 +1172,22 @@ function getSkiDifficultyDisplayLabel(label) {
     expert: '專家',
     hell: '地獄',
   };
-  return labels[label] || '未定';
+  return labels[label] || window.SkiDifficulty?.getDifficultyLabel?.(label) || '未定';
+}
+
+let lastSkiDifficultyPreview = null;
+let skiDifficultyRenderQueued = false;
+
+function applySkiDifficultyPreview(preview, state) {
+  const scoreEl = document.getElementById('skiDifficultyScore');
+  const levelEl = document.getElementById('skiDifficultyLevel');
+  const metaEl = document.getElementById('skiDifficultyMeta');
+  const panelEl = document.getElementById('skiDifficultyPanel');
+  if (!scoreEl || !levelEl || !metaEl || !panelEl) return;
+  scoreEl.textContent = String(preview.score);
+  levelEl.textContent = getSkiDifficultyDisplayLabel(preview.label);
+  metaEl.textContent = `${window.currentGameData.symbol} ・ ${state.isNormal ? '標準模式' : `${state.startPct}% - ${state.endPct}% 練習區間`} ・ 下坡風險 ${Math.round((preview.factors.downhillRisk || 0) * 100)}%`;
+  panelEl.dataset.level = preview.label;
 }
 
 function renderSkiDifficultyPreview() {
@@ -1182,7 +1197,8 @@ function renderSkiDifficultyPreview() {
   const panelEl = document.getElementById('skiDifficultyPanel');
   if (!scoreEl || !levelEl || !metaEl || !panelEl) return;
 
-  if (!window.currentGameData || !window.SkiGame?.previewDifficulty) {
+  if (!window.currentGameData) {
+    lastSkiDifficultyPreview = null;
     scoreEl.textContent = '--';
     levelEl.textContent = '尚未載入';
     metaEl.textContent = '先查詢股票後，這裡會顯示目前滑雪地圖的難度係數。';
@@ -1191,15 +1207,40 @@ function renderSkiDifficultyPreview() {
   }
 
   const state = getSkiDifficultyState();
-  const preview = window.SkiGame.previewDifficulty(window.currentGameData, state.isNormal ? {} : {
+  const previewOptions = state.isNormal ? {} : {
     practice: true,
     steepness: state.steepness,
     hitboxSize: state.hitboxSize,
     startPct: state.startPct,
     endPct: state.endPct,
-  });
+  };
+  const previewApi = window.SkiDifficulty?.previewDifficulty || window.SkiGame?.previewDifficulty;
+  if (!previewApi) {
+    if (lastSkiDifficultyPreview) {
+      applySkiDifficultyPreview(lastSkiDifficultyPreview.preview, lastSkiDifficultyPreview.state);
+      metaEl.textContent += ' ・ 暫用快取';
+      return;
+    }
+    scoreEl.textContent = '--';
+    levelEl.textContent = '尚未載入';
+    metaEl.textContent = '難度模組尚未初始化完成。';
+    panelEl.dataset.level = 'unknown';
+    return;
+  }
+
+  let preview = null;
+  try {
+    preview = previewApi(window.currentGameData, previewOptions);
+  } catch (error) {
+    console.error('Failed to render ski difficulty preview:', error);
+  }
 
   if (!preview) {
+    if (lastSkiDifficultyPreview) {
+      applySkiDifficultyPreview(lastSkiDifficultyPreview.preview, lastSkiDifficultyPreview.state);
+      metaEl.textContent += ' ・ 暫停更新';
+      return;
+    }
     scoreEl.textContent = '--';
     levelEl.textContent = '無法計算';
     metaEl.textContent = '目前資料不足，暫時無法建立滑雪難度。';
@@ -1207,10 +1248,21 @@ function renderSkiDifficultyPreview() {
     return;
   }
 
-  scoreEl.textContent = String(preview.score);
-  levelEl.textContent = getSkiDifficultyDisplayLabel(preview.label);
-  metaEl.textContent = `${window.currentGameData.symbol} ・ ${state.isNormal ? '標準模式' : `${state.startPct}% - ${state.endPct}% 練習區間`} ・ 下坡風險 ${Math.round((preview.factors.downhillRisk || 0) * 100)}%`;
-  panelEl.dataset.level = preview.label;
+  lastSkiDifficultyPreview = {
+    preview,
+    state,
+    symbol: window.currentGameData.symbol,
+  };
+  applySkiDifficultyPreview(preview, state);
+}
+
+function scheduleSkiDifficultyPreview() {
+  if (skiDifficultyRenderQueued) return;
+  skiDifficultyRenderQueued = true;
+  window.requestAnimationFrame(() => {
+    skiDifficultyRenderQueued = false;
+    renderSkiDifficultyPreview();
+  });
 }
 
 function getSkiMedalState() {
@@ -1249,28 +1301,30 @@ function setPracticeRange(start, end) {
 
 // 滑桿初始化：讓 CSS --val 變數追蹤滑桿進度（填色效果）
 (function initSliders() {
+  let initialized = false;
   function syncSlider(el) {
     if (!el) return;
     el.style.setProperty('--val', el.value);
     el.addEventListener('input', () => {
       el.style.setProperty('--val', el.value);
       updateSkiLaunchButton();
-      renderSkiDifficultyPreview();
+      scheduleSkiDifficultyPreview();
     });
   }
   function bindRange(el) {
     if (!el) return;
     el.addEventListener('input', () => {
       updateSkiLaunchButton();
-      renderSkiDifficultyPreview();
+      scheduleSkiDifficultyPreview();
     });
     el.addEventListener('change', () => {
       updateSkiLaunchButton();
-      renderSkiDifficultyPreview();
+      scheduleSkiDifficultyPreview();
     });
   }
-  // DOM 可能還沒 ready，等一下
-  document.addEventListener('DOMContentLoaded', () => {
+  function runInit() {
+    if (initialized) return;
+    initialized = true;
     setNormalPreset();
     syncSlider(document.getElementById('steepnessSlider'));
     syncSlider(document.getElementById('hitboxSlider'));
@@ -1278,16 +1332,10 @@ function setPracticeRange(start, end) {
     bindRange(document.getElementById('rangeEnd'));
     updateSkiLaunchButton();
     updateSkiMedals();
-  });
-  // 若已 ready 則立即執行
+  }
+  document.addEventListener('DOMContentLoaded', runInit, { once: true });
   if (document.readyState !== 'loading') {
-    setNormalPreset();
-    syncSlider(document.getElementById('steepnessSlider'));
-    syncSlider(document.getElementById('hitboxSlider'));
-    bindRange(document.getElementById('rangeStart'));
-    bindRange(document.getElementById('rangeEnd'));
-    updateSkiLaunchButton();
-    updateSkiMedals();
+    runInit();
   }
 })();
 
