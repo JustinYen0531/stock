@@ -104,12 +104,18 @@ body.park-mode .footer {
 }
 
 /* ── Background layers ── */
+/* park-bg 現在是全局元素（不在 parkWelcomePage 裡面）
+   只在 park mode 下可見，否則完全隱藏 */
 .park-bg {
+  display: none;            /* 專業模式：完全隱藏 */
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+}
+body.park-mode .park-bg {
+  display: block;           /* park mode：顯示 */
 }
 
 .park-sky {
@@ -1715,23 +1721,9 @@ body.park-mode .btn-search:hover {
    全部在 body.park-mode 下生效，不影響專業模式
    ══════════════════════════════════════════════════════ */
 
-/* ── 儀表板底色 → 首頁藍色天空 ── */
+/* ── 儀表板底色 → 由全局 .park-bg 提供（山景+下雪） ── */
 body.park-mode #dashboard::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -2;  /* Sky layer (behind chart thumbnail) */
-  /* 套用首頁的藍色漸層天空 */
-  background: linear-gradient(180deg,
-    #050d1c  0%,
-    #0a2050  15%,
-    #163a80  35%,
-    #2566b8  55%,
-    #4a9ed6  72%,
-    #80c4e8  85%,
-    #b5dcf2  100%
-  );
-  pointer-events: none;
+  display: none;  /* park-bg handles everything */
 }
 
 /* ── 1. QUEST 關卡標題卡 ── */
