@@ -38,6 +38,8 @@
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
   const PROP_SPRITE_BASE = '/static/assets/ski-props';
   const AAPL_PROP_BASE = '/static/assets/themes/AAPL/props';
+  const MSFT_PROP_BASE = '/static/assets/themes/MSFT/props';
+  const GOOGL_PROP_BASE = '/static/assets/themes/GOOGL/props';
   const PERIOD_TUNING = {
     "1mo": { mapWidth: 3.2, heightScale: 1.45, slopeAccel: 0.095, dangerTolerance: 38 },
     "3mo": { mapWidth: 4.2, heightScale: 1.2, slopeAccel: 0.085, dangerTolerance: 42 },
@@ -155,6 +157,34 @@
     'aapl-ice-mountain',
     'aapl-hover-device',
   ];
+  const MSFT_PROP_PACK = [
+    'msft-glass-wall',
+    'msft-cloud-orb',
+    'msft-copilot-arch',
+    'msft-data-elevator',
+    'msft-signal-tower',
+    'msft-ice-campus',
+    'msft-azure-platform',
+    'msft-server-core',
+    'msft-market-panel',
+  ];
+  const GOOGL_PROP_PACK = [
+    'googl-prism-crystals',
+    'googl-search-curve-blue',
+    'googl-search-curve-green',
+    'googl-cloud-network',
+    'googl-rainbow-arch',
+    'googl-floating-island',
+    'googl-data-platform',
+    'googl-neural-globe',
+    'googl-orbit-node',
+  ];
+  const HIGH_DETAIL_RAW_PROP_THEMES = new Set(['AAPL', 'MSFT', 'GOOGL']);
+  const HIGH_DETAIL_RAW_PROP_PREFIXES = {
+    AAPL: 'aapl-',
+    MSFT: 'msft-',
+    GOOGL: 'googl-',
+  };
   const STOCK_HERO_PACKS = {
     META: [
       { prop: 'meta-social-window', band: 0.18, depthRatio: 0.16, size: 184, anchor: 'hero' },
@@ -302,8 +332,26 @@
     'tsla-supercharger-bay': 'tsla-supercharger-bay',
     'msft-window-campus': 'msft-window-campus',
     'msft-copilot-bridge': 'msft-copilot-bridge',
+    'msft-glass-wall': 'msft-glass-wall',
+    'msft-cloud-orb': 'msft-cloud-orb',
+    'msft-copilot-arch': 'msft-copilot-arch',
+    'msft-data-elevator': 'msft-data-elevator',
+    'msft-signal-tower': 'msft-signal-tower',
+    'msft-ice-campus': 'msft-ice-campus',
+    'msft-azure-platform': 'msft-azure-platform',
+    'msft-server-core': 'msft-server-core',
+    'msft-market-panel': 'msft-market-panel',
     'googl-search-gateway': 'googl-search-gateway',
     'googl-data-orbit': 'googl-data-orbit',
+    'googl-prism-crystals': 'googl-prism-crystals',
+    'googl-search-curve-blue': 'googl-search-curve-blue',
+    'googl-search-curve-green': 'googl-search-curve-green',
+    'googl-cloud-network': 'googl-cloud-network',
+    'googl-rainbow-arch': 'googl-rainbow-arch',
+    'googl-floating-island': 'googl-floating-island',
+    'googl-data-platform': 'googl-data-platform',
+    'googl-neural-globe': 'googl-neural-globe',
+    'googl-orbit-node': 'googl-orbit-node',
     'jpm-vault-facade': 'jpm-vault-facade',
     'jpm-column-crown': 'jpm-column-crown',
     'aapl-vision-dome': 'aapl-vision-dome',
@@ -374,6 +422,24 @@
     'aapl-airpods-platform': { src: `${AAPL_PROP_BASE}/airpods-platform.png`, raw: true },
     'aapl-ice-mountain': { src: `${AAPL_PROP_BASE}/ice-mountain.png`, raw: true },
     'aapl-hover-device': { src: `${AAPL_PROP_BASE}/hover-device.png`, raw: true },
+    'msft-glass-wall': { src: `${MSFT_PROP_BASE}/glass-wall.png`, raw: true },
+    'msft-cloud-orb': { src: `${MSFT_PROP_BASE}/cloud-orb.png`, raw: true },
+    'msft-copilot-arch': { src: `${MSFT_PROP_BASE}/copilot-arch.png`, raw: true },
+    'msft-data-elevator': { src: `${MSFT_PROP_BASE}/data-elevator.png`, raw: true },
+    'msft-signal-tower': { src: `${MSFT_PROP_BASE}/signal-tower.png`, raw: true },
+    'msft-ice-campus': { src: `${MSFT_PROP_BASE}/ice-campus.png`, raw: true },
+    'msft-azure-platform': { src: `${MSFT_PROP_BASE}/azure-platform.png`, raw: true },
+    'msft-server-core': { src: `${MSFT_PROP_BASE}/server-core.png`, raw: true },
+    'msft-market-panel': { src: `${MSFT_PROP_BASE}/market-panel.png`, raw: true },
+    'googl-prism-crystals': { src: `${GOOGL_PROP_BASE}/prism-crystals.png`, raw: true },
+    'googl-search-curve-blue': { src: `${GOOGL_PROP_BASE}/search-curve-blue.png`, raw: true },
+    'googl-search-curve-green': { src: `${GOOGL_PROP_BASE}/search-curve-green.png`, raw: true },
+    'googl-cloud-network': { src: `${GOOGL_PROP_BASE}/cloud-network.png`, raw: true },
+    'googl-rainbow-arch': { src: `${GOOGL_PROP_BASE}/rainbow-arch.png`, raw: true },
+    'googl-floating-island': { src: `${GOOGL_PROP_BASE}/floating-island.png`, raw: true },
+    'googl-data-platform': { src: `${GOOGL_PROP_BASE}/data-platform.png`, raw: true },
+    'googl-neural-globe': { src: `${GOOGL_PROP_BASE}/neural-globe.png`, raw: true },
+    'googl-orbit-node': { src: `${GOOGL_PROP_BASE}/orbit-node.png`, raw: true },
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
@@ -596,6 +662,10 @@
     return elapsedMs / 1000;
   }
 
+  function frameAdjustedLerp(baseAmount, deltaFactor) {
+    return 1 - Math.pow(1 - baseAmount, Math.max(0, deltaFactor || 1));
+  }
+
   function getQualifyingSeconds() {
     return timeLimitSeconds;
   }
@@ -739,7 +809,10 @@
   }
 
   function getStockPropPack(symbol, manifestProps) {
-    if (normalizeThemeSymbol(symbol) === 'AAPL') return AAPL_PROP_PACK;
+    const symbolKey = normalizeThemeSymbol(symbol);
+    if (symbolKey === 'AAPL') return AAPL_PROP_PACK;
+    if (symbolKey === 'MSFT') return MSFT_PROP_PACK;
+    if (symbolKey === 'GOOGL') return GOOGL_PROP_PACK;
     return Array.isArray(manifestProps) ? manifestProps : [];
   }
 
@@ -809,7 +882,7 @@
   function buildPropPlacements(symbol, props, stats, heroSpecs = []) {
     if (!terrainPoints.length) return [];
     const symbolKey = normalizeThemeSymbol(symbol);
-    const compactSpriteMode = symbolKey === 'AAPL';
+    const compactSpriteMode = HIGH_DETAIL_RAW_PROP_THEMES.has(symbolKey);
     const rng = createRng(`${symbol}:${terrainPoints.length}:${stats.trend.toFixed(3)}:${stats.volatility.toFixed(3)}`);
     const totalX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     const viewportH = canvas?.height || terrainYMax || 720;
@@ -1910,7 +1983,8 @@
     if (!lastFrameTs) lastFrameTs = now;
     const deltaMs = Math.min(50, Math.max(0, now - lastFrameTs));
     lastFrameTs = now;
-    update();
+    const deltaFactor = deltaMs / (1000 / 60);
+    update(deltaFactor);
     if (gameState === 'playing') {
       elapsedMs += deltaMs;
     }
@@ -1920,17 +1994,18 @@
     }
   }
 
-  function update() {
+  function update(deltaFactor = 1) {
+    const frameScale = Math.max(0, Math.min(3, Number.isFinite(deltaFactor) ? deltaFactor : 1));
     if (gameState === 'countdown') {
-      countdownTimer++;
+      countdownTimer += frameScale;
       if (countdownTimer >= 60) { // 每秒
-        countdownTimer = 0;
+        countdownTimer -= 60;
         countdownVal--;
         if (countdownVal <= 0) gameState = 'playing';
       }
-      updateTerrainCameraOffset();
-      updateVerticalCameraOffset();
-      updateCharacterVisualOffset();
+      updateTerrainCameraOffset(frameScale);
+      updateVerticalCameraOffset(frameScale);
+      updateCharacterVisualOffset(frameScale);
       updateParticles();
       if (Math.random() < 0.3) {
         spawnSnowflake();
@@ -1939,9 +2014,9 @@
     }
 
     if (gameState === 'complete') {
-      updateTerrainCameraOffset();
-      updateVerticalCameraOffset();
-      updateCharacterVisualOffset();
+      updateTerrainCameraOffset(frameScale);
+      updateVerticalCameraOffset(frameScale);
+      updateCharacterVisualOffset(frameScale);
       updateParticles();
       if (Math.random() < 0.45) {
         spawnFallingConfetti();
@@ -1950,21 +2025,21 @@
     }
 
     if (gameState === 'dead') {
-      updateTerrainCameraOffset();
-      updateVerticalCameraOffset();
-      updateCharacterVisualOffset();
+      updateTerrainCameraOffset(frameScale);
+      updateVerticalCameraOffset(frameScale);
+      updateCharacterVisualOffset(frameScale);
       updateParticles();
       return;
     }
 
     if (gameState !== 'playing') return;
 
-    surviveFrames++;
+    surviveFrames += frameScale;
     const config = getPeriodConfig();
     const charX = getCharX();
 
     // 平滑移動角色
-    charY += (charTargetY - charY) * 0.18;
+    charY += (charTargetY - charY) * frameAdjustedLerp(0.18, frameScale);
 
     // 計算目前捲動位置對應的地形 Y
     const lineYBeforeScroll = getLineYAt(terrainScrollX + charX);
@@ -1975,10 +2050,10 @@
     const slope     = (nextLineY - lineYBeforeScroll) / lookAhead; // 正=下坡, 負=上坡
 
     // 根據斜率累加/減速度 (加速度模型)
-    currentSpeed += slope * config.slopeAccel;
+    currentSpeed += slope * config.slopeAccel * frameScale;
 
     // 空氣阻力：緩緩拉回基準速度 (讓速度不會永遠卡在最高或最低)
-    const drag = 0.004;
+    const drag = frameAdjustedLerp(0.004, frameScale);
     currentSpeed += (SCROLL_SPEED - currentSpeed) * drag;
 
     // 玩家自主速度倍率：只受左右鍵影響，與上下坡造成的實際速度分開
@@ -1986,19 +2061,19 @@
     const brakeActive = (leftKeyDown || leftMouseDown) && !(rightKeyDown || rightMouseDown);
 
     if (accelActive) {
-      playerSpeedMultiplier = Math.min(SPEED_BOOST_MULT, playerSpeedMultiplier + 0.008);
+      playerSpeedMultiplier = Math.min(SPEED_BOOST_MULT, playerSpeedMultiplier + 0.008 * frameScale);
     } else if (brakeActive) {
-      playerSpeedMultiplier = Math.max(SPEED_BRAKE_MULT, playerSpeedMultiplier - 0.008);
+      playerSpeedMultiplier = Math.max(SPEED_BRAKE_MULT, playerSpeedMultiplier - 0.008 * frameScale);
     } else {
-      const driftBack = playerSpeedMultiplier > 1 ? -0.005 : playerSpeedMultiplier < 1 ? 0.005 : 0;
+      const driftBack = playerSpeedMultiplier > 1 ? -0.005 * frameScale : playerSpeedMultiplier < 1 ? 0.005 * frameScale : 0;
       playerSpeedMultiplier = Math.max(SPEED_BRAKE_MULT, Math.min(SPEED_BOOST_MULT, playerSpeedMultiplier + driftBack));
     }
 
     // 玩家控制速度：右側輸入加速，左側輸入減速
     if (accelActive) {
-      currentSpeed += 0.16;
+      currentSpeed += 0.16 * frameScale;
     } else if (brakeActive) {
-      currentSpeed -= 0.14;
+      currentSpeed -= 0.14 * frameScale;
     }
 
     // 限制極速與最低速
@@ -2006,7 +2081,7 @@
     const dynamicMaxSpeed = Math.min(MAX_SPEED, SCROLL_SPEED * SPEED_BOOST_MULT);
     currentSpeed = Math.max(dynamicMinSpeed, Math.min(dynamicMaxSpeed, currentSpeed));
 
-    terrainScrollX += currentSpeed;
+    terrainScrollX += currentSpeed * frameScale;
     const rawLineY = getLineYAt(terrainScrollX + charX);
     const topTriggerY = canvas.height * CAMERA_DEAD_ZONE_TOP_RATIO;
     let desiredCameraOffsetY = 0;
@@ -2021,9 +2096,9 @@
       canvas.height * 0.28,
     );
     isVerticalCameraFollowing = Math.abs(verticalCameraTargetOffsetY) > 0.01;
-    updateTerrainCameraOffset();
-    updateVerticalCameraOffset();
-    updateCharacterVisualOffset();
+    updateTerrainCameraOffset(frameScale);
+    updateVerticalCameraOffset(frameScale);
+    updateCharacterVisualOffset(frameScale);
     const lineY = rawLineY + terrainCameraOffsetY;
 
     if (getElapsedSeconds() > timeLimitSeconds) {
@@ -2046,7 +2121,7 @@
       const baseIncreaseRate = 0.12 + Math.pow(Math.max(0, distRatio), 0.85) * 0.55;
       const increaseRate = baseIncreaseRate * (belowLine ? BELOW_LINE_DANGER_MULTIPLIER : 1);
       
-      dangerFrames += increaseRate;
+      dangerFrames += increaseRate * frameScale;
       isDangerAbove = aboveLine;
       isDangerBelow = belowLine;
       
@@ -2062,19 +2137,19 @@
     // ── 動態計分系統 ──
     const postDangerRatio = getDangerRatio();
     const scoreBand = getDangerBand(postDangerRatio);
-    scoreBandFrames[scoreBand]++;
+    scoreBandFrames[scoreBand] += frameScale;
 
     if (scoreBand === 'perfect') {
-      perfectStreakDistance += currentSpeed;
+      perfectStreakDistance += currentSpeed * frameScale;
       bestPerfectStreakDistance = Math.max(bestPerfectStreakDistance, perfectStreakDistance);
     } else {
       perfectStreakDistance = 0;
     }
 
     const frameScore = getBandScore(postDangerRatio);
-    score += frameScore;
+    score += frameScore * frameScale;
     if (scoreBand === 'perfect' && frameScore > 10) {
-      streakBonusScore += frameScore - 10;
+      streakBonusScore += (frameScore - 10) * frameScale;
     }
 
     if (maybeTriggerEducationStation()) {
@@ -2155,16 +2230,16 @@
     return terrainYMax - ratio * (terrainYMax - terrainYMin) + getTerrainRenderOffsetY();
   }
 
-  function updateTerrainCameraOffset() {
-    terrainCameraOffsetY += (terrainCameraTargetOffsetY - terrainCameraOffsetY) * 0.18;
+  function updateTerrainCameraOffset(deltaFactor = 1) {
+    terrainCameraOffsetY += (terrainCameraTargetOffsetY - terrainCameraOffsetY) * frameAdjustedLerp(0.18, deltaFactor);
   }
 
-  function updateVerticalCameraOffset() {
-    verticalCameraOffsetY += (verticalCameraTargetOffsetY - verticalCameraOffsetY) * CAMERA_VERTICAL_DAMPING;
+  function updateVerticalCameraOffset(deltaFactor = 1) {
+    verticalCameraOffsetY += (verticalCameraTargetOffsetY - verticalCameraOffsetY) * frameAdjustedLerp(CAMERA_VERTICAL_DAMPING, deltaFactor);
   }
 
-  function updateCharacterVisualOffset() {
-    charVisualOffsetY += (0 - charVisualOffsetY) * 0.25;
+  function updateCharacterVisualOffset(deltaFactor = 1) {
+    charVisualOffsetY += (0 - charVisualOffsetY) * frameAdjustedLerp(0.25, deltaFactor);
   }
 
   /* ── 死亡 ────────────────────────────────────────── */
@@ -2807,7 +2882,7 @@
   function drawTerrainFill(theme, fillPath, W, H) {
     ctx.save();
     ctx.clip(fillPath);
-    const useHighDetailTerrain = highDetailMode && themeAssets.texture && theme?.key === 'AAPL';
+    const useHighDetailTerrain = highDetailMode && themeAssets.texture && HIGH_DETAIL_RAW_PROP_THEMES.has(theme?.key);
 
     const baseGrad = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
     baseGrad.addColorStop(0, useHighDetailTerrain ? 'rgba(222,244,255,0.86)' : withAlpha(theme.palette.base, 0.94));
@@ -3387,14 +3462,16 @@
 
   function drawTerrainProps(theme, fillPath, W, H) {
     if (!theme?.placements?.length) return;
-    const rawSpriteBudget = theme.key === 'AAPL' ? 22 : Infinity;
+    const rawPropPrefix = HIGH_DETAIL_RAW_PROP_PREFIXES[theme.key] || '';
+    const hasRawPropPack = rawPropPrefix && HIGH_DETAIL_RAW_PROP_THEMES.has(theme.key);
+    const rawSpriteBudget = hasRawPropPack ? 22 : Infinity;
     let rawSpritesDrawn = 0;
     const motionFor = (placement, floating = false) => ({
       phase: ((placement.worldX * 0.011 + placement.ridgeY * 0.017 + String(placement.prop || '').length) % (Math.PI * 2)),
       floating,
     });
     const shouldDrawPlacement = (placement) => {
-      if (theme.key !== 'AAPL' || !String(placement.prop || '').startsWith('aapl-')) return true;
+      if (!hasRawPropPack || !String(placement.prop || '').startsWith(rawPropPrefix)) return true;
       if (rawSpritesDrawn >= rawSpriteBudget) return false;
       rawSpritesDrawn++;
       return true;
@@ -3405,23 +3482,23 @@
       if (placement.anchor === 'ridge') continue;
       const screenX = placement.worldX - terrainScrollX;
       if (screenX < -40 || screenX > W + 40) continue;
-      const y = placement.ridgeY + placement.depth + (theme.key === 'AAPL' ? placement.size * 0.18 : 0);
+      const y = placement.ridgeY + placement.depth + (hasRawPropPack ? placement.size * 0.18 : 0);
       if (y > H + 40) continue;
       if (!shouldDrawPlacement(placement)) continue;
       const scale =
-        placement.anchor === 'hero' ? (theme.key === 'AAPL' ? 0.98 : 1)
-        : placement.anchor === 'lower-band' ? (theme.key === 'AAPL' ? 1.08 : 0.88)
+        placement.anchor === 'hero' ? (hasRawPropPack ? 0.98 : 1)
+        : placement.anchor === 'lower-band' ? (hasRawPropPack ? 1.08 : 0.88)
         : placement.anchor === 'deep' ? 0.9
-        : placement.anchor === 'mid' ? (theme.key === 'AAPL' ? 1.08 : 0.96)
-        : theme.key === 'AAPL' ? 1.04 : 0.94;
+        : placement.anchor === 'mid' ? (hasRawPropPack ? 1.08 : 0.96)
+        : hasRawPropPack ? 1.04 : 0.94;
       drawTerrainPropSprite(placement.prop, screenX, y, placement.size * scale, theme, placement.alpha, motionFor(placement));
     }
     ctx.restore();
 
-    if (theme.key === 'AAPL') {
+    if (hasRawPropPack) {
       for (let i = 0; i < theme.placements.length; i++) {
         const placement = theme.placements[i];
-        if (!String(placement.prop || '').startsWith('aapl-')) continue;
+        if (!String(placement.prop || '').startsWith(rawPropPrefix)) continue;
         if (placement.anchor === 'lower-band' || placement.anchor === 'deep') continue;
         if (i % 4 !== 1 && placement.anchor !== 'hero') continue;
         const screenX = placement.worldX - terrainScrollX;
