@@ -1721,9 +1721,16 @@ body.park-mode #dashboard::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(ellipse 120% 80% at 50% -10%,
+  background:
+    linear-gradient(180deg, rgba(3, 9, 26, 0.66) 0%, rgba(3, 9, 26, 0.9) 62%, rgba(3, 9, 26, 0.96) 100%),
+    var(--park-quest-thumb, linear-gradient(180deg, #040c22 0%, #070f28 100%)),
+    radial-gradient(ellipse 120% 80% at 50% -10%,
     rgba(20,50,120,0.55) 0%, transparent 60%),
     linear-gradient(180deg, #040c22 0%, #070f28 100%);
+  background-size: cover, cover, auto, auto;
+  background-position: center top, center top, center, center;
+  filter: blur(7px) saturate(1.24) brightness(0.92);
+  transform: scale(1.025);
   pointer-events: none;
 }
 
@@ -2336,7 +2343,11 @@ body.park-mode .price-stat {
 
 /* ── 2. Action card → Hero Launch Pad ── */
 body.park-mode .stock-action-card {
-  background: linear-gradient(160deg, rgba(4,14,40,0.98) 0%, rgba(2,8,26,0.99) 100%) !important;
+  background:
+    linear-gradient(160deg, rgba(4,14,40,0.78) 0%, rgba(2,8,26,0.9) 100%),
+    var(--park-quest-thumb, linear-gradient(160deg, rgba(4,14,40,0.98) 0%, rgba(2,8,26,0.99) 100%)) !important;
+  background-size: cover !important;
+  background-position: center !important;
   border: 1.5px solid rgba(0,207,170,0.28) !important;
   border-radius: 22px !important;
   box-shadow:
@@ -2347,10 +2358,30 @@ body.park-mode .stock-action-card {
   position: relative;
   overflow: hidden;
 }
+body.park-mode .stock-action-card::before {
+  content: '';
+  position: absolute;
+  inset: -22px;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(2,8,26,0.12), rgba(2,8,26,0.46)),
+    var(--park-quest-thumb, transparent);
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px) saturate(1.28) brightness(0.72);
+  transform: scale(1.08);
+  opacity: 0.78;
+  pointer-events: none;
+}
+body.park-mode .stock-action-card > * {
+  position: relative;
+  z-index: 1;
+}
 /* Slow sweep shimmer */
 body.park-mode .stock-action-card::after {
   content: '';
   position: absolute;
+  z-index: 2;
   top: 0; left: -120%;
   width: 80%; height: 100%;
   background: linear-gradient(105deg,

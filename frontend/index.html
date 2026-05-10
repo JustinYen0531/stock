@@ -1390,10 +1390,18 @@
     if (!canvas || canvas.width === 0 || canvas.height === 0) return;
     try {
       const dataUrl = canvas.toDataURL('image/jpeg', 0.60);
+      if (typeof setParkDashboardThumb === 'function') {
+        setParkDashboardThumb(dataUrl);
+        return;
+      }
       const el = document.getElementById('parkDashThumb');
+      const dash = document.getElementById('dashboard');
+      const card = document.querySelector('.stock-action-card');
+      const cssUrl = `url("${dataUrl}")`;
+      if (dash) dash.style.setProperty('--park-quest-thumb', cssUrl);
+      if (card) card.style.setProperty('--park-quest-thumb', cssUrl);
       if (!el) return;
-      el.style.backgroundImage = `url("${dataUrl}")`;
-      // 觸發淡入動畫（先移除再加回來）
+      el.style.backgroundImage = cssUrl;
       el.classList.remove('thumb-loaded');
       requestAnimationFrame(() => el.classList.add('thumb-loaded'));
     } catch(e) { /* cross-origin canvas 會拋錯，靜默處理 */ }
