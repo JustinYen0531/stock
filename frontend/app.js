@@ -651,6 +651,7 @@ function renderDashboard(data, education = currentEducationData) {
     period: $("periodSelect").value,
     education,
   };
+  syncLobbyDetailModeForStock(symbol);
   updateSkiMedals();
   renderSkiDifficultyPreview();
 }
@@ -1190,14 +1191,31 @@ function resetKnowledge() {
 let lobbyHighDetailMode = false;
 let skiTuningCollapsed = false;
 const SKI_PROGRESS_KEY = "skiProgress";
+const SKI_HIGH_DETAIL_THEME_SYMBOLS = new Set(["AAPL", "GOOGL", "AMZN", "META", "MSFT", "NVDA", "INTC"]);
 
-function toggleLobbyDetailMode() {
-  lobbyHighDetailMode = !lobbyHighDetailMode;
+function normalizeSkiThemeSymbol(symbol) {
+  return String(symbol || "").trim().toUpperCase().replace(/\./g, "_");
+}
+
+function hasSkiHighDetailTheme(symbol) {
+  return SKI_HIGH_DETAIL_THEME_SYMBOLS.has(normalizeSkiThemeSymbol(symbol));
+}
+
+function setLobbyHighDetailMode(enabled) {
+  lobbyHighDetailMode = !!enabled;
   const btn = document.getElementById('lobbyDetailToggle');
   if (btn) {
     btn.classList.toggle('active', lobbyHighDetailMode);
     btn.querySelector('.detail-label').textContent = lobbyHighDetailMode ? '高細節：開啟' : '視覺細節';
   }
+}
+
+function syncLobbyDetailModeForStock(symbol) {
+  setLobbyHighDetailMode(hasSkiHighDetailTheme(symbol));
+}
+
+function toggleLobbyDetailMode() {
+  setLobbyHighDetailMode(!lobbyHighDetailMode);
 }
 
 function launchSkiGame() {

@@ -360,6 +360,15 @@
   let highDetailMode = false;
   let themeAssets = { vista: null, texture: null };
   let cachedPatterns = { terrain: null, detail: null, hd: null, hdSrc: null, themeSrc: null };
+  const HIGH_DETAIL_THEME_DIRS = {
+    AAPL: 'AAPL',
+    GOOGL: 'GOOGL',
+    AMZN: 'AMZN',
+    META: 'META',
+    MSFT: 'MSFT',
+    NVDA: 'NVDA',
+    INTC: 'intel',
+  };
   const themeBackgroundCache = new Map();
   const terrainPatternCache = new Map();
   const terrainDetailCache = new Map();
@@ -1280,7 +1289,7 @@
     launch(data, options = {}) {
       stockData    = data; // { symbol, closes: [], dates: [], period }
       educationData = options.education || data.education || null;
-      highDetailMode = !!options.highDetail;
+      highDetailMode = !!options.highDetail || !!HIGH_DETAIL_THEME_DIRS[normalizeThemeSymbol(data?.symbol)];
       practiceMode   = !!options.practice;
 
       if (practiceMode) {
@@ -1424,13 +1433,10 @@
 
   // ── 主題資產加載 ──
   function loadThemeAssets(symbol) {
-    const sym = (symbol || '').toUpperCase();
-    // 直接用股票代號當目錄名，或特殊映射
-    const dirMap = { 'INTC': 'intel' };
-    const validSyms = ['GOOGL', 'AMZN', 'META', 'MSFT', 'NVDA', 'INTC'];
-    if (!validSyms.includes(sym)) return;
-
-    const themeDir = dirMap[sym] || sym; // INTC → intel，其餘直接用代號
+    themeAssets = { vista: null, texture: null };
+    const sym = normalizeThemeSymbol(symbol);
+    const themeDir = HIGH_DETAIL_THEME_DIRS[sym];
+    if (!themeDir) return;
 
     const vistaImg = new Image();
     vistaImg.src = `/static/assets/themes/${themeDir}/vista.png`;
