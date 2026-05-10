@@ -38,6 +38,8 @@
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
   const PROP_SPRITE_BASE = '/static/assets/ski-props';
   const AAPL_PROP_BASE = '/static/assets/themes/AAPL/props';
+  const MSFT_PROP_BASE = '/static/assets/themes/MSFT/props';
+  const GOOGL_PROP_BASE = '/static/assets/themes/GOOGL/props';
   const PERIOD_TUNING = {
     "1mo": { mapWidth: 3.2, heightScale: 1.45, slopeAccel: 0.095, dangerTolerance: 38 },
     "3mo": { mapWidth: 4.2, heightScale: 1.2, slopeAccel: 0.085, dangerTolerance: 42 },
@@ -155,6 +157,34 @@
     'aapl-ice-mountain',
     'aapl-hover-device',
   ];
+  const MSFT_PROP_PACK = [
+    'msft-glass-wall',
+    'msft-cloud-orb',
+    'msft-copilot-arch',
+    'msft-data-elevator',
+    'msft-signal-tower',
+    'msft-ice-campus',
+    'msft-azure-platform',
+    'msft-server-core',
+    'msft-market-panel',
+  ];
+  const GOOGL_PROP_PACK = [
+    'googl-prism-crystals',
+    'googl-search-curve-blue',
+    'googl-search-curve-green',
+    'googl-cloud-network',
+    'googl-rainbow-arch',
+    'googl-floating-island',
+    'googl-data-platform',
+    'googl-neural-globe',
+    'googl-orbit-node',
+  ];
+  const HIGH_DETAIL_RAW_PROP_THEMES = new Set(['AAPL', 'MSFT', 'GOOGL']);
+  const HIGH_DETAIL_RAW_PROP_PREFIXES = {
+    AAPL: 'aapl-',
+    MSFT: 'msft-',
+    GOOGL: 'googl-',
+  };
   const STOCK_HERO_PACKS = {
     META: [
       { prop: 'meta-social-window', band: 0.18, depthRatio: 0.16, size: 184, anchor: 'hero' },
@@ -302,8 +332,26 @@
     'tsla-supercharger-bay': 'tsla-supercharger-bay',
     'msft-window-campus': 'msft-window-campus',
     'msft-copilot-bridge': 'msft-copilot-bridge',
+    'msft-glass-wall': 'msft-glass-wall',
+    'msft-cloud-orb': 'msft-cloud-orb',
+    'msft-copilot-arch': 'msft-copilot-arch',
+    'msft-data-elevator': 'msft-data-elevator',
+    'msft-signal-tower': 'msft-signal-tower',
+    'msft-ice-campus': 'msft-ice-campus',
+    'msft-azure-platform': 'msft-azure-platform',
+    'msft-server-core': 'msft-server-core',
+    'msft-market-panel': 'msft-market-panel',
     'googl-search-gateway': 'googl-search-gateway',
     'googl-data-orbit': 'googl-data-orbit',
+    'googl-prism-crystals': 'googl-prism-crystals',
+    'googl-search-curve-blue': 'googl-search-curve-blue',
+    'googl-search-curve-green': 'googl-search-curve-green',
+    'googl-cloud-network': 'googl-cloud-network',
+    'googl-rainbow-arch': 'googl-rainbow-arch',
+    'googl-floating-island': 'googl-floating-island',
+    'googl-data-platform': 'googl-data-platform',
+    'googl-neural-globe': 'googl-neural-globe',
+    'googl-orbit-node': 'googl-orbit-node',
     'jpm-vault-facade': 'jpm-vault-facade',
     'jpm-column-crown': 'jpm-column-crown',
     'aapl-vision-dome': 'aapl-vision-dome',
@@ -374,6 +422,24 @@
     'aapl-airpods-platform': { src: `${AAPL_PROP_BASE}/airpods-platform.png`, raw: true },
     'aapl-ice-mountain': { src: `${AAPL_PROP_BASE}/ice-mountain.png`, raw: true },
     'aapl-hover-device': { src: `${AAPL_PROP_BASE}/hover-device.png`, raw: true },
+    'msft-glass-wall': { src: `${MSFT_PROP_BASE}/glass-wall.png`, raw: true },
+    'msft-cloud-orb': { src: `${MSFT_PROP_BASE}/cloud-orb.png`, raw: true },
+    'msft-copilot-arch': { src: `${MSFT_PROP_BASE}/copilot-arch.png`, raw: true },
+    'msft-data-elevator': { src: `${MSFT_PROP_BASE}/data-elevator.png`, raw: true },
+    'msft-signal-tower': { src: `${MSFT_PROP_BASE}/signal-tower.png`, raw: true },
+    'msft-ice-campus': { src: `${MSFT_PROP_BASE}/ice-campus.png`, raw: true },
+    'msft-azure-platform': { src: `${MSFT_PROP_BASE}/azure-platform.png`, raw: true },
+    'msft-server-core': { src: `${MSFT_PROP_BASE}/server-core.png`, raw: true },
+    'msft-market-panel': { src: `${MSFT_PROP_BASE}/market-panel.png`, raw: true },
+    'googl-prism-crystals': { src: `${GOOGL_PROP_BASE}/prism-crystals.png`, raw: true },
+    'googl-search-curve-blue': { src: `${GOOGL_PROP_BASE}/search-curve-blue.png`, raw: true },
+    'googl-search-curve-green': { src: `${GOOGL_PROP_BASE}/search-curve-green.png`, raw: true },
+    'googl-cloud-network': { src: `${GOOGL_PROP_BASE}/cloud-network.png`, raw: true },
+    'googl-rainbow-arch': { src: `${GOOGL_PROP_BASE}/rainbow-arch.png`, raw: true },
+    'googl-floating-island': { src: `${GOOGL_PROP_BASE}/floating-island.png`, raw: true },
+    'googl-data-platform': { src: `${GOOGL_PROP_BASE}/data-platform.png`, raw: true },
+    'googl-neural-globe': { src: `${GOOGL_PROP_BASE}/neural-globe.png`, raw: true },
+    'googl-orbit-node': { src: `${GOOGL_PROP_BASE}/orbit-node.png`, raw: true },
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
@@ -739,7 +805,10 @@
   }
 
   function getStockPropPack(symbol, manifestProps) {
-    if (normalizeThemeSymbol(symbol) === 'AAPL') return AAPL_PROP_PACK;
+    const symbolKey = normalizeThemeSymbol(symbol);
+    if (symbolKey === 'AAPL') return AAPL_PROP_PACK;
+    if (symbolKey === 'MSFT') return MSFT_PROP_PACK;
+    if (symbolKey === 'GOOGL') return GOOGL_PROP_PACK;
     return Array.isArray(manifestProps) ? manifestProps : [];
   }
 
@@ -809,7 +878,7 @@
   function buildPropPlacements(symbol, props, stats, heroSpecs = []) {
     if (!terrainPoints.length) return [];
     const symbolKey = normalizeThemeSymbol(symbol);
-    const compactSpriteMode = symbolKey === 'AAPL';
+    const compactSpriteMode = HIGH_DETAIL_RAW_PROP_THEMES.has(symbolKey);
     const rng = createRng(`${symbol}:${terrainPoints.length}:${stats.trend.toFixed(3)}:${stats.volatility.toFixed(3)}`);
     const totalX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     const viewportH = canvas?.height || terrainYMax || 720;
@@ -835,7 +904,7 @@
         worldX: anchor.worldX,
         ridgeY: anchor.ridgeY,
         depth: isHero ? anchorDepth : compactSpriteMode ? anchorDepth : 0,
-        size: isHero ? 118 + rng() * 42 : compactSpriteMode ? 72 + rng() * 30 : 70 + rng() * 30,
+        size: isHero ? 146 + rng() * 48 : compactSpriteMode ? 92 + rng() * 36 : 70 + rng() * 30,
         anchor: isHero ? 'hero' : compactSpriteMode ? 'interior' : 'ridge',
         alpha: isHero ? 0.54 + rng() * 0.12 : compactSpriteMode ? 0.78 + rng() * 0.12 : 0.96,
       });
@@ -853,7 +922,7 @@
           worldX,
           ridgeY: flankRidgeY,
           depth: flankAvailableDepth * depthRatio,
-          size: j === 0 ? 56 + rng() * 28 : 50 + rng() * 26,
+          size: compactSpriteMode ? (j === 0 ? 82 + rng() * 30 : 72 + rng() * 28) : j === 0 ? 56 + rng() * 28 : 50 + rng() * 26,
           anchor: j === 0 ? 'interior' : 'deep',
           alpha: j === 0 ? 0.84 + rng() * 0.12 : 0.58 + rng() * 0.16,
         });
@@ -884,7 +953,12 @@
           : layerType === 'deep' ? availableDepth * (0.56 + rng() * 0.22)
           : availableDepth * (0.16 + rng() * 0.18),
         size:
-          layerType === 'ridge' ? 60 + rng() * 36
+          compactSpriteMode ? (
+            layerType === 'deep' ? 76 + rng() * 30
+            : layerType === 'mid' ? 86 + rng() * 34
+            : 82 + rng() * 32
+          )
+          : layerType === 'ridge' ? 60 + rng() * 36
           : layerType === 'deep' ? 48 + rng() * 24
           : 46 + rng() * 30,
         anchor: layerType,
@@ -910,7 +984,7 @@
         worldX,
         ridgeY,
         depth: availableDepth * lowerRatio,
-        size: 42 + rng() * 24,
+        size: compactSpriteMode ? 78 + rng() * 32 : 42 + rng() * 24,
         anchor: 'lower-band',
         alpha: 0.54 + rng() * 0.16,
       });
@@ -926,7 +1000,7 @@
         worldX,
         ridgeY,
         depth: availableDepth * (compactSpriteMode ? spec.depthRatio + 0.08 : spec.depthRatio),
-        size: spec.size * (compactSpriteMode ? 0.82 + rng() * 0.08 : 0.92 + rng() * 0.12),
+        size: spec.size * (compactSpriteMode ? 1.02 + rng() * 0.1 : 0.92 + rng() * 0.12),
         anchor: spec.anchor || 'hero',
         alpha: compactSpriteMode ? 0.56 + rng() * 0.12 : 0.5 + rng() * 0.12,
       });
@@ -2802,7 +2876,7 @@
   function drawTerrainFill(theme, fillPath, W, H) {
     ctx.save();
     ctx.clip(fillPath);
-    const useHighDetailTerrain = highDetailMode && themeAssets.texture && theme?.key === 'AAPL';
+    const useHighDetailTerrain = highDetailMode && themeAssets.texture && HIGH_DETAIL_RAW_PROP_THEMES.has(theme?.key);
 
     const baseGrad = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
     baseGrad.addColorStop(0, useHighDetailTerrain ? 'rgba(222,244,255,0.86)' : withAlpha(theme.palette.base, 0.94));
@@ -2931,7 +3005,7 @@
     return cacheCanvas;
   }
 
-  function drawTerrainPropSprite(kind, x, y, size, theme, alphaScale = 1) {
+  function drawTerrainPropSprite(kind, x, y, size, theme, alphaScale = 1, motion = null) {
     const fill = withAlpha(theme.palette.accent, 0.88 * alphaScale);
     const stroke = withAlpha(theme.palette.glow, 0.9 * alphaScale);
     const dark = withAlpha(theme.palette.shadow, 0.92 * alphaScale);
@@ -2942,13 +3016,19 @@
     ctx.lineJoin = 'round';
 
     if (spriteEntry?.status === 'ready' && spriteEntry.raw && spriteEntry.img?.naturalWidth) {
-      const wobble = ((x * 0.013 + y * 0.007) % 0.18) - 0.09;
+      const time = (lastFrameTs || performance.now()) * 0.001;
+      const phase = motion?.phase ?? 0;
+      const breath = Math.sin(time * 1.15 + phase);
+      const drift = Math.sin(time * 0.82 + phase * 1.37);
+      const breathScale = 1 + breath * (motion?.floating ? 0.045 : 0.028);
+      const floatY = drift * size * (motion?.floating ? 0.075 : 0.028);
       const pad = size * 0.68;
       const aspect = spriteEntry.img.naturalWidth / Math.max(1, spriteEntry.img.naturalHeight);
       const drawW = aspect >= 1 ? pad * 2 : pad * 2 * aspect;
       const drawH = aspect >= 1 ? (pad * 2) / aspect : pad * 2;
-      ctx.rotate(wobble);
-      ctx.globalAlpha = clamp(alphaScale * 1.72, 0.62, 1);
+      ctx.translate(0, floatY);
+      ctx.scale(breathScale, breathScale);
+      ctx.globalAlpha = clamp(alphaScale * (motion?.floating ? 1.82 : 1.72), 0.62, 1);
       ctx.drawImage(spriteEntry.img, -drawW / 2, -drawH / 2, drawW, drawH);
       ctx.restore();
       return;
@@ -3376,10 +3456,16 @@
 
   function drawTerrainProps(theme, fillPath, W, H) {
     if (!theme?.placements?.length) return;
-    const rawSpriteBudget = theme.key === 'AAPL' ? 18 : Infinity;
+    const rawPropPrefix = HIGH_DETAIL_RAW_PROP_PREFIXES[theme.key] || '';
+    const hasRawPropPack = rawPropPrefix && HIGH_DETAIL_RAW_PROP_THEMES.has(theme.key);
+    const rawSpriteBudget = hasRawPropPack ? 22 : Infinity;
     let rawSpritesDrawn = 0;
+    const motionFor = (placement, floating = false) => ({
+      phase: ((placement.worldX * 0.011 + placement.ridgeY * 0.017 + String(placement.prop || '').length) % (Math.PI * 2)),
+      floating,
+    });
     const shouldDrawPlacement = (placement) => {
-      if (theme.key !== 'AAPL' || !String(placement.prop || '').startsWith('aapl-')) return true;
+      if (!hasRawPropPack || !String(placement.prop || '').startsWith(rawPropPrefix)) return true;
       if (rawSpritesDrawn >= rawSpriteBudget) return false;
       rawSpritesDrawn++;
       return true;
@@ -3390,18 +3476,35 @@
       if (placement.anchor === 'ridge') continue;
       const screenX = placement.worldX - terrainScrollX;
       if (screenX < -40 || screenX > W + 40) continue;
-      const y = placement.ridgeY + placement.depth + (theme.key === 'AAPL' ? placement.size * 0.18 : 0);
+      const y = placement.ridgeY + placement.depth + (hasRawPropPack ? placement.size * 0.18 : 0);
       if (y > H + 40) continue;
       if (!shouldDrawPlacement(placement)) continue;
       const scale =
-        placement.anchor === 'hero' ? (theme.key === 'AAPL' ? 0.86 : 1)
-        : placement.anchor === 'lower-band' ? (theme.key === 'AAPL' ? 0.96 : 0.88)
+        placement.anchor === 'hero' ? (hasRawPropPack ? 0.98 : 1)
+        : placement.anchor === 'lower-band' ? (hasRawPropPack ? 1.08 : 0.88)
         : placement.anchor === 'deep' ? 0.9
-        : placement.anchor === 'mid' ? 0.96
-        : 0.94;
-      drawTerrainPropSprite(placement.prop, screenX, y, placement.size * scale, theme, placement.alpha);
+        : placement.anchor === 'mid' ? (hasRawPropPack ? 1.08 : 0.96)
+        : hasRawPropPack ? 1.04 : 0.94;
+      drawTerrainPropSprite(placement.prop, screenX, y, placement.size * scale, theme, placement.alpha, motionFor(placement));
     }
     ctx.restore();
+
+    if (hasRawPropPack) {
+      for (let i = 0; i < theme.placements.length; i++) {
+        const placement = theme.placements[i];
+        if (!String(placement.prop || '').startsWith(rawPropPrefix)) continue;
+        if (placement.anchor === 'lower-band' || placement.anchor === 'deep') continue;
+        if (i % 4 !== 1 && placement.anchor !== 'hero') continue;
+        const screenX = placement.worldX - terrainScrollX;
+        if (screenX < 90 || screenX > W - 90) continue;
+        if (!shouldDrawPlacement(placement)) continue;
+        const floatLift = placement.anchor === 'hero' ? placement.size * 1.18 : placement.size * 0.92;
+        const floatY = placement.ridgeY - floatLift;
+        if (floatY < H * 0.34 || floatY > H - 90) continue;
+        const floatSize = placement.size * (placement.anchor === 'hero' ? 1.1 : 0.92);
+        drawTerrainPropSprite(placement.prop, screenX, floatY, floatSize, theme, placement.alpha * 0.74, motionFor(placement, true));
+      }
+    }
 
     for (const placement of theme.placements) {
       if (placement.anchor !== 'ridge') continue;
@@ -3409,7 +3512,7 @@
       if (screenX < -40 || screenX > W + 40) continue;
       if (!shouldDrawPlacement(placement)) continue;
       const y = placement.ridgeY - placement.size * 0.44;
-      drawTerrainPropSprite(placement.prop, screenX, y, placement.size, theme, placement.alpha);
+      drawTerrainPropSprite(placement.prop, screenX, y, placement.size, theme, placement.alpha, motionFor(placement));
     }
   }
 
