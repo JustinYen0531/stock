@@ -1711,6 +1711,269 @@ body.park-mode .btn-search:hover {
 }
 
 /* ══════════════════════════════════════════════════════
+   PATCH F: 股票分析頁 (#dashboard) 遊戲化
+   全部在 body.park-mode 下生效，不影響專業模式
+   ══════════════════════════════════════════════════════ */
+
+/* ── 儀表板底色 ── */
+body.park-mode #dashboard::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 120% 80% at 50% -10%,
+    rgba(20,50,120,0.55) 0%, transparent 60%),
+    linear-gradient(180deg, #040c22 0%, #070f28 100%);
+  pointer-events: none;
+}
+
+/* ── 1. QUEST 關卡標題卡 ── */
+body.park-mode .stock-header-card {
+  background: linear-gradient(145deg, rgba(6,14,38,0.97) 0%, rgba(12,26,66,0.95) 100%);
+  border: 1.5px solid rgba(255,210,50,0.28);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  padding-top: 3rem !important;
+}
+/* "QUEST IN PROGRESS" kicker */
+body.park-mode .stock-header-card::before {
+  content: '⚔️  QUEST IN PROGRESS';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 0.55rem 1.4rem;
+  font-size: 0.60rem;
+  font-weight: 900;
+  color: rgba(255,210,50,0.70);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  background: rgba(255,210,50,0.07);
+  border-bottom: 1px solid rgba(255,210,50,0.14);
+}
+/* Gold shimmer */
+body.park-mode .stock-header-card::after {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(255,210,50,0.09) 0%, transparent 65%);
+  pointer-events: none;
+}
+/* Big game-style stock name */
+body.park-mode .stock-name {
+  font-size: clamp(2.2rem, 5vw, 3.2rem) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  background: linear-gradient(135deg, #ffe066 0%, #ffb300 55%, #ff8c1a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 14px rgba(255,180,0,0.38));
+}
+/* Symbol badge → game level tag */
+body.park-mode .stock-symbol-badge {
+  background: rgba(255,210,50,0.12) !important;
+  border: 1.5px solid rgba(255,210,50,0.32) !important;
+  color: #ffe066 !important;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  border-radius: 8px !important;
+}
+/* Price stat labels → game language via data-park */
+body.park-mode .stat-label { font-size: 0 !important; }
+body.park-mode .stat-label[data-park]::before {
+  content: attr(data-park);
+  font-size: 0.68rem;
+  color: rgba(180,210,255,0.55);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+/* Price value → bigger, monospace */
+body.park-mode .price-value {
+  font-size: 1.9rem !important;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  color: #fff;
+}
+
+/* ── 2. 滑雪啟動 → 關卡挑戰中心 ── */
+body.park-mode .stock-action-card {
+  background: linear-gradient(145deg,
+    rgba(255,90,0,0.10) 0%, rgba(10,8,4,0.92) 100%);
+  border: 1.5px solid rgba(255,100,0,0.28) !important;
+  border-radius: 18px;
+}
+body.park-mode .ski-action-title {
+  font-size: 1.1rem !important;
+  font-weight: 900;
+  color: #ffb300 !important;
+  letter-spacing: 0.02em;
+}
+body.park-mode .ski-action-desc { font-size: 0 !important; }
+body.park-mode .ski-action-desc::before {
+  content: '征服這條雪道，挑戰極限！';
+  font-size: 0.82rem;
+  color: rgba(255,200,100,0.65);
+}
+/* Mega start button */
+body.park-mode .ski-launch-big {
+  background: linear-gradient(135deg, #ff8c1a 0%, #ffb300 50%, #ff5500 100%) !important;
+  box-shadow: 0 6px 32px rgba(255,120,0,0.55), 0 0 0 2px rgba(255,180,0,0.18) !important;
+  font-size: 1.05rem !important;
+  padding: 0.95rem 1.8rem !important;
+  border-radius: 14px !important;
+  animation: parkPulse 2.5s infinite;
+  letter-spacing: 0.03em;
+}
+/* Difficulty label → game language */
+body.park-mode .ski-difficulty-label { font-size: 0 !important; }
+body.park-mode .ski-difficulty-label::before {
+  content: '🏔️ 雪道難度';
+  font-size: 0.70rem;
+  color: rgba(180,210,255,0.60);
+  font-weight: 700;
+}
+
+/* ── 3. 教育纜車預習 → 任務地形簡報 ── */
+body.park-mode .education-preview-card {
+  background: rgba(6,14,40,0.94);
+  border: 1.5px solid rgba(0,207,170,0.22);
+  border-radius: 18px;
+}
+body.park-mode .education-preview-kicker { font-size: 0 !important; }
+body.park-mode .education-preview-kicker::before {
+  content: '🗺️  任務地形簡報';
+  font-size: 0.70rem;
+  font-weight: 900;
+  color: rgba(0,207,170,0.80);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+body.park-mode .education-preview-badge {
+  background: rgba(0,207,170,0.12) !important;
+  border: 1px solid rgba(0,207,170,0.28) !important;
+  color: var(--park-teal) !important;
+  font-size: 0 !important;
+}
+body.park-mode .education-preview-badge::before {
+  content: '情報';
+  font-size: 0.70rem;
+}
+
+/* ── 4. AI 建議 → NPC 嚮導對話框 ── */
+body.park-mode .advice-card {
+  background: rgba(4,12,34,0.96);
+  border: 1.5px solid rgba(80,160,255,0.22) !important;
+  border-radius: 20px;
+  position: relative;
+}
+/* Speech bubble triangle at top */
+body.park-mode .advice-card::before {
+  content: '';
+  position: absolute;
+  top: -9px; left: 36px;
+  width: 0; height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 9px solid rgba(80,160,255,0.22);
+}
+/* NPC avatar icon */
+body.park-mode .advice-icon {
+  width: 46px !important; height: 46px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #00cfaa, #0080c0) !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  font-size: 1.3rem !important;
+  box-shadow: 0 0 18px rgba(0,207,170,0.42) !important;
+  flex-shrink: 0 !important;
+}
+/* NPC name replace */
+body.park-mode .advice-title { font-size: 0 !important; }
+body.park-mode .advice-title::before {
+  content: '⛷️ AI 嚮導';
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+}
+body.park-mode .advice-summary {
+  font-size: 0.95rem !important;
+  line-height: 1.75 !important;
+  color: rgba(220,235,255,0.88) !important;
+  font-style: italic;
+}
+/* Signal badge → game verdict */
+body.park-mode #signalBadge {
+  font-weight: 900;
+  font-size: 0.88rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+}
+
+/* ── 5. 圖表 Tabs → 地形掃描 ── */
+body.park-mode .tab-btn {
+  border-radius: 10px !important;
+}
+/* Hide original text, show game alias */
+body.park-mode .tab-btn > :not(.park-tab-alias) { display: none; }
+body.park-mode .park-tab-alias {
+  display: inline !important;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+/* Active tab highlight */
+body.park-mode .tab-btn.active {
+  background: rgba(0,207,170,0.18) !important;
+  border-color: rgba(0,207,170,0.40) !important;
+  color: var(--park-teal) !important;
+}
+
+/* ── 6. 圖表標題 + info tags → 遊戲語言 ── */
+body.park-mode .chart-label { font-size: 0 !important; }
+body.park-mode .chart-label[data-park]::before {
+  content: attr(data-park);
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: rgba(180,215,255,0.85);
+}
+body.park-mode .info-tag { font-size: 0 !important; }
+body.park-mode .info-tag[data-park]::before {
+  content: attr(data-park);
+  font-size: 0.70rem;
+}
+
+/* ── 7. 指標卡 → 遊戲 HUD 面板 ── */
+body.park-mode .stat-card {
+  background: rgba(6,16,44,0.92);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 1rem 0.8rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+body.park-mode .stat-card:hover {
+  border-color: rgba(0,207,170,0.30);
+  box-shadow: 0 0 14px rgba(0,207,170,0.10);
+}
+/* Hide tech label, show only game alias */
+body.park-mode .stat-card-title { font-size: 0 !important; }
+body.park-mode .park-stat-alias {
+  font-size: 0.72rem !important;
+  display: block !important;
+  color: rgba(0,207,170,0.78) !important;
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+  font-style: normal;
+}
+body.park-mode .stat-card-value {
+  font-size: 1.3rem;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  color: #fff;
+}
+
+/* Tab alias hidden in pro mode */
+.park-tab-alias { display: none; }
+
+/* ══════════════════════════════════════════════════════
    PATCH E: 主題關卡地圖 — 進度條 + 任務流程燈
    ══════════════════════════════════════════════════════ */
 

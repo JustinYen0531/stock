@@ -457,15 +457,15 @@
           </div>
           <div class="stock-price-area">
             <div class="price-stat">
-              <span class="stat-label">最新收盤</span>
+              <span class="stat-label" data-park="本日終點">最新收盤</span>
               <span id="latestClose" class="stat-value price-value">—</span>
             </div>
             <div class="price-stat">
-              <span class="stat-label">漲跌幅</span>
+              <span class="stat-label" data-park="坡度變化">漲跌幅</span>
               <span id="priceChange" class="stat-value">—</span>
             </div>
             <div class="price-stat">
-              <span class="stat-label">成交量</span>
+              <span class="stat-label" data-park="雪場人潮">成交量</span>
               <span id="latestVolume" class="stat-value">—</span>
             </div>
           </div>
@@ -588,22 +588,22 @@
 
       <!-- 指標 tabs -->
       <div class="chart-tabs">
-        <button class="tab-btn active" onclick="switchTab('price')" id="tab-price">📈 K線圖 + MA</button>
-        <button class="tab-btn" onclick="switchTab('rsi')" id="tab-rsi">📊 RSI</button>
-        <button class="tab-btn" onclick="switchTab('macd')" id="tab-macd">🌊 MACD</button>
+        <button class="tab-btn active" onclick="switchTab('price')" id="tab-price">📈 K線圖 + MA<span class="park-tab-alias">⛷️ 雪道地形圖</span></button>
+        <button class="tab-btn" onclick="switchTab('rsi')" id="tab-rsi">📊 RSI<span class="park-tab-alias">💪 體力值監測</span></button>
+        <button class="tab-btn" onclick="switchTab('macd')" id="tab-macd">🌊 MACD<span class="park-tab-alias">🌊 浪潮雷達</span></button>
       </div>
 
       <!-- 圖表容器 -->
       <div class="charts-area">
         <div id="panel-price" class="chart-panel">
           <div class="chart-card">
-            <div class="chart-label">K線圖 + 移動平均線</div>
+            <div class="chart-label" data-park="⛷️ 雪道地形圖 · K線走勢">K線圖 + 移動平均線</div>
             <div class="chart-wrapper">
               <canvas id="priceChart"></canvas>
             </div>
           </div>
           <div class="chart-card volume-card">
-            <div class="chart-label">成交量</div>
+            <div class="chart-label" data-park="🏔️ 雪場人潮流量">成交量</div>
             <div class="chart-wrapper chart-wrapper-sm">
               <canvas id="volumeChart"></canvas>
             </div>
@@ -612,11 +612,11 @@
 
         <div id="panel-rsi" class="chart-panel hidden">
           <div class="chart-card">
-            <div class="chart-label">RSI (14) — 相對強弱指數</div>
+            <div class="chart-label" data-park="💪 體力值監測 (RSI 14)">RSI (14) — 相對強弱指數</div>
             <div class="chart-info">
-              <span class="info-tag bear">RSI &gt; 70 超買</span>
-              <span class="info-tag neutral">30–70 中性</span>
-              <span class="info-tag bull">RSI &lt; 30 超賣</span>
+              <span class="info-tag bear" data-park="體力透支 &gt; 70 · 小心回調">RSI &gt; 70 超買</span>
+              <span class="info-tag neutral" data-park="30–70 穩定滑行">30–70 中性</span>
+              <span class="info-tag bull" data-park="體力見底 &lt; 30 · 等待反彈">RSI &lt; 30 超賣</span>
             </div>
             <div class="chart-wrapper chart-wrapper-lg">
               <canvas id="rsiChart"></canvas>
@@ -626,10 +626,10 @@
 
         <div id="panel-macd" class="chart-panel hidden">
           <div class="chart-card">
-            <div class="chart-label">MACD — 指數移動平均收斂發散</div>
+            <div class="chart-label" data-park="🌊 市場浪潮儀 (MACD)">MACD — 指數移動平均收斂發散</div>
             <div class="chart-info">
-              <span class="info-tag bull">MACD 黃金交叉 → 買入信號</span>
-              <span class="info-tag bear">死亡交叉 → 賣出信號</span>
+              <span class="info-tag bull" data-park="浪潮翻湧 · 衝刺加速！">MACD 黃金交叉 → 買入信號</span>
+              <span class="info-tag bear" data-park="浪潮逆轉 · 立即防守！">死亡交叉 → 賣出信號</span>
             </div>
             <div class="chart-wrapper chart-wrapper-lg">
               <canvas id="macdChart"></canvas>
