@@ -1370,26 +1370,7 @@
 
   /* ── 真實縮圖擷取 ── */
   function _captureParkThumb() {
-    if (!_parkMode) return;
-    const canvas = document.getElementById('priceChart');
-    if (!canvas || canvas.width === 0 || canvas.height === 0) return;
-    try {
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.60);
-      if (typeof setParkDashboardThumb === 'function') {
-        setParkDashboardThumb(dataUrl);
-        return;
-      }
-      const el = document.getElementById('parkDashThumb');
-      const dash = document.getElementById('dashboard');
-      const card = document.querySelector('.stock-action-card');
-      const cssUrl = `url("${dataUrl}")`;
-      if (dash) dash.style.setProperty('--park-quest-thumb', cssUrl);
-      if (card) card.style.setProperty('--park-quest-thumb', cssUrl);
-      if (!el) return;
-      el.style.backgroundImage = cssUrl;
-      el.classList.remove('thumb-loaded');
-      requestAnimationFrame(() => el.classList.add('thumb-loaded'));
-    } catch(e) { /* cross-origin canvas 會拋錯，靜默處理 */ }
+    if (typeof setParkDashboardThumb === 'function') setParkDashboardThumb('');
   }
 
   /* ── 迷你折線 SVG ── */

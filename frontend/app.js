@@ -658,68 +658,20 @@ function renderDashboard(data, education = currentEducationData) {
 }
 
 function setParkDashboardThumb(imageUrl) {
+  // Park dashboard uses the shared snowy home background now, not chart thumbnails.
   const dash = $("dashboard");
   const thumb = $("parkDashThumb");
   const actionCard = document.querySelector(".stock-action-card");
-  if (!imageUrl) return;
-  const cssUrl = `url("${imageUrl}")`;
-  if (dash) dash.style.setProperty("--park-quest-thumb", cssUrl);
-  if (actionCard) actionCard.style.setProperty("--park-quest-thumb", cssUrl);
+  dash?.style.removeProperty("--park-quest-thumb");
+  actionCard?.style.removeProperty("--park-quest-thumb");
   if (thumb) {
-    thumb.style.backgroundImage = cssUrl;
+    thumb.style.backgroundImage = "";
     thumb.classList.remove("thumb-loaded");
-    requestAnimationFrame(() => thumb.classList.add("thumb-loaded"));
   }
 }
 
 function setParkDashboardThumbFromSeries(symbol, dates, closes) {
-  const clean = (closes || []).map(Number).filter(Number.isFinite);
-  if (clean.length < 2) return;
-  const width = 960;
-  const height = 360;
-  const min = Math.min(...clean);
-  const max = Math.max(...clean);
-  const range = max - min || 1;
-  const points = clean.map((value, index) => {
-    const x = 42 + (index / Math.max(1, clean.length - 1)) * (width - 84);
-    const y = height - 48 - ((value - min) / range) * (height - 104);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(" ");
-  const up = clean[clean.length - 1] >= clean[0];
-  const accent = up ? "#22d3ee" : "#fb7185";
-  const glow = up ? "#14b8a6" : "#f97316";
-  const safeSymbol = escapeHtml(symbol || "STOCK");
-  const safeStart = escapeHtml((dates || [])[0] || "");
-  const safeEnd = escapeHtml((dates || [])[dates.length - 1] || "");
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">
-      <defs>
-        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#061936"/>
-          <stop offset="54%" stop-color="#0f3b50"/>
-          <stop offset="100%" stop-color="#020817"/>
-        </linearGradient>
-        <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="${accent}" stop-opacity="0.34"/>
-          <stop offset="100%" stop-color="${glow}" stop-opacity="0.03"/>
-        </linearGradient>
-        <filter id="softGlow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#bg)"/>
-      <g opacity="0.2">
-        <path d="M0 76 C180 20 290 122 450 72 S760 44 960 94 V360 H0 Z" fill="#7dd3fc"/>
-        <path d="M0 220 C190 186 330 236 500 192 S760 152 960 210 V360 H0 Z" fill="#38bdf8"/>
-      </g>
-      <g opacity="0.18" stroke="#bfdbfe" stroke-width="1">
-        <path d="M0 84 H960"/><path d="M0 156 H960"/><path d="M0 228 H960"/><path d="M0 300 H960"/>
-      </g>
-      <polyline points="${points}" fill="none" stroke="${accent}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.28" filter="url(#softGlow)"/>
-      <polygon points="${points} 918,330 42,330" fill="url(#area)" opacity="0.78"/>
-      <polyline points="${points}" fill="none" stroke="#d9f99d" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <text x="42" y="52" fill="#e0f2fe" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="800">${safeSymbol}</text>
-      <text x="42" y="86" fill="#93c5fd" font-family="Inter, Arial, sans-serif" font-size="18">${safeStart} - ${safeEnd}</text>
-    </svg>`;
-  setParkDashboardThumb(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
+  setParkDashboardThumb("");
 }
 
 function renderEducationPreview(education, state = "ready") {
