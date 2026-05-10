@@ -2699,23 +2699,9 @@ body.park-mode #dashboard.park-intel-open .stats-row {
 .park-dash-thumb {
   display: none;
 }
-/* Park mode: 清晰背景層（不模糊） */
+/* Park mode: 縮圖層完全關閉 — 背景由 .park-bg 山景+下雪處理 */
 body.park-mode .park-dash-thumb {
-  display: block;
-  position: fixed;
-  inset: 0;
-  z-index: -1;          /* 在天空 (z:-2) 前面，在內容 (z:0+) 後面 */
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  filter: none;  /* No blur, no effect — crystal clear */
-  opacity: 0;    /* Invisible — let sky + snow show through */
-  pointer-events: none;
-  transition: background-image 0.6s ease;
-}
-/* 縮圖出現時的淡入動畫 */
-body.park-mode .park-dash-thumb.thumb-loaded {
-  animation: park-thumb-in 0.8s ease forwards;
+  display: none !important;
 }
 @keyframes park-thumb-in {
   from { opacity: 0; }
