@@ -19,7 +19,7 @@
   <!-- ═══ HEADER ═══ -->
   <header class="header">
     <div class="header-inner">
-      <div class="logo">
+      <div class="logo" onclick="returnToHome()" title="點擊返回首頁">
         <span class="logo-icon">📈</span>
         <span class="logo-text">StockAI</span>
         <span class="logo-sub">技術面分析</span>
@@ -1567,6 +1567,29 @@
     // Update profile button label
     const lbl = document.getElementById('parkProfileLabel');
     if (lbl) lbl.textContent = symbol;
+  }
+
+  /* ── 返回首頁 ─────────────────────────────── */
+  function returnToHome() {
+    // 隱藏 dashboard，顯示首頁
+    const dash = document.getElementById('dashboard');
+    const proWelcome = document.getElementById('welcomePage');
+    const parkWelcome = document.getElementById('parkWelcomePage');
+
+    if (dash) dash.classList.add('hidden');
+
+    // 根據當前模式顯示對應首頁
+    if (_parkMode) {
+      if (parkWelcome) parkWelcome.classList.remove('hidden');
+      if (proWelcome) proWelcome.classList.add('hidden');
+    } else {
+      if (proWelcome) proWelcome.classList.remove('hidden');
+      if (parkWelcome) parkWelcome.classList.add('hidden');
+    }
+
+    // 清空搜尋欄
+    const input = document.getElementById('symbolInput');
+    if (input) input.value = '';
   }
 
   /* ── Mission Intel 收合 ─────────────────────── */

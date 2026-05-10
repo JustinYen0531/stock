@@ -2729,11 +2729,22 @@ body.park-mode .park-dash-thumb.thumb-loaded {
 /* Game menu hierarchy: re-rank existing dashboard controls without adding UI. */
 body.park-mode .header {
   background: rgba(3, 9, 24, 0.82);
+  position: relative;
+  z-index: 50; /* Ensure header stays above all background layers */
+}
+/* Logo: clickable in park mode (returns to home) */
+body.park-mode .logo {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+body.park-mode .logo:hover {
+  opacity: 0.75;
 }
 body.park-mode .search-bar {
-  transform: scale(0.92);
-  transform-origin: left center;
-  opacity: 0.82;
+  /* Full brightness + normal scale for full usability */
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
 }
 body.park-mode .mode-toggle-btn {
   padding: 0.54rem 1rem;
