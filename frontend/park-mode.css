@@ -1720,7 +1720,7 @@ body.park-mode #dashboard::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;  /* Sky layer (behind chart thumbnail) */
   /* 套用首頁的藍色漸層天空 */
   background: linear-gradient(180deg,
     #050d1c  0%,
@@ -2708,7 +2708,7 @@ body.park-mode .park-dash-thumb {
   display: block;
   position: fixed;
   inset: 0;
-  z-index: -2;          /* 在 #dashboard::before 的深色遮罩 (z:-1) 後面 */
+  z-index: -1;          /* 在天空 (z:-2) 前面，在內容 (z:0+) 後面 */
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
