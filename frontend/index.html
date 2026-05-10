@@ -281,7 +281,61 @@
           </div>
         </div>
 
+        <!-- ── 每日關卡（全寬 featured）── -->
+        <div class="park-section" style="max-width:100%">
+          <div class="park-section-header">
+            <span class="park-section-icon">📅</span>
+            <div>
+              <div class="park-section-kicker">TODAY'S QUEST</div>
+              <h2 class="park-section-title">每日關卡</h2>
+            </div>
+            <span class="park-section-badge daily">DAILY</span>
+          </div>
+          <div id="parkDailyQuest" class="park-daily-quest-wrap">
+            <div class="park-rec-loading">正在準備今日關卡...</div>
+          </div>
+        </div>
+
+        <!-- ── 熱門關卡 2×2 ── -->
+        <div class="park-section" style="max-width:100%">
+          <div class="park-section-header">
+            <span class="park-section-icon">🔥</span>
+            <div>
+              <div class="park-section-kicker">HOT QUESTS</div>
+              <h2 class="park-section-title">熱門關卡</h2>
+            </div>
+            <span class="park-section-badge hot">RANKING</span>
+          </div>
+          <div id="parkHotQuests" class="park-hot-grid">
+            <div class="park-rec-loading" style="grid-column:1/-1">正在同步熱門排行...</div>
+          </div>
+        </div>
+
+        <!-- ── 主題關卡 1×4 ── -->
+        <div class="park-section" style="max-width:100%">
+          <div class="park-section-header">
+            <span class="park-section-icon">🗺️</span>
+            <div>
+              <div class="park-section-kicker">THEME STAGES</div>
+              <h2 class="park-section-title">主題關卡地圖</h2>
+            </div>
+            <span class="park-section-badge theme">EXPLORE</span>
+          </div>
+          <div id="parkThemeQuests" class="park-theme-band">
+            <div class="park-rec-loading" style="grid-column:1/-1">正在整理主題地圖...</div>
+          </div>
+        </div>
+
         <!-- 精選雪場門票 -->
+        <div class="park-section" style="max-width:100%">
+          <div class="park-section-header">
+            <span class="park-section-icon">🎟️</span>
+            <div>
+              <div class="park-section-kicker">QUICK ACCESS</div>
+              <h2 class="park-section-title">精選雪場快速入口</h2>
+            </div>
+          </div>
+        </div>
         <div class="park-tickets-section">
           <div class="park-tickets-label">⛷️ 精選雪場快速入口</div>
           <div class="park-tickets-grid">
@@ -954,6 +1008,107 @@
     loadStock();
   }
 
+  /* ── 推薦區建構函數 ──────────────────────────── */
+  function _escHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildParkDailyQuest() {
+    const f = window.homepageRecommendationData?.featured;
+    if (!f) return `<div class="park-rec-loading">今日關卡準備中，請稍候...</div>`;
+    const chips = (f.chips||[]).map(c =>
+      `<span class="park-quest-chip ${_escHtml(c.tone||'')}">${_escHtml(c.label)}</span>`
+    ).join('');
+    const reasons = (f.reasons||[]).map(r =>
+      `<span class="park-victory-cond">✓ ${_escHtml(r)}</span>`
+    ).join('');
+    const diff  = Math.min(5, Math.max(2, (f.chips?.length||3)));
+    const stars = '★'.repeat(diff) + '☆'.repeat(5-diff);
+    return `
+      <div class="park-daily-card" onclick="parkLoadSymbol('${_escHtml(f.symbol)}')">
+        <div class="park-daily-left">
+          <div class="park-daily-sym-row">
+            <span class="park-daily-symbol">${_escHtml(f.symbol)}</span>
+            <span class="park-daily-name">${_escHtml(f.name)}</span>
+          </div>
+          <p class="park-daily-summary">${_escHtml(f.summary||f.detail||'')}</p>
+          <div class="park-daily-chips">${chips}</div>
+          <div>
+            <span class="park-victory-label">🏆 勝利條件</span>
+            <div class="park-victory-list">${reasons}</div>
+          </div>
+        </div>
+        <div class="park-daily-right">
+          <div>
+            <div class="park-daily-diff-label">關卡難度</div>
+            <div class="park-daily-stars">${stars}</div>
+          </div>
+          <button class="park-daily-btn"
+            onclick="event.stopPropagation();parkLoadSymbol('${_escHtml(f.symbol)}')">
+            🎿 進入今日關卡
+          </button>
+        </div>
+      </div>`;
+  }
+
+  function buildParkHotQuests() {
+    const list = window.homepageRecommendationData?.hot || [];
+    if (!list.length) return `<div class="park-rec-loading" style="grid-column:1/-1">熱門關卡同步中...</div>`;
+    const rankCls = ['rank-1','rank-2','rank-3','rank-4'];
+    return list.slice(0,4).map((item,i) => `
+      <div class="park-hot-card ${item.trend==='down'?'is-down':'is-up'}"
+           onclick="parkLoadSymbol('${_escHtml(item.symbol)}')">
+        <div class="park-hot-card-top">
+          <div class="park-hot-rank ${rankCls[i]||''}">#${i+1}</div>
+          <div class="park-hot-sym-group">
+            <span class="park-hot-symbol">${_escHtml(item.symbol)}</span>
+            <span class="park-hot-name">${_escHtml(item.name)}</span>
+          </div>
+          <span class="park-hot-change">${_escHtml(item.change)}</span>
+        </div>
+        <p class="park-hot-blurb">${_escHtml(item.blurb||'')}</p>
+        <button class="park-hot-btn"
+          onclick="event.stopPropagation();parkLoadSymbol('${_escHtml(item.symbol)}')">
+          ⚔️ 挑戰
+        </button>
+      </div>`).join('');
+  }
+
+  function buildParkThemeQuests() {
+    const themes = window.homepageRecommendationData?.themes || [];
+    if (!themes.length) return `<div class="park-rec-loading" style="grid-column:1/-1">主題地圖準備中...</div>`;
+    return themes.slice(0,4).map(theme => {
+      const picks = (theme.picks||[]).slice(0,3).map(p =>
+        `<span class="park-theme-pick"
+           onclick="event.stopPropagation();parkLoadSymbol('${_escHtml(p.symbol)}')"
+         >${_escHtml(p.symbol)}</span>`
+      ).join('');
+      const first = theme.picks?.[0]?.symbol || '';
+      return `
+        <div class="park-theme-card" onclick="parkLoadSymbol('${_escHtml(first)}')">
+          <div class="park-theme-card-icon">${_escHtml(theme.icon)}</div>
+          <div class="park-theme-card-title">${_escHtml(theme.title)}</div>
+          <div class="park-theme-card-desc">${_escHtml(theme.desc)}</div>
+          <div class="park-theme-picks">${picks}</div>
+          <button class="park-theme-btn"
+            onclick="event.stopPropagation();parkLoadSymbol('${_escHtml(first)}')">
+            🗺️ 探索
+          </button>
+        </div>`;
+    }).join('');
+  }
+
+  function renderParkRecommendations() {
+    const d = document.getElementById('parkDailyQuest');
+    const h = document.getElementById('parkHotQuests');
+    const t = document.getElementById('parkThemeQuests');
+    if (d) d.innerHTML = buildParkDailyQuest();
+    if (h) h.innerHTML = buildParkHotQuests();
+    if (t) t.innerHTML = buildParkThemeQuests();
+  }
+
   /* ── 生成飄雪粒子 ─────────────────────────── */
   function _initParkSnowflakes() {
     const canvas = document.getElementById('parkSnowCanvas');
@@ -1012,7 +1167,16 @@
       });
     }
 
-    // 4) 生成雪花
+    // 4) 監聽 homepageFeaturedRecommendation 更新 → 同步 park 推薦區
+    const featuredEl = document.getElementById('homepageFeaturedRecommendation');
+    if (featuredEl) {
+      new MutationObserver(() => renderParkRecommendations())
+        .observe(featuredEl, { childList: true });
+    }
+    // 立即嘗試渲染一次（若資料已就緒）
+    renderParkRecommendations();
+
+    // 5) 生成雪花
     _initParkSnowflakes();
 
     // 5) 還原上次偏好設定
