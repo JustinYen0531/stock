@@ -26,6 +26,7 @@
   const BELOW_LINE_DANGER_MULTIPLIER = 0.45; // 在線下方時放慢 danger 累積，避免看起來像被卡住
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
+  const EDUCATION_TIME_LIMIT_MULTIPLIER = 1.2; // segmented quizzes consume run time, so add 20%
   const CAMERA_STATE_FREE = 'free';
   const CAMERA_STATE_LOCKED = 'locked';
   const CAMERA_STATE_DYNAMIC = 'dynamic';
@@ -663,6 +664,10 @@
     return elapsedMs / 1000;
   }
 
+  function isRunTimerActive() {
+    return gameState === 'playing' || gameState === 'education_station' || gameState === 'education_final';
+  }
+
   function frameAdjustedLerp(baseAmount, deltaFactor) {
     return 1 - Math.pow(1 - baseAmount, Math.max(0, deltaFactor || 1));
   }
@@ -1248,7 +1253,10 @@
       selectedChoice: null,
       feedback: '',
       awaitingContinue: false,
-      routeTriggers: nodes.map((_, index) => (index + 1) / (nodes.length + 1)),
+      routeTriggers: nodes.map((_, index) => {
+        if (nodes.length <= 1) return 0.5;
+        return lerp(0.18, 0.82, index / (nodes.length - 1));
+      }),
       triggered: new Set(),
       finalQuizStarted: false,
       finalQuizComplete: false,
@@ -1452,14 +1460,10 @@
 
     if (gameState === 'education_final') {
       if (!educationSession.awaitingContinue) return;
-      const nextIndex = educationSession.nodes.findIndex((_, index) => !educationSession.answered[index]);
-      if (nextIndex >= 0) enterEducationQuiz(nextIndex, 'final');
-      else {
-        educationSession.finalQuizComplete = true;
-        recordRunProgress();
-        gameState = 'complete';
-        updateCursorVisibility();
-      }
+      educationSession.finalQuizComplete = true;
+      recordRunProgress();
+      gameState = 'complete';
+      updateCursorVisibility();
     }
   }
 
@@ -1495,12 +1499,7 @@
   }
 
   function startFinalEducationQuizIfNeeded() {
-    if (!educationSession || educationSession.finalQuizStarted) return false;
-    const pendingIndex = educationSession.nodes.findIndex((_, index) => !educationSession.answered[index]);
-    if (pendingIndex < 0) return false;
-    educationSession.finalQuizStarted = true;
-    enterEducationQuiz(pendingIndex, 'final');
-    return true;
+    return false;
   }
 
   /* ══════════════════════════════════════════════════
@@ -1615,7 +1614,7 @@
     const steps = Math.max(1, Math.round(ms / (1000 / 60)));
     for (let i = 0; i < steps; i++) {
       update();
-      if (gameState === 'playing') elapsedMs += 1000 / 60;
+      if (isRunTimerActive()) elapsedMs += 1000 / 60;
     }
     render();
   };
@@ -1820,7 +1819,7 @@
     // 我們粗略估計：總距離 / 平均速度 = 總幀數 * 10
     const lastX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     maxPossibleScore = Math.floor((lastX / SCROLL_SPEED) * 10);
-    timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO);
+    timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO * EDUCATION_TIME_LIMIT_MULTIPLIER);
 
     // 角色與橘線固定在較低的畫面錨點，山體則對齊到這條線
     const charX = getCharX();
@@ -2070,7 +2069,7 @@
     lastFrameTs = now;
     const deltaFactor = deltaMs / (1000 / 60);
     update(deltaFactor);
-    if (gameState === 'playing') {
+    if (isRunTimerActive()) {
       elapsedMs += deltaMs;
     }
     render();
@@ -2114,6 +2113,15 @@
       updateVerticalCameraOffset(frameScale);
       updateCharacterVisualOffset(frameScale);
       updateParticles();
+      return;
+    }
+
+    if (gameState === 'education_station' || gameState === 'education_final') {
+      if (getElapsedSeconds() > timeLimitSeconds) {
+        triggerDeath(getScreenLineYAt(getCharWorldX()));
+        return;
+      }
+      updateEducationQuestionTimer();
       return;
     }
 
