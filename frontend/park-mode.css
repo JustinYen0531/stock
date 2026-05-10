@@ -2448,14 +2448,14 @@ body.park-mode .ski-difficulty-panel {
   border-radius: 14px !important;
 }
 
-/* ── THE MEGA LAUNCH BUTTON ── */
+/* ── 發起冒險按鈕 ── */
 body.park-mode #skiLaunchButton {
   width: 100% !important;
-  max-width: 420px !important;
-  padding: 1.3rem 2rem !important;
-  font-size: 1.4rem !important;
+  max-width: 320px !important;
+  padding: 0.95rem 1.8rem !important;
+  font-size: 1.1rem !important;
   font-weight: 900 !important;
-  border-radius: 18px !important;
+  border-radius: 16px !important;
   border: none !important;
   background: linear-gradient(135deg, #00cfaa 0%, #0088e0 55%, #5a3cff 100%) !important;
   color: #fff !important;
@@ -2649,23 +2649,27 @@ body.park-mode .park-intel-toggle-wrap {
 .park-intel-toggle-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.11);
-  border-radius: 999px;
-  color: rgba(160,200,255,0.65);
-  font-size: 0.83rem;
-  font-weight: 700;
-  padding: 0.48rem 1.5rem;
+  justify-content: center;
+  gap: 0.65rem;
+  background: linear-gradient(135deg, rgba(0,207,170,0.25), rgba(0,150,200,0.20));
+  border: 1.2px solid rgba(0,207,170,0.40);
+  border-radius: 12px;
+  color: rgba(200,240,255,0.90);
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 0.7rem 2rem;
   cursor: pointer;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 16px rgba(0,207,170,0.15);
 }
 .park-intel-toggle-btn:hover {
-  background: rgba(0,207,170,0.10);
-  border-color: rgba(0,207,170,0.35);
-  color: var(--park-teal);
+  background: linear-gradient(135deg, rgba(0,207,170,0.35), rgba(0,150,200,0.30));
+  border-color: rgba(0,207,170,0.55);
+  color: #fff;
+  box-shadow: 0 0 28px rgba(0,207,170,0.30);
+  transform: translateY(-2px);
 }
 .park-intel-arrow {
   display: inline-block;
@@ -2703,7 +2707,7 @@ body.park-mode #dashboard.park-intel-open .stats-row {
 .park-dash-thumb {
   display: none;
 }
-/* Park mode: 固定佔滿視窗，模糊縮圖做背景 */
+/* Park mode: 固定佔滿視窗，清晰縮圖（不模糊） */
 body.park-mode .park-dash-thumb {
   display: block;
   position: fixed;
@@ -2712,8 +2716,8 @@ body.park-mode .park-dash-thumb {
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
-  filter: blur(22px) brightness(0.22) saturate(1.5);
-  transform: scale(1.08); /* 稍微放大，隱藏 blur 邊緣虛化 */
+  filter: brightness(0.60) saturate(0.9);  /* No blur — preserve chart & sky animation */
+  opacity: 0.75;
   pointer-events: none;
   transition: background-image 0.6s ease;
 }
