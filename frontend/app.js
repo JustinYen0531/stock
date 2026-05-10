@@ -705,11 +705,36 @@ function buildEducationFolderMarkup(education) {
           <span class="education-folder-summary">${escapeHtml(folder.summary || "")}</span>
         </summary>
         <div class="education-folder-body">
-          ${(folder.details || []).map((detail) => `<p>${escapeHtml(detail)}</p>`).join("")}
+          <div class="education-folder-fulltext">
+            <div class="education-folder-section-label">閱讀全文</div>
+            ${formatEducationParagraphs(folder.fullText || [folder.summary, ...(folder.details || [])].join("\n\n"))}
+          </div>
+          <div class="education-quiz-bank">
+            <div class="education-folder-section-label">題庫預覽</div>
+            ${(folder.quizBank || []).map((quiz, quizIndex) => `
+              <article class="education-quiz-item">
+                <div class="education-quiz-question">Q${quizIndex + 1}. ${escapeHtml(quiz.question)}</div>
+                <div class="education-quiz-choices">
+                  ${(quiz.choices || []).map((choice, choiceIndex) => `
+                    <span class="${choiceIndex === quiz.answerIndex ? "is-answer" : ""}">${escapeHtml(choice)}</span>
+                  `).join("")}
+                </div>
+              </article>
+            `).join("")}
+          </div>
         </div>
       </details>
     `).join("")}
   </div>`;
+}
+
+function formatEducationParagraphs(text) {
+  return String(text || "")
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+    .join("");
 }
 
 // ── 投資建議渲染 ──────────────────────────────────

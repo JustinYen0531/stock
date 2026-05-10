@@ -481,6 +481,87 @@ function getEducationKnowledge(symbol, quote = {}) {
   };
 }
 
+function buildFolderFullText(folder) {
+  if (folder.fullText) return folder.fullText;
+  const details = Array.isArray(folder.details) ? folder.details : [];
+  return [folder.summary, ...details].filter(Boolean).join("\n\n");
+}
+
+function buildFolderQuizBank(folder, companyName) {
+  if (Array.isArray(folder.quizBank) && folder.quizBank.length) return folder.quizBank;
+  const details = Array.isArray(folder.details) ? folder.details : [];
+  const primaryDetail = details[0] || folder.summary;
+  const secondaryDetail = details[1] || folder.summary;
+  return [
+    {
+      question: `讀完「${folder.title}」後，最應該記住 ${companyName} 的哪個重點？`,
+      choices: [
+        folder.summary,
+        "只需要記住今天的股價顏色",
+        "這段內容和公司理解沒有關係",
+      ],
+      answerIndex: 0,
+      explanation: folder.summary,
+    },
+    {
+      question: `下列哪個描述最符合「${folder.title}」的故事脈絡？`,
+      choices: [
+        primaryDetail,
+        "公司價值只由單日漲跌決定",
+        secondaryDetail,
+      ],
+      answerIndex: 0,
+      explanation: primaryDetail,
+    },
+  ];
+}
+
+function normalizeEducationFolders(knowledge, companyName) {
+  const fallbackFolders = [
+    {
+      title: "公司起源故事",
+      summary: knowledge.origin,
+      details: ["這檔股票尚未放入完整知識庫，第一版先用通用公司分析框架補足。"],
+    },
+    {
+      title: "主要產品",
+      summary: knowledge.business,
+      details: ["可以從產品服務、營收來源、客戶族群與產業位置四個角度開始閱讀。"],
+    },
+    {
+      title: "代表事件",
+      summary: knowledge.event,
+      details: ["後續可以把財報轉折、產品發表、產業事件與重大併購逐步補進題庫。"],
+    },
+    {
+      title: "觀察重點",
+      summary: knowledge.focus,
+      details: ["先觀察近期漲跌幅、成交量是否放大、技術指標是否同向，以及市場是否正在重新定價成長故事。"],
+    },
+  ];
+  return (knowledge.folders || fallbackFolders).map((folder) => ({
+    ...folder,
+    fullText: buildFolderFullText(folder),
+    quizBank: buildFolderQuizBank(folder, companyName),
+  }));
+}
+
+function buildEducationNodesFromFolders(folders, companyName) {
+  return folders.map((folder, index) => {
+    const quiz = folder.quizBank?.[0] || buildFolderQuizBank(folder, companyName)[0];
+    return {
+      title: `第${index + 1}站：${folder.title}`,
+      type: index === 0 ? "history" : index === 1 ? "business" : index === 2 ? "volatility" : "technical",
+      summary: folder.summary,
+      question: quiz.question,
+      choices: quiz.choices,
+      answerIndex: quiz.answerIndex,
+      explanation: quiz.explanation,
+      sourceKind: "curated",
+    };
+  });
+}
+
 function buildEducationStats(quotes) {
   const clean = (quotes || []).filter((q) => q.close !== null && q.close !== undefined);
   const closes = clean.map((q) => +q.close);
@@ -550,7 +631,8 @@ function buildEducationPayload({ symbol, period, quote, chart, advice }) {
   const stats = buildEducationStats(chart?.quotes || []);
   const name = quote.longName || quote.shortName || knowledge.name || symbol;
   const signal = advice?.signal || "中性觀望";
-  const reason = advice?.reasons?.[0]?.label || "近期技術面需要搭配價格與量能一起觀察";
+  const folders = normalizeEducationFolders(knowledge, name);
+  const nodes = buildEducationNodesFromFolders(folders, name);
 
   return {
     symbol,
@@ -575,28 +657,7 @@ function buildEducationPayload({ symbol, period, quote, chart, advice }) {
     preview: {
       headline: `${name} 纜車預習`,
       summary: `${knowledge.origin} 這趟滑雪會把公司背景、商業模式、近期震盪與技術面拆成 4 個停靠站。`,
-      folders: knowledge.folders || [
-        {
-          title: "公司起源故事",
-          summary: knowledge.origin,
-          details: ["這檔股票尚未放入完整知識庫，第一版先用通用公司分析框架補足。"],
-        },
-        {
-          title: "主要產品",
-          summary: knowledge.business,
-          details: ["可以從產品服務、營收來源、客戶族群與產業位置四個角度開始閱讀。"],
-        },
-        {
-          title: "代表事件",
-          summary: knowledge.event,
-          details: ["後續可以把財報轉折、產品發表、產業事件與重大併購逐步補進題庫。"],
-        },
-        {
-          title: "觀察重點",
-          summary: knowledge.focus,
-          details: ["先觀察近期漲跌幅、成交量是否放大、技術指標是否同向，以及市場是否正在重新定價成長故事。"],
-        },
-      ],
+      folders,
       learningPoints: [
         "這家公司從哪裡開始，市場為什麼認得它",
         "它主要靠什麼產品或服務賺錢",
@@ -604,48 +665,7 @@ function buildEducationPayload({ symbol, period, quote, chart, advice }) {
         "滑雪地形如何對應這段期間的技術面變化",
       ],
     },
-    nodes: [
-      {
-        title: "第一站：公司起源",
-        type: "history",
-        summary: knowledge.origin,
-        question: `${name} 的公司背景最適合先從哪個角度理解？`,
-        choices: ["創立脈絡與代表定位", "今天的收盤價小數點", "滑雪角色的顏色"],
-        answerIndex: 0,
-        explanation: "公司起源能幫玩家建立長期敘事，不會只被一天漲跌牽著走。",
-        sourceKind: EDUCATION_KNOWLEDGE[normalizeEducationSymbol(symbol)] ? "curated" : "fallback",
-      },
-      {
-        title: "第二站：商業模式",
-        type: "business",
-        summary: knowledge.business,
-        question: `理解 ${name} 的商業模式時，哪一項最重要？`,
-        choices: ["它如何創造營收與市場地位", "股價線條是不是好看", "遊戲雪花多不多"],
-        answerIndex: 0,
-        explanation: "商業模式決定市場如何評價公司，也影響股價面對消息時的反應。",
-        sourceKind: EDUCATION_KNOWLEDGE[normalizeEducationSymbol(symbol)] ? "curated" : "fallback",
-      },
-      {
-        title: "第三站：近期震盪",
-        type: "volatility",
-        summary: `${name} 在目前區間呈現 ${stats.directionLabel}，區間變化 ${stats.periodChangeLabel}，最近一日變化 ${stats.changeLabel}，量能約為近 20 日均量的 ${stats.volumePulse.toFixed(1)}x。`,
-        question: "如果一段行情突然震盪變大，第一步應該先看什麼？",
-        choices: ["新聞、量能與價格是否同時變化", "只看顏色猜漲跌", "把所有波動都當成隨機"],
-        answerIndex: 0,
-        explanation: "震盪通常要同時看事件、成交量與價格位置，才不容易把雜訊當主因。",
-        sourceKind: "market_data",
-      },
-      {
-        title: "第四站：技術地形",
-        type: "technical",
-        summary: `目前技術面訊號為「${signal}」。地圖坡度會跟價格路徑連動，玩家滑過的起伏就是這段行情的形狀。`,
-        question: "滑雪地形主要對應股票資料中的哪一種資訊？",
-        choices: ["價格路徑與波動", "公司 Logo 的字體", "聊天室回覆速度"],
-        answerIndex: 0,
-        explanation: `這一關的技術重點是 ${reason}，滑雪時的上下起伏會幫你感覺這段行情的節奏。`,
-        sourceKind: "market_data",
-      },
-    ],
+    nodes,
     newsContext: null,
     sourceTime: new Date().toISOString(),
   };
@@ -1105,11 +1125,6 @@ async function handleEducation(req, res) {
 
     if (newsContext?.summary) {
       payload.newsContext = newsContext;
-      const volatilityNode = payload.nodes.find((node) => node.type === "volatility");
-      if (volatilityNode) {
-        volatilityNode.summary = `${newsContext.summary} 市場資料補充：區間變化 ${payload.marketSnapshot.periodChangePercent >= 0 ? "+" : ""}${payload.marketSnapshot.periodChangePercent}%、量能 ${payload.marketSnapshot.volumePulse}x。`;
-        volatilityNode.sourceKind = newsContext.sourceKind;
-      }
     }
 
     res.json(payload);

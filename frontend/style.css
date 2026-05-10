@@ -1726,13 +1726,14 @@ body::before {
   display: none;
 }
 .education-folder summary::after {
-  content: "+";
+  content: "▸";
   justify-self: end;
   color: #7dd3fc;
   font-weight: 800;
+  transition: transform 0.18s ease;
 }
 .education-folder[open] summary::after {
-  content: "−";
+  transform: rotate(90deg);
 }
 .education-folder-icon {
   display: inline-flex;
@@ -1760,25 +1761,64 @@ body::before {
 }
 .education-folder-body {
   display: grid;
-  gap: 0.42rem;
-  padding: 0 1rem 0.88rem 3.6rem;
+  gap: 0.9rem;
+  padding: 0.1rem 1rem 1rem 3.6rem;
 }
-.education-folder-body p {
-  position: relative;
+.education-folder-section-label {
+  color: #67e8f9;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+.education-folder-fulltext {
+  max-width: 980px;
+}
+.education-folder-fulltext p {
   margin: 0;
   color: #cbd5e1;
-  font-size: 0.84rem;
-  line-height: 1.62;
+  font-size: 0.88rem;
+  line-height: 1.78;
 }
-.education-folder-body p::before {
-  content: "";
-  position: absolute;
-  left: -0.85rem;
-  top: 0.72em;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #67e8f9;
+.education-folder-fulltext p + p {
+  margin-top: 0.56rem;
+}
+.education-quiz-bank {
+  display: grid;
+  gap: 0.58rem;
+  padding-top: 0.18rem;
+}
+.education-quiz-item {
+  padding: 0.72rem 0.78rem;
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.24);
+}
+.education-quiz-question {
+  color: #f8fafc;
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.45;
+  margin-bottom: 0.48rem;
+}
+.education-quiz-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+}
+.education-quiz-choices span {
+  padding: 0.22rem 0.55rem;
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.68);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  color: #94a3b8;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+.education-quiz-choices span.is-answer {
+  color: #bbf7d0;
+  border-color: rgba(74, 222, 128, 0.34);
+  background: rgba(22, 101, 52, 0.24);
 }
 @media (max-width: 760px) {
   .education-folder summary {
