@@ -815,10 +815,10 @@
     const viewportH = canvas?.height || terrainYMax || 720;
     const mountainFloorY = Math.max(terrainYMax + 110, viewportH - 28);
     const baseProps = props.length ? props : ['signal-beam', 'chip', 'coin', 'parcel'];
-    const anchorLimit = compactSpriteMode ? 3 : Math.max(5, Math.min(8, baseProps.length + 4));
+    const anchorLimit = compactSpriteMode ? 8 : Math.max(5, Math.min(8, baseProps.length + 4));
     const anchors = getTerrainFeatureAnchors(anchorLimit);
     const count = compactSpriteMode
-      ? clamp(Math.round((baseProps.length || 3) * (0.28 + stats.volatility * 3)), 3, 5)
+      ? clamp(Math.round((baseProps.length || 3) * (2.2 + stats.volatility * 12)), 22, 34)
       : clamp(Math.round((baseProps.length || 3) * (2.5 + stats.volatility * 22)), 12, 22);
     const placements = [];
     const anchorStrength = [...anchors].sort((a, b) => b.prominence - a.prominence);
@@ -829,17 +829,18 @@
       const anchor = anchors[i];
       const isHero = heroAnchorSet.has(anchor.worldX);
       const availableDepth = Math.max(80, mountainFloorY - anchor.ridgeY - 24);
+      const anchorDepth = compactSpriteMode ? availableDepth * (isHero ? 0.26 + rng() * 0.16 : 0.2 + rng() * 0.18) : 0;
       placements.push({
         prop: baseProps[i % baseProps.length],
         worldX: anchor.worldX,
         ridgeY: anchor.ridgeY,
-        depth: isHero ? availableDepth * (0.14 + rng() * 0.14) : 0,
-        size: isHero ? 128 + rng() * 54 : 70 + rng() * 30,
-        anchor: isHero ? 'hero' : 'ridge',
-        alpha: isHero ? 0.46 + rng() * 0.12 : 0.96,
+        depth: isHero ? anchorDepth : compactSpriteMode ? anchorDepth : 0,
+        size: isHero ? 118 + rng() * 42 : compactSpriteMode ? 72 + rng() * 30 : 70 + rng() * 30,
+        anchor: isHero ? 'hero' : compactSpriteMode ? 'interior' : 'ridge',
+        alpha: isHero ? 0.54 + rng() * 0.12 : compactSpriteMode ? 0.78 + rng() * 0.12 : 0.96,
       });
 
-      const flankCount = compactSpriteMode ? (isHero ? 1 : 0) : isHero ? 3 : 2;
+      const flankCount = compactSpriteMode ? (isHero ? 2 : 1) : isHero ? 3 : 2;
       for (let j = 0; j < flankCount; j++) {
         const direction = j % 2 === 0 ? -1 : 1;
         const offset = direction * (34 + rng() * 74) + (j > 1 ? direction * (46 + rng() * 54) : 0);
@@ -870,7 +871,7 @@
       const availableDepth = Math.max(72, mountainFloorY - ridgeY - 24);
       let layerType = 'interior';
       const layerRoll = rng();
-      if (i % 6 === 0) layerType = 'ridge';
+      if (!compactSpriteMode && i % 6 === 0) layerType = 'ridge';
       else if (layerRoll > 0.68) layerType = 'deep';
       else if (layerRoll > 0.36) layerType = 'mid';
       placements.push({
@@ -894,7 +895,7 @@
       });
     }
 
-    const lowerBandCount = compactSpriteMode ? 2 : clamp(Math.round(baseProps.length * (1.6 + stats.volatility * 12)), 6, 12);
+    const lowerBandCount = compactSpriteMode ? 10 : clamp(Math.round(baseProps.length * (1.6 + stats.volatility * 12)), 6, 12);
     for (let i = 0; i < lowerBandCount; i++) {
       const band = (i + 0.6) / (lowerBandCount + 0.4);
       const anchor = anchors.length ? anchors[(i * 2 + 1) % anchors.length] : null;
@@ -924,10 +925,10 @@
         prop: spec.prop,
         worldX,
         ridgeY,
-        depth: availableDepth * spec.depthRatio,
-        size: spec.size * (0.92 + rng() * 0.12),
+        depth: availableDepth * (compactSpriteMode ? spec.depthRatio + 0.08 : spec.depthRatio),
+        size: spec.size * (compactSpriteMode ? 0.82 + rng() * 0.08 : 0.92 + rng() * 0.12),
         anchor: spec.anchor || 'hero',
-        alpha: 0.5 + rng() * 0.12,
+        alpha: compactSpriteMode ? 0.56 + rng() * 0.12 : 0.5 + rng() * 0.12,
       });
     }
 
@@ -2268,18 +2269,11 @@
     // ── 高細節：遠景 Vista (Parallax) ──
     const vistaDrawn = highDetailMode && !!themeAssets.vista;
     if (vistaDrawn) {
-      const scrollRatioX = 0.35; // 提高水平視差速度讓動態更明顯
-      const scrollRatioY = 0.15; // 新增垂直視差，跟隨地形起伏
       const vistaFrame = getHighDetailVistaFrame(W, H);
-      
-      const scrollX = (terrainScrollX * scrollRatioX) % W;
-      // 根據鏡頭垂直偏移量，產生背景的上下錯位立體感
-      const vistaOffsetY = terrainCameraOffsetY * scrollRatioY;
 
       ctx.save();
       ctx.globalAlpha = 0.96;
-      ctx.drawImage(vistaFrame, -scrollX, vistaOffsetY);
-      ctx.drawImage(vistaFrame, W - scrollX, vistaOffsetY);
+      ctx.drawImage(vistaFrame, 0, 0);
       ctx.restore();
     }
 
@@ -2382,23 +2376,11 @@
     const drawW = naturalWidth * scale;
     const drawH = naturalHeight * scale;
     const offsetY = (H - drawH) / 2;
-    const drift = drawW > 0 ? ((terrainScrollX * 0.14) % drawW + drawW) % drawW : 0;
-    const startX = -drift;
+    const startX = (W - drawW) / 2;
 
     ctx.save();
     ctx.globalAlpha = 0.92;
-    for (let i = -1; i <= 1; i++) {
-      ctx.drawImage(img, startX + i * drawW, offsetY, drawW, drawH);
-      if (i < 1) {
-        const seamX = startX + (i + 1) * drawW;
-        const seamFade = ctx.createLinearGradient(seamX - 18, 0, seamX + 18, 0);
-        seamFade.addColorStop(0, 'rgba(8,16,30,0)');
-        seamFade.addColorStop(0.5, 'rgba(8,16,30,0.18)');
-        seamFade.addColorStop(1, 'rgba(8,16,30,0)');
-        ctx.fillStyle = seamFade;
-        ctx.fillRect(seamX - 18, offsetY, 36, drawH);
-      }
-    }
+    ctx.drawImage(img, startX, offsetY, drawW, drawH);
 
     const veil = ctx.createLinearGradient(0, 0, 0, H);
     veil.addColorStop(0, 'rgba(4, 9, 18, 0.10)');
@@ -3394,7 +3376,7 @@
 
   function drawTerrainProps(theme, fillPath, W, H) {
     if (!theme?.placements?.length) return;
-    const rawSpriteBudget = theme.key === 'AAPL' ? 5 : Infinity;
+    const rawSpriteBudget = theme.key === 'AAPL' ? 18 : Infinity;
     let rawSpritesDrawn = 0;
     const shouldDrawPlacement = (placement) => {
       if (theme.key !== 'AAPL' || !String(placement.prop || '').startsWith('aapl-')) return true;
@@ -3408,12 +3390,12 @@
       if (placement.anchor === 'ridge') continue;
       const screenX = placement.worldX - terrainScrollX;
       if (screenX < -40 || screenX > W + 40) continue;
-      const y = placement.ridgeY + placement.depth;
+      const y = placement.ridgeY + placement.depth + (theme.key === 'AAPL' ? placement.size * 0.18 : 0);
       if (y > H + 40) continue;
       if (!shouldDrawPlacement(placement)) continue;
       const scale =
-        placement.anchor === 'hero' ? 1
-        : placement.anchor === 'lower-band' ? 0.88
+        placement.anchor === 'hero' ? (theme.key === 'AAPL' ? 0.86 : 1)
+        : placement.anchor === 'lower-band' ? (theme.key === 'AAPL' ? 0.96 : 0.88)
         : placement.anchor === 'deep' ? 0.9
         : placement.anchor === 'mid' ? 0.96
         : 0.94;
