@@ -450,6 +450,7 @@
   let educationData = null;
   let educationSession = null;
   let educationOverlayRects = null;
+  const EDUCATION_QUESTION_LIMIT_SECONDS = 15;
   let activeThemeBackground = null;
   let activeTerrainTheme = null;
   let practiceMode = false; // 練習模式開關
@@ -701,6 +702,23 @@
     return function rng() {
       state = (1664525 * state + 1013904223) >>> 0;
       return state / 0x100000000;
+    };
+  }
+
+  function shuffleEducationNodeChoices(node, seed) {
+    const originalChoices = Array.isArray(node.choices) ? node.choices.slice(0, 4) : [];
+    if (!originalChoices.length) return { ...node, choices: [], answerIndex: -1 };
+    const originalAnswerIndex = clamp(Number(node.answerIndex) || 0, 0, originalChoices.length - 1);
+    const entries = originalChoices.map((choice, index) => ({ choice, wasAnswer: index === originalAnswerIndex }));
+    const rng = createRng(seed);
+    for (let i = entries.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [entries[i], entries[j]] = [entries[j], entries[i]];
+    }
+    return {
+      ...node,
+      choices: entries.map((entry) => entry.choice),
+      answerIndex: entries.findIndex((entry) => entry.wasAnswer),
     };
   }
 
@@ -1144,7 +1162,12 @@
             '公司故事是這趟滑雪的地圖底稿。',
           ],
           question: '理解一家公司時，哪一件事最適合放在第一步？',
-          choices: ['公司定位與商業故事', '滑雪角色的顏色', '按鈕是不是發光'],
+          choices: [
+            '公司定位與商業故事',
+            '先看單日漲跌，再回頭找理由',
+            '只看市場熱門題材，不管產品與客戶',
+            '只依技術指標，不檢查公司脈絡',
+          ],
           answerIndex: 0,
           explanation: '公司定位能讓後面的價格波動變得有脈絡。',
           sourceKind: 'fallback',
@@ -1159,7 +1182,12 @@
             '單一漲跌不等於完整原因，交叉檢查比較穩。',
           ],
           question: '面對突然放大的震盪，第一步應該交叉檢查什麼？',
-          choices: ['新聞、量能與價格', '只看股名', '只看背景圖片'],
+          choices: [
+            '新聞、量能與價格',
+            '只看價格方向，先不管事件原因',
+            '只看成交量變大，就直接判斷趨勢成立',
+            '只看熱門討論度，忽略價格所在位置',
+          ],
           answerIndex: 0,
           explanation: '事件、量能與價格一起看，才比較不會誤判。',
           sourceKind: 'fallback',
@@ -1174,7 +1202,12 @@
             '滑雪不是只拚速度，也是在練習跟住價格路徑。',
           ],
           question: '滑雪地形主要對應什麼？',
-          choices: ['價格路徑與波動', '聊天室速度', '瀏覽器寬度'],
+          choices: [
+            '價格路徑與波動',
+            '公司新聞的重要程度排序',
+            '市場情緒熱度的單一分數',
+            '玩家按鍵速度造成的隨機坡度',
+          ],
           answerIndex: 0,
           explanation: '地形起伏來自股價資料，所以滑雪同時也是讀圖練習。',
           sourceKind: 'fallback',
@@ -1190,10 +1223,14 @@
     const nodes = baseNodes.map((node, index) => {
       const folder = folders[index];
       const folderBullets = folder ? [folder.summary, ...(folder.details || [])].filter(Boolean) : [];
-      return {
+      const mergedNode = {
         ...node,
         bullets: Array.isArray(node.bullets) && node.bullets.length ? node.bullets : folderBullets,
       };
+      return shuffleEducationNodeChoices(
+        mergedNode,
+        `${data.symbol || stockData?.symbol || 'stock'}|${index}|${mergedNode.question || ''}`,
+      );
     });
     return {
       data,
@@ -1204,6 +1241,7 @@
       activeMode: 'intro',
       answered: new Array(nodes.length).fill(false),
       correct: new Array(nodes.length).fill(false),
+      timedOut: new Array(nodes.length).fill(false),
       answerTimes: new Array(nodes.length).fill(null),
       questionScores: new Array(nodes.length).fill(0),
       questionStartedAt: 0,
@@ -1360,6 +1398,40 @@
     updateCursorVisibility();
   }
 
+  function getEducationQuestionElapsedSeconds() {
+    if (!educationSession?.questionStartedAt || educationSession.awaitingContinue) return 0;
+    return Math.max(0, (performance.now() - educationSession.questionStartedAt) / 1000);
+  }
+
+  function getEducationQuestionTimeRatio() {
+    return clamp(1 - getEducationQuestionElapsedSeconds() / EDUCATION_QUESTION_LIMIT_SECONDS, 0, 1);
+  }
+
+  function resolveEducationAnswer(choiceIndex, timedOut = false) {
+    if (!educationSession) return;
+    const index = educationSession.activeNodeIndex;
+    const node = educationSession.nodes[index];
+    if (!node || educationSession.awaitingContinue) return;
+    const elapsedSeconds = educationSession.questionStartedAt
+      ? (performance.now() - educationSession.questionStartedAt) / 1000
+      : EDUCATION_QUESTION_LIMIT_SECONDS;
+    const timeRatio = timedOut ? 0 : clamp(1 - elapsedSeconds / EDUCATION_QUESTION_LIMIT_SECONDS, 0, 1);
+    const isCorrect = !timedOut && choiceIndex === node.answerIndex;
+    const questionScore = isCorrect ? Math.round(45 + 55 * timeRatio) : 0;
+    educationSession.selectedChoice = timedOut ? null : choiceIndex;
+    educationSession.answered[index] = true;
+    educationSession.correct[index] = isCorrect;
+    educationSession.timedOut[index] = timedOut;
+    educationSession.answerTimes[index] = Math.min(elapsedSeconds, EDUCATION_QUESTION_LIMIT_SECONDS);
+    educationSession.questionScores[index] = questionScore;
+    educationSession.feedback = timedOut
+      ? `時間到，這題算錯。${node.explanation}`
+      : isCorrect
+        ? `答對了，速度越快分數越高。${node.explanation}`
+        : `再看一次會更穩。${node.explanation}`;
+    educationSession.awaitingContinue = true;
+  }
+
   function continueAfterEducation() {
     if (!educationSession) {
       startCountdown();
@@ -1396,28 +1468,21 @@
   }
 
   function handleEducationChoice(choiceIndex) {
-    if (!educationSession) return;
-    const index = educationSession.activeNodeIndex;
-    const node = educationSession.nodes[index];
-    if (!node || educationSession.awaitingContinue) return;
-    const isCorrect = choiceIndex === node.answerIndex;
-    const elapsedSeconds = educationSession.questionStartedAt
-      ? (performance.now() - educationSession.questionStartedAt) / 1000
-      : 12;
-    const speedBonus = Math.max(0, 30 - Math.max(0, elapsedSeconds - 3) * 3);
-    const questionScore = isCorrect ? Math.round(70 + speedBonus) : 0;
-    educationSession.selectedChoice = choiceIndex;
-    educationSession.answered[index] = true;
-    educationSession.correct[index] = isCorrect;
-    educationSession.answerTimes[index] = elapsedSeconds;
-    educationSession.questionScores[index] = questionScore;
-    educationSession.feedback = isCorrect ? `答對了。${node.explanation}` : `再看一次會更穩。${node.explanation}`;
-    educationSession.awaitingContinue = true;
+    resolveEducationAnswer(choiceIndex, false);
+  }
+
+  function updateEducationQuestionTimer() {
+    if (!educationSession || educationSession.awaitingContinue) return;
+    if (gameState !== 'education_station' && gameState !== 'education_final') return;
+    if (getEducationQuestionElapsedSeconds() >= EDUCATION_QUESTION_LIMIT_SECONDS) {
+      resolveEducationAnswer(-1, true);
+    }
   }
 
   function maybeTriggerEducationStation() {
     if (!educationSession || gameState !== 'playing') return false;
-    if (getElapsedSeconds() <= 30) return false;
+    const firstQuizDelaySeconds = clamp(timeLimitSeconds * 0.25, 6, 18);
+    if (getElapsedSeconds() <= firstQuizDelaySeconds) return false;
     const lastX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     const progress = (terrainScrollX + getCharX()) / Math.max(1, lastX);
     const nextIndex = educationSession.routeTriggers.findIndex((trigger, index) => (
@@ -1484,6 +1549,7 @@
   };
 
   window.render_game_to_text = function renderGameToText() {
+    updateEducationQuestionTimer();
     const playerX = getCharX();
     const worldX = getCharWorldX();
     const lineY = canvas && terrainPoints.length ? getScreenLineYAt(worldX) : null;
@@ -1530,6 +1596,14 @@
         introBullets: gameState === 'education_intro'
           ? getIntroBullets(educationSession.nodes?.[educationSession.activeNodeIndex] || educationSession.nodes?.[0])
           : [],
+        question: gameState === 'education_station' || gameState === 'education_final' ? {
+          title: educationSession.nodes?.[educationSession.activeNodeIndex]?.title || '',
+          choices: educationSession.nodes?.[educationSession.activeNodeIndex]?.choices || [],
+          answerIndex: educationSession.nodes?.[educationSession.activeNodeIndex]?.answerIndex ?? -1,
+          timeRemaining: Number((getEducationQuestionTimeRatio() * EDUCATION_QUESTION_LIMIT_SECONDS).toFixed(2)),
+          awaitingContinue: !!educationSession.awaitingContinue,
+          timedOut: !!educationSession.timedOut?.[educationSession.activeNodeIndex],
+        } : null,
         answered: educationSession.answered.filter(Boolean).length,
         grade: getEducationGrade(),
       } : null,
@@ -1821,6 +1895,11 @@
       setEducationIntroProgress((educationSession?.introProgress || 0) + progressDelta);
       return;
     }
+    if (gameState === 'education_station' || gameState === 'education_final') {
+      updateEducationQuestionTimer();
+      return;
+    }
+
     if (gameState !== 'playing') return;
     const moveAmount = SCROLL_SENS * (isBoosting ? BOOST_MULTIPLIER : 1);
     charTargetY += e.deltaY > 0 ? moveAmount : -moveAmount;
@@ -4375,6 +4454,7 @@
   }
 
   function drawEducationOverlay(W, H) {
+    updateEducationQuestionTimer();
     educationOverlayRects = { choices: [] };
     const session = educationSession || buildEducationSession();
     const node = session.nodes?.[session.activeNodeIndex] || session.nodes?.[0];
@@ -4447,19 +4527,48 @@
       ctx.fillStyle = '#e0f2fe';
       ctx.font = '800 18px Inter, sans-serif';
       drawWrappedText(node.question, x + pad, cursorY, cardW - pad * 2, 26, 2);
-      cursorY += 62;
+      cursorY += 56;
+
+      const timeRatio = session.awaitingContinue ? 0 : getEducationQuestionTimeRatio();
+      const timerW = cardW - pad * 2;
+      const timerH = 12;
+      const timerY = cursorY;
+      const timerColor = timeRatio <= 0.25 ? '#fb7185' : timeRatio <= 0.55 ? '#facc15' : '#22d3ee';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x + pad, timerY, timerW, timerH, 999);
+      ctx.fill();
+      ctx.stroke();
+      if (timeRatio > 0.01) {
+        ctx.fillStyle = timerColor;
+        ctx.beginPath();
+        ctx.roundRect(x + pad + 2, timerY + 2, (timerW - 4) * timeRatio, timerH - 4, 999);
+        ctx.fill();
+      }
+      ctx.fillStyle = timerColor;
+      ctx.font = '800 12px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${Math.ceil(timeRatio * EDUCATION_QUESTION_LIMIT_SECONDS)}s`, x + pad + timerW, timerY - 18);
+      ctx.textAlign = 'left';
+      cursorY += 28;
 
       (node.choices || []).slice(0, 4).forEach((choice, index) => {
-        const choiceH = 44;
-        const choiceY = cursorY + index * (choiceH + 10);
+        const choiceH = 56;
+        const choiceY = cursorY + index * (choiceH + 9);
         const selected = session.selectedChoice === index;
         const answered = session.awaitingContinue;
         const correct = index === node.answerIndex;
+        const timedOut = !!session.timedOut?.[session.activeNodeIndex];
         let fill = 'rgba(15, 23, 42, 0.9)';
         let stroke = 'rgba(148, 163, 184, 0.22)';
-        if (answered && correct) {
+        if (answered && correct && !timedOut) {
           fill = 'rgba(22, 101, 52, 0.68)';
           stroke = 'rgba(74, 222, 128, 0.7)';
+        } else if (answered && timedOut && correct) {
+          fill = 'rgba(51, 65, 85, 0.72)';
+          stroke = 'rgba(148, 163, 184, 0.45)';
         } else if (answered && selected && !correct) {
           fill = 'rgba(127, 29, 29, 0.72)';
           stroke = 'rgba(248, 113, 113, 0.7)';
@@ -4475,12 +4584,12 @@
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = '#f8fafc';
-        ctx.font = '700 16px Inter, sans-serif';
-        ctx.fillText(`${index + 1}. ${choice}`, x + pad + 16, choiceY + 12);
+        ctx.font = '700 15px Inter, sans-serif';
+        drawWrappedText(`${index + 1}. ${choice}`, x + pad + 16, choiceY + 10, cardW - pad * 2 - 32, 18, 2);
         educationOverlayRects.choices.push({ x: x + pad, y: choiceY, w: cardW - pad * 2, h: choiceH });
       });
 
-      cursorY += (node.choices || []).slice(0, 4).length * 54 + 8;
+      cursorY += (node.choices || []).slice(0, 4).length * 65 + 8;
       if (session.feedback) {
         ctx.fillStyle = session.correct[session.activeNodeIndex] ? '#bbf7d0' : '#fecaca';
         ctx.font = '700 15px Inter, sans-serif';

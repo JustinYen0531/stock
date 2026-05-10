@@ -879,14 +879,14 @@ function buildFolderQuizBank(folder, companyName) {
   if (Array.isArray(folder.quizBank) && folder.quizBank.length) return folder.quizBank;
   const details = Array.isArray(folder.details) ? folder.details : [];
   const primaryDetail = details[0] || folder.summary;
-  const secondaryDetail = details[1] || folder.summary;
   return [
     {
       question: `讀完「${folder.title}」後，最應該記住 ${companyName} 的哪個重點？`,
       choices: [
         folder.summary,
-        "只需要記住今天的股價顏色",
-        "這段內容和公司理解沒有關係",
+        "先把單日漲跌當成主因，再用故事回頭解釋價格",
+        "只看市場熱門關鍵字，暫時不檢查產品、客戶或產業位置",
+        "把技術指標當成唯一答案，等到結果出來再補公司脈絡",
       ],
       answerIndex: 0,
       explanation: folder.summary,
@@ -895,8 +895,9 @@ function buildFolderQuizBank(folder, companyName) {
       question: `下列哪個描述最符合「${folder.title}」的故事脈絡？`,
       choices: [
         primaryDetail,
-        "公司價值只由單日漲跌決定",
-        secondaryDetail,
+        "這段內容比較像短線進出提示，不需要連回公司的長期敘事",
+        "只要題材熱度還在，就可以先忽略營收來源與競爭變化",
+        "價格圖形已經包含所有資訊，所以不用再看事件與產品脈絡",
       ],
       answerIndex: 0,
       explanation: primaryDetail,
