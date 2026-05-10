@@ -373,6 +373,7 @@
   const terrainPatternCache = new Map();
   const terrainDetailCache = new Map();
   const propSpriteCache = new Map();
+  let highDetailVistaCache = { canvas: null, img: null, width: 0, height: 0 };
   let themeManifestMap = null;
   let themeManifestPromise = null;
 
@@ -1434,6 +1435,7 @@
   // ── 主題資產加載 ──
   function loadThemeAssets(symbol) {
     themeAssets = { vista: null, texture: null };
+    highDetailVistaCache = { canvas: null, img: null, width: 0, height: 0 };
     const sym = normalizeThemeSymbol(symbol);
     const themeDir = HIGH_DETAIL_THEME_DIRS[sym];
     if (!themeDir) return;
@@ -2164,6 +2166,7 @@
     if (vistaDrawn) {
       const scrollRatioX = 0.35; // 提高水平視差速度讓動態更明顯
       const scrollRatioY = 0.15; // 新增垂直視差，跟隨地形起伏
+      const vistaFrame = getHighDetailVistaFrame(W, H);
       
       const scrollX = (terrainScrollX * scrollRatioX) % W;
       // 根據鏡頭垂直偏移量，產生背景的上下錯位立體感
@@ -2171,16 +2174,8 @@
 
       ctx.save();
       ctx.globalAlpha = 0.96;
-      ctx.drawImage(themeAssets.vista, -scrollX, vistaOffsetY, W, H);
-      ctx.drawImage(themeAssets.vista, W - scrollX, vistaOffsetY, W, H);
-      
-      // 底部漸層暗幕，優化與地形的融合
-      const veil = ctx.createLinearGradient(0, H * 0.45, 0, H);
-      veil.addColorStop(0, 'rgba(5,10,20,0)');
-      veil.addColorStop(1, 'rgba(7,12,24,0.42)');
-      ctx.fillStyle = veil;
-      ctx.globalAlpha = 1;
-      ctx.fillRect(0, 0, W, H);
+      ctx.drawImage(vistaFrame, -scrollX, vistaOffsetY);
+      ctx.drawImage(vistaFrame, W - scrollX, vistaOffsetY);
       ctx.restore();
     }
 
@@ -2804,6 +2799,34 @@
     }
 
     ctx.restore();
+  }
+
+  function getHighDetailVistaFrame(W, H) {
+    const img = themeAssets.vista;
+    if (!img) return null;
+    if (
+      highDetailVistaCache.canvas &&
+      highDetailVistaCache.img === img &&
+      highDetailVistaCache.width === W &&
+      highDetailVistaCache.height === H
+    ) {
+      return highDetailVistaCache.canvas;
+    }
+
+    const cacheCanvas = document.createElement('canvas');
+    cacheCanvas.width = W;
+    cacheCanvas.height = H;
+    const cacheCtx = cacheCanvas.getContext('2d');
+    cacheCtx.drawImage(img, 0, 0, W, H);
+
+    const veil = cacheCtx.createLinearGradient(0, H * 0.45, 0, H);
+    veil.addColorStop(0, 'rgba(5,10,20,0)');
+    veil.addColorStop(1, 'rgba(7,12,24,0.42)');
+    cacheCtx.fillStyle = veil;
+    cacheCtx.fillRect(0, 0, W, H);
+
+    highDetailVistaCache = { canvas: cacheCanvas, img, width: W, height: H };
+    return cacheCanvas;
   }
 
   function drawTerrainPropSprite(kind, x, y, size, theme, alphaScale = 1) {
