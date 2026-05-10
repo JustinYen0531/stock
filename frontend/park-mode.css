@@ -2903,3 +2903,149 @@ body.park-mode .ski-medal-group {
     padding: 1.35rem 1.3rem !important;
   }
 }
+
+/* Final quest panel placement: keep the important game stats in view. */
+body.park-mode .stock-action-area {
+  display: grid !important;
+  grid-template-columns: minmax(11rem, 0.78fr) minmax(22rem, 1.45fr) minmax(11rem, 0.78fr) !important;
+  grid-template-areas: "best controls medals" !important;
+  align-items: center !important;
+  justify-items: stretch !important;
+  column-gap: clamp(0.8rem, 2vw, 1.6rem) !important;
+  min-height: clamp(13.5rem, 22vh, 16rem) !important;
+}
+
+body.park-mode .ski-achievement-strip {
+  grid-area: 1 / 1 / 2 / 4 !important;
+  display: grid !important;
+  grid-template-columns: minmax(11rem, 0.78fr) minmax(22rem, 1.45fr) minmax(11rem, 0.78fr) !important;
+  grid-template-areas: "best spacer medals" !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  opacity: 1 !important;
+  z-index: 1;
+  pointer-events: none;
+}
+
+body.park-mode .ski-best-row {
+  grid-area: best !important;
+  align-self: center !important;
+  justify-self: start !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: min(12rem, 100%) !important;
+  gap: 0.7rem !important;
+  margin: 0 !important;
+}
+
+body.park-mode .ski-best-stat {
+  min-width: 0 !important;
+  width: 100%;
+  padding: 0.72rem 0.9rem !important;
+  border: 1px solid rgba(110, 185, 255, 0.28) !important;
+  background: rgba(5, 14, 34, 0.74) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(14px);
+}
+
+body.park-mode .ski-best-label {
+  font-size: 0.72rem !important;
+  color: rgba(165, 205, 255, 0.82) !important;
+}
+
+body.park-mode .ski-best-stat strong {
+  font-size: 1.25rem !important;
+  color: rgba(238, 248, 255, 0.98) !important;
+}
+
+body.park-mode .ski-medal-group {
+  grid-area: medals !important;
+  align-self: center !important;
+  justify-self: end !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.55rem !important;
+  width: min(12rem, 100%) !important;
+  opacity: 1 !important;
+}
+
+body.park-mode .ski-medal {
+  justify-content: flex-start !important;
+  min-height: 2.2rem;
+  padding: 0.5rem 0.74rem !important;
+  border-radius: 999px !important;
+  background: rgba(5, 14, 34, 0.66) !important;
+  border-color: rgba(115, 170, 245, 0.24) !important;
+}
+
+body.park-mode .ski-medal.unlocked {
+  background: rgba(255, 170, 34, 0.16) !important;
+  border-color: rgba(255, 190, 80, 0.58) !important;
+}
+
+body.park-mode .ski-action-controls {
+  grid-area: controls !important;
+  position: relative !important;
+  z-index: 2;
+  justify-self: center !important;
+  align-self: center !important;
+  width: min(42rem, 100%) !important;
+}
+
+body.park-mode .ski-sliders-panel {
+  display: block !important;
+  width: 100%;
+  margin: 0 0 0.75rem;
+}
+
+body.park-mode .stock-action-card.ski-tuning-collapsed .ski-sliders-panel {
+  display: none !important;
+}
+
+body.park-mode .ski-difficulty-panel {
+  position: relative;
+  z-index: 3;
+}
+
+@media (max-width: 900px) {
+  body.park-mode .stock-action-area {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "best"
+      "controls"
+      "medals" !important;
+    row-gap: 0.8rem !important;
+    min-height: 0 !important;
+  }
+
+  body.park-mode .ski-achievement-strip {
+    grid-area: 1 / 1 / 4 / 2 !important;
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "best"
+      "spacer"
+      "medals" !important;
+    row-gap: 0.75rem !important;
+  }
+
+  body.park-mode .ski-best-row,
+  body.park-mode .ski-medal-group {
+    justify-self: center !important;
+    width: min(24rem, 100%) !important;
+  }
+
+  body.park-mode .ski-best-row {
+    flex-direction: row !important;
+  }
+
+  body.park-mode .ski-medal-group {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    justify-content: center !important;
+  }
+}

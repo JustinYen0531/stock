@@ -1255,7 +1255,7 @@ function resetKnowledge() {
 
 // ── 滑雪遊戲啟動 ──────────────────────────────────
 let lobbyHighDetailMode = false;
-let skiTuningCollapsed = false;
+let skiTuningCollapsed = true;
 const SKI_PROGRESS_KEY = "skiProgress";
 const SKI_HIGH_DETAIL_THEME_SYMBOLS = new Set(["AAPL", "GOOGL", "AMZN", "META", "MSFT", "NVDA", "INTC"]);
 
@@ -1534,7 +1534,8 @@ function setPracticeRange(start, end) {
     syncSlider(document.getElementById('hitboxSlider'));
     bindRange(document.getElementById('rangeStart'));
     bindRange(document.getElementById('rangeEnd'));
-    skiTuningCollapsed = localStorage.getItem('skiTuningCollapsed') === '1';
+    const storedSkiTuningCollapsed = localStorage.getItem('skiTuningCollapsed');
+    skiTuningCollapsed = storedSkiTuningCollapsed === null ? true : storedSkiTuningCollapsed === '1';
     applySkiTuningCollapsed();
     updateSkiLaunchButton();
     updateSkiMedals();
