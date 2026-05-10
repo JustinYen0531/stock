@@ -1688,20 +1688,109 @@ body::before {
   margin: 0 0 0.85rem;
 }
 .education-learning-points {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: block;
 }
-.education-learning-points span {
+.education-point-chip {
   display: inline-flex;
   align-items: center;
   min-height: 28px;
   padding: 0.25rem 0.68rem;
+  margin: 0 0.45rem 0.45rem 0;
   border-radius: 8px;
   background: rgba(15, 23, 42, 0.58);
   border: 1px solid rgba(148, 163, 184, 0.16);
   color: #dbeafe;
   font-size: 0.78rem;
+}
+.education-folder-list {
+  display: grid;
+  gap: 0.55rem;
+}
+.education-folder {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  background: rgba(8, 16, 32, 0.44);
+  overflow: hidden;
+}
+.education-folder summary {
+  display: grid;
+  grid-template-columns: 26px minmax(96px, 0.25fr) minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 0.72rem;
+  min-height: 44px;
+  padding: 0.58rem 0.78rem;
+  cursor: pointer;
+  list-style: none;
+}
+.education-folder summary::-webkit-details-marker {
+  display: none;
+}
+.education-folder summary::after {
+  content: "+";
+  justify-self: end;
+  color: #7dd3fc;
+  font-weight: 800;
+}
+.education-folder[open] summary::after {
+  content: "−";
+}
+.education-folder-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: rgba(14, 165, 233, 0.16);
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  color: #bae6fd;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.education-folder-title {
+  color: #f8fafc;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+.education-folder-summary {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  padding-right: 1.2rem;
+}
+.education-folder-body {
+  display: grid;
+  gap: 0.42rem;
+  padding: 0 1rem 0.88rem 3.6rem;
+}
+.education-folder-body p {
+  position: relative;
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 0.84rem;
+  line-height: 1.62;
+}
+.education-folder-body p::before {
+  content: "";
+  position: absolute;
+  left: -0.85rem;
+  top: 0.72em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #67e8f9;
+}
+@media (max-width: 760px) {
+  .education-folder summary {
+    grid-template-columns: 26px 1fr 24px;
+  }
+  .education-folder-summary {
+    grid-column: 2 / 4;
+    padding-right: 0;
+  }
+  .education-folder-body {
+    padding-left: 3.25rem;
+  }
 }
 
 /* ── Advice Card ─────────────────────────────── */

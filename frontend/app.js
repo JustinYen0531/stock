@@ -676,18 +676,40 @@ function renderEducationPreview(education, state = "ready") {
     badge.textContent = "備用模式";
     summary.textContent = "等等仍然可以正常滑雪；教育題庫會使用遊戲內的通用備用節點。";
     points.innerHTML = ["公司故事稍後補上", "先看價格與技術面", "滑雪分數不受教育題影響"]
-      .map((item) => `<span>${escapeHtml(item)}</span>`)
+      .map((item) => `<span class="education-point-chip">${escapeHtml(item)}</span>`)
       .join("");
     return;
   }
 
   title.textContent = education.preview?.headline || `${education.symbol} 纜車預習`;
-  badge.textContent = education.newsContext?.sourceKind === "live_news" ? "含近期新聞" : "已載入";
+  badge.textContent = education.newsContext?.sourceKind === "live_news" ? "含近期新聞" : "知識庫";
   summary.textContent = education.preview?.summary || education.company?.story || "已準備好教育節點。";
-  points.innerHTML = (education.preview?.learningPoints || [])
-    .slice(0, 5)
-    .map((item) => `<span>${escapeHtml(item)}</span>`)
-    .join("");
+  points.innerHTML = buildEducationFolderMarkup(education);
+}
+
+function buildEducationFolderMarkup(education) {
+  const folders = education.preview?.folders || [];
+  if (!folders.length) {
+    return (education.preview?.learningPoints || [])
+      .slice(0, 5)
+      .map((item) => `<span class="education-point-chip">${escapeHtml(item)}</span>`)
+      .join("");
+  }
+
+  return `<div class="education-folder-list">
+    ${folders.map((folder, index) => `
+      <details class="education-folder" ${index === 0 ? "open" : ""}>
+        <summary>
+          <span class="education-folder-icon">${index + 1}</span>
+          <span class="education-folder-title">${escapeHtml(folder.title)}</span>
+          <span class="education-folder-summary">${escapeHtml(folder.summary || "")}</span>
+        </summary>
+        <div class="education-folder-body">
+          ${(folder.details || []).map((detail) => `<p>${escapeHtml(detail)}</p>`).join("")}
+        </div>
+      </details>
+    `).join("")}
+  </div>`;
 }
 
 // ── 投資建議渲染 ──────────────────────────────────

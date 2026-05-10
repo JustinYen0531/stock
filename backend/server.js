@@ -245,6 +245,44 @@ const EDUCATION_KNOWLEDGE = {
     business: "公司核心是 GPU、AI 加速器、資料中心平台與軟體生態。近年資料中心與 AI 訓練需求成為市場解讀 NVIDIA 的主軸。",
     event: "代表事件包含 GeForce 遊戲 GPU、CUDA 生態、資料中心 GPU，以及 AI 伺服器需求推升市場關注。",
     focus: "玩家應注意 AI 需求、資料中心營收、供應鏈產能與高估值下的波動。",
+    folders: [
+      {
+        title: "公司起源故事",
+        summary: "從遊戲顯示晶片起家，最後變成 AI 算力時代的核心公司。",
+        details: [
+          "NVIDIA 早期主戰場是 PC 3D 圖形與遊戲 GPU，品牌心智建立在高效能視覺運算。",
+          "CUDA 讓 GPU 不只服務遊戲畫面，也能做科學運算、資料處理與 AI 訓練。",
+          "市場後來重新理解 NVIDIA：它不是單純賣顯卡，而是賣平行運算平台與生態系。",
+        ],
+      },
+      {
+        title: "主要產品",
+        summary: "GPU、資料中心加速器、AI 軟硬體平台與網路設備。",
+        details: [
+          "GeForce 面向消費與遊戲市場，維持品牌能見度與高階硬體形象。",
+          "資料中心 GPU 與 AI 加速器是近年估值敘事的核心，常與雲端巨頭資本支出連動。",
+          "CUDA、AI Enterprise、Networking 等軟硬整合能力，使客戶轉換成本變高。",
+        ],
+      },
+      {
+        title: "代表事件",
+        summary: "GeForce、CUDA、資料中心 GPU、生成式 AI 浪潮。",
+        details: [
+          "GeForce 讓 NVIDIA 在遊戲玩家與高效能圖形市場取得長期辨識度。",
+          "CUDA 生態擴大 GPU 用途，是後來 AI 訓練需求爆發的重要基礎。",
+          "生成式 AI 帶動資料中心 GPU 需求，讓市場把 NVIDIA 視為 AI 基礎設施代表股。",
+        ],
+      },
+      {
+        title: "觀察重點",
+        summary: "AI 需求、資料中心營收、供應鏈產能與高估值下的波動。",
+        details: [
+          "如果雲端公司持續增加 AI 資本支出，市場通常會提高對 NVIDIA 的成長預期。",
+          "供應鏈產能、先進封裝與交貨能力，會影響營收是否跟得上市場期待。",
+          "估值很高時，任何需求放緩或毛利率疑慮都可能放大股價震盪。",
+        ],
+      },
+    ],
   },
   TSLA: {
     name: "Tesla",
@@ -252,6 +290,134 @@ const EDUCATION_KNOWLEDGE = {
     business: "公司核心包含電動車、電池、能源儲存、充電網路與自動駕駛軟體。市場常同時用車廠與科技平台兩種角度看它。",
     event: "代表事件包含 Model S、Model 3 放量、全球超級充電網路、價格戰與自動駕駛功能迭代。",
     focus: "玩家應注意交車量、毛利率、降價策略、自動駕駛進展與市場對成長敘事的信心。",
+    folders: [
+      {
+        title: "公司起源故事",
+        summary: "Tesla 把電動車從科技理想推向大眾市場，也把車廠估值敘事改寫成平台故事。",
+        details: [
+          "Tesla 最早不是傳統車廠，而是用高性能電動車證明電動車可以有速度、設計與品牌魅力。",
+          "Elon Musk 加入後，Tesla 的敘事從單一車款擴大到能源、軟體、自動駕駛與製造效率。",
+          "市場常把 Tesla 同時看成車廠、能源公司與科技平台，這也是它估值波動很大的原因。",
+        ],
+      },
+      {
+        title: "主要產品",
+        summary: "電動車、電池、能源儲存、充電網路與自動駕駛軟體。",
+        details: [
+          "Model 3 / Model Y 是放量核心，交車量與毛利率通常直接影響市場情緒。",
+          "Supercharger 充電網路強化使用者黏著度，也讓 Tesla 擁有基礎設施層面的優勢。",
+          "FSD 與軟體收入代表市場對未來平台化的期待，但也伴隨監管與落地不確定性。",
+        ],
+      },
+      {
+        title: "代表事件",
+        summary: "Model 3 量產、全球建廠、價格戰、自動駕駛功能迭代。",
+        details: [
+          "Model 3 量產是 Tesla 從高端品牌走向大眾市場的關鍵轉折。",
+          "上海、柏林、德州等工廠讓 Tesla 從概念型公司變成全球製造公司。",
+          "降價策略常被市場雙重解讀：一方面刺激需求，另一方面可能壓縮毛利率。",
+        ],
+      },
+      {
+        title: "觀察重點",
+        summary: "交車量、毛利率、價格策略、自動駕駛進度與市場信心。",
+        details: [
+          "交車量如果低於預期，市場會懷疑需求；如果毛利率下滑，市場會懷疑價格戰代價。",
+          "自動駕駛與機器人題材會拉高想像空間，但短期股價仍常被車輛銷售數據牽動。",
+          "Tesla 波動大，是因為它同時承載基本面、科技敘事與領導人風險。",
+        ],
+      },
+    ],
+  },
+  AAPL: {
+    name: "Apple",
+    origin: "Apple 由 Steve Jobs、Steve Wozniak 與 Ronald Wayne 在 1976 年創立，從個人電腦開始，逐步塑造出硬體、軟體與服務整合的消費科技品牌。",
+    business: "公司核心是 iPhone、Mac、iPad、Wearables 與 Services。市場看 Apple 時，通常同時看硬體銷售週期、使用者黏著度與服務收入。",
+    event: "代表事件包含 Macintosh、iPod、iPhone、App Store、Apple Watch，以及近年的服務收入與空間運算產品。",
+    focus: "玩家應注意 iPhone 需求、服務毛利、供應鏈、地區銷售與新產品能否打開下一段成長。",
+    folders: [
+      {
+        title: "公司起源故事",
+        summary: "Apple 從個人電腦起家，真正的核心是把科技做成大眾願意使用、願意付費的體驗。",
+        details: [
+          "早期 Apple 以 Apple II 與 Macintosh 建立個人電腦品牌，強調圖形介面與使用者體驗。",
+          "Steve Jobs 回歸後，Apple 重新聚焦產品線，並用 iMac、iPod、iPhone 改寫消費電子市場。",
+          "Apple 的長期優勢不是單一硬體，而是硬體、作業系統、晶片、服務與品牌信任的整合。",
+        ],
+      },
+      {
+        title: "主要產品",
+        summary: "iPhone 是核心，Services 與穿戴裝置讓生態系更厚。",
+        details: [
+          "iPhone 仍是營收與市場注意力中心，換機週期會影響投資人對成長的看法。",
+          "Services 包含 App Store、iCloud、Apple Music、Apple Pay 等，毛利結構通常優於硬體。",
+          "Mac、iPad、Apple Watch、AirPods 擴大使用場景，讓使用者更難離開 Apple 生態系。",
+        ],
+      },
+      {
+        title: "代表事件",
+        summary: "iPhone 發表、App Store、生態系擴張、自研晶片。",
+        details: [
+          "2007 年 iPhone 發表是 Apple 從電腦公司轉型成行動平台公司的關鍵。",
+          "App Store 把硬體銷售延伸成軟體分發與服務抽成模式。",
+          "Apple Silicon 讓 Mac 產品線在效能、續航與供應鏈控制上更有差異化。",
+        ],
+      },
+      {
+        title: "觀察重點",
+        summary: "iPhone 需求、服務成長、毛利率、供應鏈與新產品週期。",
+        details: [
+          "如果 iPhone 銷售疲弱，市場會擔心硬體換機週期；如果 Services 強，則能部分抵銷硬體波動。",
+          "Apple 的股價常受中國市場、供應鏈政策與高階機型需求影響。",
+          "新產品如 Vision Pro 或 AI 功能，重點不是聲量，而是能否變成可持續的生態收入。",
+        ],
+      },
+    ],
+  },
+  MSFT: {
+    name: "Microsoft",
+    origin: "Microsoft 由 Bill Gates 與 Paul Allen 在 1975 年創立，從個人電腦軟體出發，逐步成為企業軟體、雲端與 AI 平台公司。",
+    business: "公司核心包含 Windows、Office/Microsoft 365、Azure、企業軟體、LinkedIn、Xbox 與 AI 服務。市場常把它視為企業數位化與雲端 AI 的代表。",
+    event: "代表事件包含 MS-DOS、Windows、Office、Azure 雲端轉型、收購 LinkedIn 與 Activision Blizzard，以及 Copilot AI 產品化。",
+    focus: "玩家應注意 Azure 成長率、企業軟體續約、AI Copilot 商業化、資本支出與雲端競爭。",
+    folders: [
+      {
+        title: "公司起源故事",
+        summary: "Microsoft 從 PC 軟體標準建立霸主地位，後來靠雲端轉型重新成長。",
+        details: [
+          "Microsoft 早期靠作業系統與開發工具進入個人電腦浪潮，Windows 成為長期平台核心。",
+          "Office 把文書、簡報、試算表變成企業日常工作標準，形成很強的續約與習慣黏著。",
+          "Satya Nadella 時代的雲端轉型，讓 Microsoft 從授權軟體公司變成訂閱與雲端平台公司。",
+        ],
+      },
+      {
+        title: "主要產品",
+        summary: "Windows、Microsoft 365、Azure、Teams、Copilot 與企業雲服務。",
+        details: [
+          "Microsoft 365 以訂閱模式服務企業與個人，收入穩定且可持續升級。",
+          "Azure 是雲端成長核心，常被市場拿來和 AWS、Google Cloud 比較。",
+          "Copilot 把 AI 嵌進 Office、Windows、GitHub 與企業流程，是 AI 商業化主軸。",
+        ],
+      },
+      {
+        title: "代表事件",
+        summary: "Windows 普及、Office 標準化、Azure 轉型、AI Copilot 推進。",
+        details: [
+          "Windows 與 Office 的普及，讓 Microsoft 長期掌握企業端入口。",
+          "Azure 成功轉型後，市場重新給 Microsoft 成長型平台公司的評價。",
+          "OpenAI 合作與 Copilot 產品線，讓 Microsoft 成為 AI 應用落地的重要代表。",
+        ],
+      },
+      {
+        title: "觀察重點",
+        summary: "Azure 成長、AI 變現、企業預算、資本支出與毛利率。",
+        details: [
+          "Azure 成長率如果放緩，市場會重新檢查雲端需求與競爭壓力。",
+          "AI Copilot 的重點是付費採用率，而不只是產品發表數量。",
+          "AI 基礎設施需要大量資本支出，投資人會看收入增量是否能支撐支出。",
+        ],
+      },
+    ],
   },
   "2330_TW": {
     name: "台積電",
@@ -259,6 +425,44 @@ const EDUCATION_KNOWLEDGE = {
     business: "公司核心是先進製程、晶圓代工、封裝與全球半導體客戶服務。市場通常把它視為 AI、手機、HPC 與全球科技供應鏈的核心節點。",
     event: "代表事件包含純晶圓代工模式、先進製程領先、海外設廠，以及 AI/HPC 需求帶動高階製程產能。",
     focus: "玩家應注意先進製程需求、資本支出、匯率、地緣政治與大客戶訂單變化。",
+    folders: [
+      {
+        title: "公司起源故事",
+        summary: "台積電把晶圓代工變成全球半導體分工的關鍵模式。",
+        details: [
+          "台積電成立時主打純晶圓代工，讓晶片設計公司不必自己建廠也能生產晶片。",
+          "這個模式降低了無晶圓廠設計公司的門檻，也讓全球半導體產業分工更細。",
+          "市場看台積電，不只看單一公司，也是在看全球科技供應鏈的核心節點。",
+        ],
+      },
+      {
+        title: "主要產品",
+        summary: "先進製程、成熟製程、晶圓代工與先進封裝。",
+        details: [
+          "先進製程常用於高效能運算、AI、手機晶片與高階處理器。",
+          "成熟製程服務車用、工控、消費電子等長尾需求，讓營收結構更分散。",
+          "先進封裝在 AI/HPC 時代變得更重要，因為高階晶片需要更複雜的整合能力。",
+        ],
+      },
+      {
+        title: "代表事件",
+        summary: "晶圓代工模式、先進製程領先、海外設廠、AI/HPC 需求。",
+        details: [
+          "純晶圓代工模式讓台積電避免與客戶在晶片設計上直接競爭，建立信任基礎。",
+          "先進製程節點的領先，是市場給予台積電高評價的重要原因。",
+          "AI/HPC 需求推升高階製程與先進封裝的重要性，使台積電成為 AI 供應鏈核心。",
+        ],
+      },
+      {
+        title: "觀察重點",
+        summary: "先進製程需求、資本支出、匯率、海外設廠與地緣政治。",
+        details: [
+          "如果 AI 與高效能運算需求延續，先進製程產能利用率通常會受到正面關注。",
+          "資本支出代表公司對未來需求的判斷，也會影響折舊與自由現金流。",
+          "台積電同時受全球客戶需求、匯率與地緣政治影響，所以股價常反映多重風險。",
+        ],
+      },
+    ],
   },
 };
 
@@ -371,6 +575,28 @@ function buildEducationPayload({ symbol, period, quote, chart, advice }) {
     preview: {
       headline: `${name} 纜車預習`,
       summary: `${knowledge.origin} 這趟滑雪會把公司背景、商業模式、近期震盪與技術面拆成 4 個停靠站。`,
+      folders: knowledge.folders || [
+        {
+          title: "公司起源故事",
+          summary: knowledge.origin,
+          details: ["這檔股票尚未放入完整知識庫，第一版先用通用公司分析框架補足。"],
+        },
+        {
+          title: "主要產品",
+          summary: knowledge.business,
+          details: ["可以從產品服務、營收來源、客戶族群與產業位置四個角度開始閱讀。"],
+        },
+        {
+          title: "代表事件",
+          summary: knowledge.event,
+          details: ["後續可以把財報轉折、產品發表、產業事件與重大併購逐步補進題庫。"],
+        },
+        {
+          title: "觀察重點",
+          summary: knowledge.focus,
+          details: ["先觀察近期漲跌幅、成交量是否放大、技術指標是否同向，以及市場是否正在重新定價成長故事。"],
+        },
+      ],
       learningPoints: [
         "這家公司從哪裡開始，市場為什麼認得它",
         "它主要靠什麼產品或服務賺錢",
