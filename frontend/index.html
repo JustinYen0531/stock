@@ -269,7 +269,7 @@
             <span class="park-booth-icon">🎟️</span>
             <span class="park-booth-title">售票亭 · 輸入雪場代碼</span>
           </div>
-          <div class="park-booth-row">
+          <div class="park-booth-row" style="position:relative">
             <input id="parkSymbolInput" class="park-input" type="text"
               placeholder="股票代碼 e.g. NVDA, TSLA, 2330.TW"
               autocomplete="off" spellcheck="false" />
@@ -283,6 +283,8 @@
             <button class="park-start-btn" onclick="parkStartAdventure()">
               🎿 開始探索！
             </button>
+            <!-- 售票亭股票選股下拉 -->
+            <div id="parkPickerPanel" class="park-picker-panel hidden"></div>
           </div>
         </div>
 
@@ -1062,6 +1064,112 @@
     loadStock();
   }
 
+  /* ── 售票亭選股資料 ─────────────────────────── */
+  const _PARK_STOCKS = [
+    { cat:'💻 美國科技', stocks:[
+      {sym:'AAPL',name:'Apple'},{sym:'MSFT',name:'Microsoft'},
+      {sym:'GOOGL',name:'Google'},{sym:'META',name:'Meta'},
+      {sym:'AMZN',name:'Amazon'},{sym:'NFLX',name:'Netflix'},
+      {sym:'NVDA',name:'Nvidia'},{sym:'AMD',name:'AMD'},
+      {sym:'CRM',name:'Salesforce'},{sym:'ORCL',name:'Oracle'},
+    ]},
+    { cat:'⚙️ 半導體', stocks:[
+      {sym:'QCOM',name:'Qualcomm'},{sym:'INTC',name:'Intel'},
+      {sym:'AVGO',name:'Broadcom'},{sym:'MU',name:'Micron'},
+      {sym:'AMAT',name:'Applied Materials'},{sym:'LRCX',name:'Lam Research'},
+    ]},
+    { cat:'⚡ 電動車/新能源', stocks:[
+      {sym:'TSLA',name:'Tesla'},{sym:'RIVN',name:'Rivian'},
+      {sym:'LCID',name:'Lucid Motors'},{sym:'NIO',name:'蔚來 NIO'},
+      {sym:'ENPH',name:'Enphase'},{sym:'PLUG',name:'Plug Power'},
+    ]},
+    { cat:'🏦 美國金融', stocks:[
+      {sym:'JPM',name:'JPMorgan'},{sym:'BAC',name:'Bank of America'},
+      {sym:'GS',name:'Goldman Sachs'},{sym:'V',name:'Visa'},
+      {sym:'MA',name:'Mastercard'},{sym:'BRK-B',name:'Berkshire B'},
+    ]},
+    { cat:'🇹🇼 台灣科技', stocks:[
+      {sym:'2330.TW',name:'台積電',disp:'2330'},{sym:'2317.TW',name:'鴻海',disp:'2317'},
+      {sym:'2454.TW',name:'聯發科',disp:'2454'},{sym:'2303.TW',name:'聯電',disp:'2303'},
+      {sym:'2308.TW',name:'台達電',disp:'2308'},{sym:'3711.TW',name:'日月光',disp:'3711'},
+      {sym:'2382.TW',name:'廣達',disp:'2382'},{sym:'2395.TW',name:'研華',disp:'2395'},
+    ]},
+    { cat:'📦 台灣 ETF', stocks:[
+      {sym:'0050.TW',name:'台灣50',disp:'0050'},{sym:'0056.TW',name:'高股息',disp:'0056'},
+      {sym:'006208.TW',name:'富邦台50',disp:'006208'},{sym:'00878.TW',name:'國泰永續高股息',disp:'00878'},
+      {sym:'00919.TW',name:'群益高息',disp:'00919'},{sym:'00929.TW',name:'復華科技優息',disp:'00929'},
+    ]},
+    { cat:'🛢️ 能源/原物料', stocks:[
+      {sym:'XOM',name:'ExxonMobil'},{sym:'CVX',name:'Chevron'},
+      {sym:'COP',name:'ConocoPhillips'},{sym:'GLD',name:'黃金 ETF'},{sym:'SLV',name:'白銀 ETF'},
+    ]},
+    { cat:'🐉 中概股', stocks:[
+      {sym:'BABA',name:'阿里巴巴'},{sym:'PDD',name:'拼多多'},
+      {sym:'JD',name:'京東'},{sym:'BIDU',name:'百度'},
+    ]},
+  ];
+
+  let _parkPickerOpen = false;
+
+  function _renderParkPicker(q) {
+    const panel = document.getElementById('parkPickerPanel');
+    if (!panel) return;
+    q = (q || '').toLowerCase().trim();
+    let html = `<div class="park-picker-hint">⛷️ 選擇雪場 · 或直接輸入代碼後按 Enter</div>`;
+    let anyResult = false;
+    _PARK_STOCKS.forEach(({ cat, stocks }) => {
+      const btns = stocks.map(s => {
+        const disp  = s.disp || s.sym;
+        const match = !q || s.sym.toLowerCase().includes(q) ||
+                      (s.disp||'').toLowerCase().includes(q) ||
+                      s.name.toLowerCase().includes(q);
+        anyResult = anyResult || match;
+        return `<button class="park-picker-btn${match?'':' hidden'}"
+          onclick="_parkPickStock('${_escHtml(s.sym)}','${_escHtml(s.name)}')">
+          <span class="park-picker-btn-sym">${_escHtml(disp)}</span>
+          <span class="park-picker-btn-name">${_escHtml(s.name)}</span>
+        </button>`;
+      }).join('');
+      const catVisible = !q || stocks.some(s =>
+        s.sym.toLowerCase().includes(q) ||
+        (s.disp||'').toLowerCase().includes(q) ||
+        s.name.toLowerCase().includes(q)
+      );
+      html += `<div class="park-picker-cat${catVisible?'':' all-hidden'}">
+        <div class="park-picker-cat-hd">${_escHtml(cat)}</div>
+        <div class="park-picker-stocks">${btns}</div>
+      </div>`;
+    });
+    if (!anyResult) {
+      html += `<div class="park-picker-hint" style="color:rgba(255,180,100,0.6);padding:0.6rem 0.4rem">
+        找不到「${_escHtml(q)}」，直接按 🎿 開始探索！</div>`;
+    }
+    panel.innerHTML = html;
+  }
+
+  function openParkPicker() {
+    const panel = document.getElementById('parkPickerPanel');
+    if (!panel || _parkPickerOpen) return;
+    _parkPickerOpen = true;
+    const q = (document.getElementById('parkSymbolInput')?.value || '');
+    _renderParkPicker(q);
+    panel.classList.remove('hidden');
+  }
+
+  function closeParkPicker() {
+    const panel = document.getElementById('parkPickerPanel');
+    if (!panel) return;
+    _parkPickerOpen = false;
+    panel.classList.add('hidden');
+  }
+
+  function _parkPickStock(sym, name) {
+    closeParkPicker();
+    const parkInput = document.getElementById('parkSymbolInput');
+    if (parkInput) parkInput.value = sym;
+    parkLoadSymbol(sym, name);
+  }
+
   /* ── 推薦區建構函數 ──────────────────────────── */
   function _escHtml(str) {
     return String(str ?? '')
@@ -1372,13 +1480,32 @@
       }).observe(dash, { attributes: true, attributeFilter: ['class'] });
     }
 
-    // 3) park input 按 Enter
+    // 3) park input 事件：focus/input → 開啟選股面板；Enter → 搜尋；Escape → 關閉
     const parkInput = document.getElementById('parkSymbolInput');
     if (parkInput) {
+      parkInput.addEventListener('focus', () => openParkPicker());
+      parkInput.addEventListener('input', () => {
+        openParkPicker();
+        _renderParkPicker(parkInput.value);
+      });
       parkInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') parkStartAdventure();
+        if (e.key === 'Enter')  { closeParkPicker(); parkStartAdventure(); }
+        if (e.key === 'Escape') closeParkPicker();
       });
     }
+
+    // 3b) 點擊 park 輸入區外部 → 關閉選股面板
+    document.addEventListener('click', e => {
+      if (!_parkPickerOpen) return;
+      const panel    = document.getElementById('parkPickerPanel');
+      const input    = document.getElementById('parkSymbolInput');
+      const startBtn = document.querySelector('.park-start-btn');
+      if (panel && !panel.contains(e.target) &&
+          input && !input.contains(e.target) &&
+          !(startBtn && startBtn.contains(e.target))) {
+        closeParkPicker();
+      }
+    });
 
     // 4) 監聽 homepageFeaturedRecommendation 更新 → 同步 park 推薦區
     const featuredEl = document.getElementById('homepageFeaturedRecommendation');

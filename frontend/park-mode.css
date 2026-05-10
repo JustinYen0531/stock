@@ -1054,6 +1054,110 @@ body.park-mode .footer {
   flex-shrink: 0;
 }
 
+/* ══════════════════════════════════════════════
+   PATCH D: 售票亭選股下拉面板
+   ══════════════════════════════════════════════ */
+
+.park-picker-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  min-width: 480px;
+  max-width: 720px;
+  max-height: 480px;
+  overflow-y: auto;
+  z-index: 500;
+  background: rgba(6, 14, 34, 0.97);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1.5px solid rgba(0, 207, 170, 0.22);
+  border-radius: 18px;
+  box-shadow: 0 16px 56px rgba(0,0,0,0.65), 0 0 0 1px rgba(0,207,170,0.08);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  animation: parkPickerIn 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes parkPickerIn {
+  from { opacity:0; transform: translateY(-10px) scale(0.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+.park-picker-panel.hidden { display: none !important; }
+
+/* scrollbar */
+.park-picker-panel::-webkit-scrollbar { width: 4px; }
+.park-picker-panel::-webkit-scrollbar-track { background: transparent; }
+.park-picker-panel::-webkit-scrollbar-thumb { background: rgba(0,207,170,0.28); border-radius: 2px; }
+
+/* search hint bar */
+.park-picker-hint {
+  font-size: 0.65rem;
+  color: rgba(180,210,255,0.40);
+  padding: 0 0.25rem 0.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  letter-spacing: 0.04em;
+}
+
+/* category block */
+.park-picker-cat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.park-picker-cat.all-hidden { display: none; }
+.park-picker-cat-hd {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0,207,170,0.55);
+  padding: 0.35rem 0.4rem 0.1rem;
+}
+.park-picker-stocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0 0.1rem;
+}
+
+/* stock button */
+.park-picker-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.38rem 0.78rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #fff;
+}
+.park-picker-btn:hover {
+  background: rgba(0,207,170,0.18);
+  border-color: rgba(0,207,170,0.40);
+  transform: translateY(-1px);
+}
+.park-picker-btn.hidden { display: none; }
+.park-picker-btn-sym {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.80rem;
+  font-weight: 800;
+  color: var(--park-teal);
+  line-height: 1;
+}
+.park-picker-btn-name {
+  font-size: 0.68rem;
+  color: rgba(200,225,255,0.58);
+  line-height: 1;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── 個人資料按鈕（header 內） ── */
 .park-profile-btn {
   display: none;
