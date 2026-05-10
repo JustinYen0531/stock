@@ -1401,31 +1401,62 @@ async function getHomepageRecommendations(forceFresh = false) {
 // Gemini AI 聊天端點
 // ═══════════════════════════════════════════════
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-flash-latest"];
 
 async function generateGeminiText(prompt, { temperature = 0.7, maxOutputTokens = 8192 } = {}) {
   if (!GEMINI_API_KEY) throw new Error("Gemini API key 未設定");
 
-  const response = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature,
-        maxOutputTokens,
-      },
-    }),
-  });
+  let lastError = "";
+  for (const model of GEMINI_MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature,
+          maxOutputTokens,
+        },
+      }),
+    });
 
-  if (!response.ok) {
-    const errText = await response.text();
-    console.error("[Gemini Error]", errText);
-    throw new Error("Gemini API 錯誤");
+    if (response.ok) {
+      const data = await response.json();
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "（無回應）";
+    }
+
+    lastError = await response.text();
+    console.error(`[Gemini Error:${model}]`, lastError);
   }
 
-  const data = await response.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "（無回應）";
+  throw new Error(`Gemini API 錯誤：${lastError.slice(0, 180)}`);
+}
+
+function buildLocalChatFallback(message, context = {}) {
+  if (!context?.symbol) {
+    return "Gemini 目前請求量太高，我先用本機備用分析回覆：你可以先選一支股票，系統會根據 K 線、RSI、MACD 與均線整理出技術面方向。這是展示用備援，不影響圖表和滑雪遊戲。";
+  }
+
+  const macd = Number(context.macd);
+  const signal = Number(context.signal);
+  const rsi = Number(context.rsi);
+  const close = context.close ?? "N/A";
+  const ma20 = context.ma20 ?? "N/A";
+  const macdText = Number.isFinite(macd) && Number.isFinite(signal)
+    ? macd >= signal
+      ? "MACD 目前高於 Signal，短線動能偏多。"
+      : "MACD 目前低於 Signal，短線動能偏弱。"
+    : "MACD 資料暫時不足，建議搭配均線和價格位置觀察。";
+  const rsiText = Number.isFinite(rsi)
+    ? rsi > 70
+      ? "RSI 偏高，代表短線可能過熱。"
+      : rsi < 30
+        ? "RSI 偏低，代表短線可能偏冷或有反彈觀察空間。"
+        : "RSI 位在中性區間，情緒沒有明顯過熱或過冷。"
+    : "RSI 資料暫時不足。";
+
+  return `Gemini 目前請求量太高，我先啟用本機備用分析。\n\n${context.symbol} 最新收盤價約 ${close}，MA20 約 ${ma20}。${macdText}${rsiText}\n\n簡單說，現在可以把 MACD 當作短線動能觀察，RSI 當作情緒溫度計，均線則用來判斷價格是否站在趨勢上方。以上僅供展示與學習參考，不構成投資建議。`;
 }
 
 app.post("/chat", async (req, res) => {
@@ -1461,7 +1492,7 @@ app.post("/chat", async (req, res) => {
 
   } catch (e) {
     console.error("[Chat Error]", e.message);
-    res.status(500).json({ error: e.message });
+    res.json({ reply: buildLocalChatFallback(message, context), fallback: true });
   }
 });
 
