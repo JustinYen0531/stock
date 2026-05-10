@@ -2344,7 +2344,7 @@ body.park-mode .price-stat {
 /* ── 2. Action card → Hero Launch Pad ── */
 body.park-mode .stock-action-card {
   background:
-    linear-gradient(160deg, rgba(4,14,40,0.78) 0%, rgba(2,8,26,0.9) 100%),
+    linear-gradient(160deg, rgba(4,14,40,0.52) 0%, rgba(2,8,26,0.66) 100%),
     var(--park-quest-thumb, linear-gradient(160deg, rgba(4,14,40,0.98) 0%, rgba(2,8,26,0.99) 100%)) !important;
   background-size: cover !important;
   background-position: center !important;
@@ -2364,13 +2364,13 @@ body.park-mode .stock-action-card::before {
   inset: -22px;
   z-index: 0;
   background:
-    linear-gradient(180deg, rgba(2,8,26,0.12), rgba(2,8,26,0.46)),
+    linear-gradient(180deg, rgba(2,8,26,0.04), rgba(2,8,26,0.22)),
     var(--park-quest-thumb, transparent);
   background-size: cover;
   background-position: center;
-  filter: blur(18px) saturate(1.28) brightness(0.72);
-  transform: scale(1.08);
-  opacity: 0.78;
+  filter: saturate(1.18) brightness(0.9);
+  transform: scale(1.01);
+  opacity: 0.92;
   pointer-events: none;
 }
 body.park-mode .stock-action-card > * {
