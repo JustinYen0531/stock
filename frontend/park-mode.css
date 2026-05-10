@@ -763,12 +763,12 @@ body.park-mode .footer {
 .park-daily-btn:active { transform: translateY(0); }
 
 /* ─────────────────────────────────────────────
-   熱門關卡 — 2×2 Grid
+   熱門關卡 — 單列縱排
    ───────────────────────────────────────────── */
 .park-hot-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 .park-hot-card {
   background: var(--park-glass);
@@ -960,13 +960,317 @@ body.park-mode .footer {
 /* ── Responsive 補充 ── */
 @media (max-width: 768px) {
   .park-daily-card { flex-direction: column; }
+  .park-daily-thumb { width: 100%; height: 100px; }
   .park-daily-right { width: 100%; flex-direction: row; align-items: center; }
   .park-daily-btn   { flex: 1; text-align: center; }
   .park-theme-band  { grid-template-columns: repeat(2, 1fr); }
+  .park-hot-card { flex-wrap: wrap; }
+  .park-hot-blurb { flex-basis: 100%; }
 }
 @media (max-width: 500px) {
-  .park-hot-grid   { grid-template-columns: 1fr; }
   .park-theme-band { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PATCH C: 每日關卡縮圖 + 熱門關卡橫排 + 個人資料面板
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 每日關卡縮圖 ── */
+.park-daily-thumb {
+  width: 148px;
+  min-height: 148px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.85rem 0.7rem;
+  gap: 0.35rem;
+}
+.park-daily-thumb-bg {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 0;
+  flex-shrink: 0;
+}
+.park-daily-thumb-sym {
+  position: relative;
+  z-index: 2;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  text-align: center;
+  line-height: 1.1;
+  word-break: break-all;
+}
+.park-daily-thumb-icon {
+  position: relative;
+  z-index: 2;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.park-daily-thumb-spark {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 44px;
+  opacity: 0.85;
+}
+
+/* ── 熱門關卡 — 每行一個橫排 ── */
+.park-hot-card {
+  flex-direction: row !important;
+  align-items: center !important;
+  padding: 0.9rem 1.2rem !important;
+  gap: 0.9rem !important;
+}
+/* 拆掉 card-top 包裝，直接讓子元素橫排 */
+.park-hot-card-top {
+  display: contents !important;
+}
+.park-hot-sym-group {
+  min-width: 120px;
+  flex-shrink: 0;
+}
+.park-hot-change {
+  min-width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.park-hot-blurb {
+  flex: 1 !important;
+  -webkit-line-clamp: 1 !important;
+  display: -webkit-box !important;
+  overflow: hidden !important;
+}
+.park-hot-btn {
+  flex-shrink: 0;
+}
+
+/* ── 個人資料按鈕（header 內） ── */
+.park-profile-btn {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(0,207,170,0.30);
+  background: rgba(0,207,170,0.10);
+  color: var(--park-teal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.22s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.park-profile-btn:hover {
+  background: rgba(0,207,170,0.20);
+  border-color: var(--park-teal);
+  box-shadow: 0 0 14px rgba(0,207,170,0.28);
+}
+body.park-mode .park-profile-btn { display: flex; }
+
+/* ── 個人資料面板 ── */
+.park-profile-panel {
+  position: fixed;
+  top: 62px;
+  right: 1.2rem;
+  width: 330px;
+  max-height: 82vh;
+  z-index: 300;
+  background: rgba(8,18,40,0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  box-shadow: 0 10px 48px rgba(0,0,0,0.55);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: parkPpSlideIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes parkPpSlideIn {
+  from { opacity:0; transform: translateY(-14px) scale(0.96); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+.park-profile-panel.hidden { display: none !important; }
+
+.park-pp-inner { overflow-y: auto; flex: 1; }
+
+/* Header */
+.park-pp-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.2rem 1.2rem 0.9rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.park-pp-avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00cfaa, #0080c0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  box-shadow: 0 3px 14px rgba(0,207,170,0.38);
+}
+.park-pp-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+}
+.park-pp-level {
+  font-size: 0.72rem;
+  color: var(--park-teal);
+  font-weight: 600;
+  margin-top: 0.1rem;
+}
+.park-pp-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 50%;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.park-pp-close:hover { color: #fff; background: rgba(255,255,255,0.10); }
+
+/* Stats row */
+.park-pp-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.park-pp-stat {
+  padding: 0.9rem 0.5rem;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+.park-pp-stat:last-child { border-right: none; }
+.park-pp-stat-num {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+.park-pp-stat-label {
+  font-size: 0.62rem;
+  color: var(--park-text-mist);
+  font-weight: 500;
+}
+
+/* Medals */
+.park-pp-section {
+  padding: 0.9rem 1.2rem 0;
+}
+.park-pp-section-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(180,210,255,0.55);
+  margin-bottom: 0.6rem;
+}
+.park-pp-medal-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+.park-pp-medal {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+.park-pp-medal.earned {
+  background: rgba(255,220,50,0.15);
+  border: 1px solid rgba(255,220,50,0.30);
+  color: #ffe066;
+}
+.park-pp-medal.locked {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.25);
+  filter: grayscale(1);
+}
+
+/* History list */
+.park-pp-history-list {
+  padding: 0 1.2rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.park-pp-empty {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--park-text-mist);
+  font-style: italic;
+  padding: 1rem 0;
+}
+.park-pp-record {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--park-radius-sm);
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.park-pp-record:hover { background: rgba(255,255,255,0.10); }
+.park-pp-rec-sym {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fff;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+.park-pp-rec-info { flex: 1; min-width: 0; }
+.park-pp-rec-name {
+  font-size: 0.70rem;
+  color: var(--park-text-mist);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.park-pp-rec-time {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.28);
+  margin-top: 0.1rem;
+}
+.park-pp-rec-badge {
+  font-size: 0.65rem;
+  padding: 0.14rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(0,207,170,0.15);
+  border: 1px solid rgba(0,207,170,0.28);
+  color: var(--park-teal);
+  flex-shrink: 0;
 }
 
 /* ── 3-STEP FLOW ── */
