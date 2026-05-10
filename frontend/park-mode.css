@@ -2472,6 +2472,140 @@ body.park-mode #skiLaunchButton .ski-btn-icon {
   font-size: 1.7rem !important;
 }
 
+/* Integrated quest launch layout: the action area floats inside the quest hero instead of
+   reading as a separate framed board. */
+body.park-mode #dashboard {
+  gap: 0;
+}
+body.park-mode .stock-header-card {
+  min-height: clamp(340px, 42vh, 460px);
+  margin-bottom: 0 !important;
+  padding: 3.2rem 2rem 9.5rem !important;
+}
+body.park-mode .stock-header-main {
+  min-height: clamp(250px, 30vh, 320px);
+  justify-content: center !important;
+  position: relative;
+}
+body.park-mode .stock-title-area {
+  flex: 0 1 auto !important;
+  justify-content: center;
+}
+body.park-mode .stock-price-area {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  margin-left: 0 !important;
+}
+body.park-mode .stock-action-card {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 2rem 1.5rem !important;
+  margin: clamp(-9.4rem, -13vw, -7.4rem) 0 0 !important;
+  overflow: visible !important;
+}
+body.park-mode .stock-action-card::before,
+body.park-mode .stock-action-card::after {
+  display: none !important;
+}
+body.park-mode .stock-action-area {
+  min-height: 9.5rem;
+  display: grid !important;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "records"
+    "medals";
+  align-items: end !important;
+  gap: 0.65rem 1.4rem !important;
+  position: relative;
+}
+body.park-mode .ski-achievement-strip {
+  grid-area: records;
+  align-self: end;
+  justify-self: center;
+  width: min(28rem, 100%);
+  margin: 0 !important;
+  gap: 0.55rem !important;
+}
+body.park-mode .ski-best-row {
+  width: min(13.5rem, 100%);
+  justify-content: center;
+  gap: 0.7rem !important;
+  margin: 0 auto;
+}
+body.park-mode .ski-best-stat {
+  min-width: 4.2rem;
+  padding: 0.55rem 0.75rem !important;
+  text-align: center;
+  background: rgba(4, 13, 34, 0.46) !important;
+  border-color: rgba(125, 211, 252, 0.2) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(10px);
+}
+body.park-mode .ski-medal-group {
+  grid-area: medals;
+  justify-content: center !important;
+  flex-wrap: wrap;
+  gap: 0.48rem !important;
+  margin-top: 0.1rem;
+}
+body.park-mode .ski-medal {
+  background: rgba(4, 13, 34, 0.34) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px);
+}
+body.park-mode .ski-medal.earned {
+  background: rgba(255, 140, 26, 0.18) !important;
+  border-color: rgba(255, 190, 80, 0.46) !important;
+}
+body.park-mode .ski-action-controls {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: min(26rem, 100%);
+}
+body.park-mode .ski-btn-group {
+  max-width: none !important;
+  width: 100% !important;
+}
+body.park-mode .ski-difficulty-panel {
+  width: 100% !important;
+  max-width: none !important;
+  background: rgba(9, 20, 38, 0.72) !important;
+  border-color: rgba(125, 211, 252, 0.26) !important;
+  backdrop-filter: blur(12px);
+}
+body.park-mode #skiLaunchButton {
+  max-width: none !important;
+}
+@media (max-width: 900px) {
+  body.park-mode .stock-header-card {
+    padding-bottom: 14.5rem !important;
+  }
+  body.park-mode .stock-price-area {
+    position: static;
+  }
+  body.park-mode .stock-action-card {
+    margin-top: -13.5rem !important;
+    padding-inline: 1rem !important;
+  }
+  body.park-mode .stock-action-area {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "controls"
+      "records"
+      "medals";
+    justify-items: center;
+    min-height: 0;
+  }
+  body.park-mode .ski-action-controls {
+    position: static;
+    justify-self: center;
+  }
+}
+
 /* ── 3. Mission Intel Toggle Button ── */
 .park-intel-toggle-wrap {
   display: none; /* hidden in pro mode */
