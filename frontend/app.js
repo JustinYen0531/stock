@@ -651,6 +651,7 @@ function renderDashboard(data, education = currentEducationData) {
     period: $("periodSelect").value,
     education,
   };
+  updateSkiMedals();
   renderSkiDifficultyPreview();
 }
 
@@ -1200,6 +1201,8 @@ function resetKnowledge() {
 
 // ── 滑雪遊戲啟動 ──────────────────────────────────
 let lobbyHighDetailMode = false;
+let skiTuningCollapsed = false;
+const SKI_PROGRESS_KEY = "skiProgress";
 
 function toggleLobbyDetailMode() {
   lobbyHighDetailMode = !lobbyHighDetailMode;
@@ -1221,6 +1224,19 @@ function launchSkiGame() {
       education: window.currentGameData.education,
     });
   }
+}
+
+function toggleSkiTuningPanel() {
+  skiTuningCollapsed = !skiTuningCollapsed;
+  localStorage.setItem('skiTuningCollapsed', skiTuningCollapsed ? '1' : '0');
+  applySkiTuningCollapsed();
+}
+
+function applySkiTuningCollapsed() {
+  const card = document.querySelector('.stock-action-card');
+  const caret = document.getElementById('skiTuningCaret');
+  card?.classList.toggle('ski-tuning-collapsed', skiTuningCollapsed);
+  if (caret) caret.textContent = skiTuningCollapsed ? '▸' : '▾';
 }
 
 function launchSkiGamePractice() {
@@ -1373,7 +1389,9 @@ function scheduleSkiDifficultyPreview() {
 
 function getSkiMedalState() {
   try {
-    return JSON.parse(localStorage.getItem('skiMedals') || '{}');
+    const legacy = JSON.parse(localStorage.getItem('skiMedals') || '{}');
+    const progress = JSON.parse(localStorage.getItem(SKI_PROGRESS_KEY) || '{}');
+    return { ...legacy, ...progress };
   } catch {
     return {};
   }
@@ -1381,9 +1399,18 @@ function getSkiMedalState() {
 
 function updateSkiMedals() {
   const medals = getSkiMedalState();
-  document.getElementById('medalPractice')?.classList.toggle('is-earned', !!medals.practiceComplete);
-  document.getElementById('medalNormal')?.classList.toggle('is-earned', !!medals.normalComplete);
-  document.getElementById('medalStars')?.classList.toggle('is-earned', !!medals.threeStars);
+  const bronze = !!(medals.bronze || medals.normalComplete);
+  const silver = !!(medals.silver || (medals.normalComplete && medals.cableAllCorrect));
+  const gold = !!(medals.gold || (medals.skiAA && medals.cableAA));
+  document.getElementById('medalBronze')?.classList.toggle('is-earned', bronze);
+  document.getElementById('medalSilver')?.classList.toggle('is-earned', silver);
+  document.getElementById('medalGold')?.classList.toggle('is-earned', gold);
+  const skiBest = Number(medals.bestSkiScore || 0);
+  const cableBest = Number(medals.bestCableScore || 0);
+  const skiBestEl = document.getElementById('skiBestScore');
+  const cableBestEl = document.getElementById('cableBestScore');
+  if (skiBestEl) skiBestEl.textContent = skiBest > 0 ? String(Math.round(skiBest)) : '--';
+  if (cableBestEl) cableBestEl.textContent = cableBest > 0 ? String(Math.round(cableBest)) : '--';
 }
 
 function launchSkiGameAdaptive() {
@@ -1436,6 +1463,8 @@ function setPracticeRange(start, end) {
     syncSlider(document.getElementById('hitboxSlider'));
     bindRange(document.getElementById('rangeStart'));
     bindRange(document.getElementById('rangeEnd'));
+    skiTuningCollapsed = localStorage.getItem('skiTuningCollapsed') === '1';
+    applySkiTuningCollapsed();
     updateSkiLaunchButton();
     updateSkiMedals();
   }

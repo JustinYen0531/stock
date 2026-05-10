@@ -1029,6 +1029,9 @@
       activeMode: 'intro',
       answered: new Array(nodes.length).fill(false),
       correct: new Array(nodes.length).fill(false),
+      answerTimes: new Array(nodes.length).fill(null),
+      questionScores: new Array(nodes.length).fill(0),
+      questionStartedAt: 0,
       selectedChoice: null,
       feedback: '',
       awaitingContinue: false,
@@ -1048,6 +1051,46 @@
     if (ratio >= 0.75) return { grade: 'A', correct, total, summary: '理解穩定，少數節點可複習' };
     if (ratio >= 0.5) return { grade: 'B', correct, total, summary: '已抓到主軸，但震盪原因還能再看一次' };
     return { grade: 'C', correct, total, summary: '建議回纜車站重新預習' };
+  }
+
+  function getCableScoreSummary() {
+    if (!educationSession?.nodes?.length) {
+      return { score: 0, grade: 'C', allCorrect: false, aa: false, avgSeconds: 0 };
+    }
+    const total = educationSession.nodes.length;
+    const answeredCount = educationSession.answered.filter(Boolean).length;
+    const correctCount = educationSession.correct.filter(Boolean).length;
+    const times = (educationSession.answerTimes || []).filter((value) => typeof value === 'number');
+    const avgSeconds = times.length ? times.reduce((sum, value) => sum + value, 0) / times.length : 0;
+    const score = Math.round((educationSession.questionScores || []).reduce((sum, value) => sum + value, 0));
+    const allCorrect = answeredCount === total && correctCount === total;
+    const aa = allCorrect && times.length === total && times.every((value) => value <= 10);
+    const grade = aa ? 'AA' : allCorrect ? 'A' : correctCount / Math.max(1, total) >= 0.7 ? 'B' : 'C';
+    return { score, grade, allCorrect, aa, avgSeconds };
+  }
+
+  function recordRunProgress() {
+    const cable = getCableScoreSummary();
+    const skiBadge = getExecutionRating().badge;
+    const skiAA = skiBadge === 'AAA' || skiBadge === 'AA';
+    const completedNormal = !practiceMode;
+    let progress = {};
+    try {
+      progress = JSON.parse(localStorage.getItem('skiProgress') || '{}');
+    } catch {
+      progress = {};
+    }
+    progress.bestSkiScore = Math.max(Number(progress.bestSkiScore || 0), getFinalScore());
+    progress.bestCableScore = Math.max(Number(progress.bestCableScore || 0), cable.score);
+    progress.normalComplete = !!(progress.normalComplete || completedNormal);
+    progress.cableAllCorrect = !!(progress.cableAllCorrect || cable.allCorrect);
+    progress.skiAA = !!(progress.skiAA || skiAA);
+    progress.cableAA = !!(progress.cableAA || cable.aa);
+    progress.bronze = !!(progress.bronze || completedNormal);
+    progress.silver = !!(progress.silver || (completedNormal && cable.allCorrect));
+    progress.gold = !!(progress.gold || (skiAA && cable.aa));
+    localStorage.setItem('skiProgress', JSON.stringify(progress));
+    window.updateSkiMedals?.();
   }
 
   function startCountdown() {
@@ -1079,6 +1122,7 @@
     educationSession.selectedChoice = null;
     educationSession.feedback = '';
     educationSession.awaitingContinue = false;
+    educationSession.questionStartedAt = performance.now();
     gameState = mode === 'final' ? 'education_final' : 'education_station';
     updateCursorVisibility();
   }
@@ -1111,6 +1155,7 @@
       if (nextIndex >= 0) enterEducationQuiz(nextIndex, 'final');
       else {
         educationSession.finalQuizComplete = true;
+        recordRunProgress();
         gameState = 'complete';
         updateCursorVisibility();
       }
@@ -1127,9 +1172,16 @@
     const node = educationSession.nodes[index];
     if (!node || educationSession.awaitingContinue) return;
     const isCorrect = choiceIndex === node.answerIndex;
+    const elapsedSeconds = educationSession.questionStartedAt
+      ? (performance.now() - educationSession.questionStartedAt) / 1000
+      : 12;
+    const speedBonus = Math.max(0, 30 - Math.max(0, elapsedSeconds - 3) * 3);
+    const questionScore = isCorrect ? Math.round(70 + speedBonus) : 0;
     educationSession.selectedChoice = choiceIndex;
     educationSession.answered[index] = true;
     educationSession.correct[index] = isCorrect;
+    educationSession.answerTimes[index] = elapsedSeconds;
+    educationSession.questionScores[index] = questionScore;
     educationSession.feedback = isCorrect ? `答對了。${node.explanation}` : `再看一次會更穩。${node.explanation}`;
     educationSession.awaitingContinue = true;
   }
@@ -1827,6 +1879,7 @@
       if (getEarnedStars() >= 3) unlockMedal('threeStars');
       spawnPartyParticles();
       if (!startFinalEducationQuizIfNeeded()) {
+        recordRunProgress();
         gameState = 'complete';
         updateCursorVisibility();
       }

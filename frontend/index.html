@@ -220,18 +220,30 @@
               <span class="ski-action-desc">把這支股票的走勢變成滑雪關卡！</span>
             </div>
           </div>
-          <div class="ski-medal-group" id="skiMedalGroup">
-            <div class="ski-medal" id="medalPractice">
-              <span class="ski-medal-icon">🥉</span>
-              <span class="ski-medal-text">練習完成</span>
+          <div class="ski-achievement-strip">
+            <div class="ski-best-row">
+              <div class="ski-best-stat">
+                <span class="ski-best-label">滑雪最佳</span>
+                <strong id="skiBestScore">--</strong>
+              </div>
+              <div class="ski-best-stat">
+                <span class="ski-best-label">纜車最佳</span>
+                <strong id="cableBestScore">--</strong>
+              </div>
             </div>
-            <div class="ski-medal" id="medalNormal">
-              <span class="ski-medal-icon">🥈</span>
-              <span class="ski-medal-text">正常完成</span>
-            </div>
-            <div class="ski-medal" id="medalStars">
-              <span class="ski-medal-icon">🥇</span>
-              <span class="ski-medal-text">3 顆星</span>
+            <div class="ski-medal-group" id="skiMedalGroup">
+              <div class="ski-medal" id="medalBronze" title="銅牌：完成一般模式滑雪">
+                <span class="ski-medal-icon">🥉</span>
+                <span class="ski-medal-text">一般完成</span>
+              </div>
+              <div class="ski-medal" id="medalSilver" title="銀牌：完成滑雪，且纜車題目全對">
+                <span class="ski-medal-icon">🥈</span>
+                <span class="ski-medal-text">纜車全對</span>
+              </div>
+              <div class="ski-medal" id="medalGold" title="金牌：滑雪與纜車都達 AA 以上">
+                <span class="ski-medal-icon">🥇</span>
+                <span class="ski-medal-text">雙 AA</span>
+              </div>
             </div>
           </div>
           <div class="ski-action-controls">
@@ -270,14 +282,15 @@
               </div>
             </div>
             <div class="ski-btn-group">
-              <div class="ski-difficulty-panel" id="skiDifficultyPanel" data-level="unknown">
-                <div class="ski-difficulty-label">難度係數</div>
+              <button class="ski-difficulty-panel" id="skiDifficultyPanel" data-level="unknown" type="button" onclick="toggleSkiTuningPanel()"
+                title="展開或收合陡峭、碰撞與區間設定">
+                <div class="ski-difficulty-label">難度係數 <span id="skiTuningCaret" class="ski-tuning-caret">▾</span></div>
                 <div class="ski-difficulty-main">
                   <span class="ski-difficulty-score" id="skiDifficultyScore">--</span>
                   <span class="ski-difficulty-level" id="skiDifficultyLevel">尚未載入</span>
                 </div>
                 <div class="ski-difficulty-meta" id="skiDifficultyMeta">先查詢股票後，這裡會顯示目前滑雪地圖的難度係數。</div>
-              </div>
+              </button>
               <button id="skiLaunchButton" class="ski-launch-btn ski-launch-big" onclick="launchSkiGameAdaptive()"
                 title="把這支股票變成滑雪關卡！">
                 <span id="skiLaunchIcon" class="ski-btn-icon">🎿</span>
