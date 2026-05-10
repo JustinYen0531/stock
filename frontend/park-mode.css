@@ -2707,7 +2707,7 @@ body.park-mode #dashboard.park-intel-open .stats-row {
 .park-dash-thumb {
   display: none;
 }
-/* Park mode: 固定佔滿視窗，清晰縮圖（不模糊） */
+/* Park mode: 清晰背景層（不模糊） */
 body.park-mode .park-dash-thumb {
   display: block;
   position: fixed;
@@ -2716,8 +2716,8 @@ body.park-mode .park-dash-thumb {
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
-  filter: brightness(0.60) saturate(0.9);  /* No blur — preserve chart & sky animation */
-  opacity: 0.75;
+  filter: none;  /* No blur, no effect — crystal clear */
+  opacity: 0;    /* Invisible — let sky + snow show through */
   pointer-events: none;
   transition: background-image 0.6s ease;
 }
