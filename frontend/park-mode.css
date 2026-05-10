@@ -1,0 +1,799 @@
+/* ═══════════════════════════════════════════════════════════
+   park-mode.css  —  Stock Ski Adventure 金融教育樂園模式
+   所有 park-mode 相關樣式獨立於此，不污染原有 style.css
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Park 設計變數 ─────────────────────────────────── */
+:root {
+  --park-orange:     #ff8c1a;
+  --park-orange-d:   #e56800;
+  --park-orange-glow:rgba(255,140,26,0.35);
+  --park-teal:       #00cfaa;
+  --park-teal-glow:  rgba(0,207,170,0.35);
+  --park-sky-deep:   #060f1e;
+  --park-sky-mid:    #12306a;
+  --park-sky-bright: #2e78c8;
+  --park-snow-pale:  #cce8f8;
+  --park-glass:      rgba(255,255,255,0.11);
+  --park-glass-b:    rgba(255,255,255,0.24);
+  --park-glass-thick:rgba(255,255,255,0.18);
+  --park-text-ice:   #e4f2ff;
+  --park-text-mist:  rgba(200,228,255,0.72);
+  --park-radius:     20px;
+  --park-radius-sm:  12px;
+  --park-shadow:     0 10px 40px rgba(0,0,0,0.4);
+  --park-shadow-lg:  0 16px 60px rgba(0,0,0,0.5);
+}
+
+/* ══════════════════════════════════════════════════════
+   MODE TOGGLE BUTTON（加在 header 右側）
+   ══════════════════════════════════════════════════════ */
+.mode-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.48rem 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  color: #b8d4f8;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.mode-toggle-btn:hover {
+  background: rgba(255,140,26,0.16);
+  border-color: var(--park-orange);
+  color: var(--park-orange);
+  box-shadow: 0 0 16px rgba(255,140,26,0.28);
+  transform: translateY(-1px);
+}
+.mode-toggle-btn .mtb-icon { font-size: 1rem; }
+
+/* Active state when park mode is on */
+body.park-mode .mode-toggle-btn {
+  background: rgba(255,140,26,0.18);
+  border-color: var(--park-orange);
+  color: var(--park-orange);
+  box-shadow: 0 0 20px rgba(255,140,26,0.3);
+}
+
+/* ══════════════════════════════════════════════════════
+   PARK MODE — BODY / GLOBAL OVERRIDES
+   ══════════════════════════════════════════════════════ */
+body.park-mode {
+  background:
+    linear-gradient(180deg,
+      #060f1e  0%,
+      #12306a 30%,
+      #2e78c8 62%,
+      #9ad0ee 100%
+    ) fixed;
+}
+/* override deep-space radial glow */
+body.park-mode::before {
+  background:
+    radial-gradient(ellipse 70% 35% at 50% 0%,
+      rgba(80,160,255,0.14) 0%, transparent 65%);
+}
+
+body.park-mode .header {
+  background: rgba(6,15,30,0.90);
+  border-bottom-color: rgba(255,255,255,0.10);
+}
+body.park-mode .footer {
+  background: rgba(6,15,30,0.80);
+  border-top-color: rgba(255,255,255,0.08);
+  color: rgba(180,210,240,0.55);
+}
+
+/* ══════════════════════════════════════════════════════
+   PARK WELCOME PAGE  — #parkWelcomePage
+   ══════════════════════════════════════════════════════ */
+#parkWelcomePage {
+  position: relative;
+  min-height: calc(100vh - 58px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Background layers ── */
+.park-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.park-sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    #050d1c  0%,
+    #0a2050  15%,
+    #163a80  35%,
+    #2566b8  55%,
+    #4a9ed6  72%,
+    #80c4e8  85%,
+    #b5dcf2  100%
+  );
+}
+
+/* Aurora glow */
+.park-aurora {
+  position: absolute;
+  top: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 55%;
+  height: 30%;
+  background: radial-gradient(ellipse,
+    rgba(90,170,255,0.20) 0%,
+    rgba(40,100,230,0.10) 45%,
+    transparent 70%);
+  filter: blur(28px);
+  animation: parkAurora 9s ease-in-out infinite alternate;
+}
+@keyframes parkAurora {
+  0%   { opacity:0.55; transform: translateX(-50%) scaleX(1)   scaleY(1);   }
+  50%  { opacity:0.85; transform: translateX(-50%) scaleX(1.1) scaleY(1.2); }
+  100% { opacity:0.65; transform: translateX(-50%) scaleX(0.9) scaleY(1);   }
+}
+
+/* Subtle star field */
+.park-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at  8%  6%, rgba(255,255,255,0.90), transparent),
+    radial-gradient(1px 1px at 20% 10%, rgba(255,255,255,0.70), transparent),
+    radial-gradient(1.5px 1.5px at 35%  4%, rgba(255,255,255,0.85), transparent),
+    radial-gradient(1px 1px at 52%  8%, rgba(255,255,255,0.60), transparent),
+    radial-gradient(1.5px 1.5px at 68%  5%, rgba(255,255,255,0.90), transparent),
+    radial-gradient(1px 1px at 82% 10%, rgba(255,255,255,0.75), transparent),
+    radial-gradient(1px 1px at 93%  7%, rgba(255,255,255,0.65), transparent),
+    radial-gradient(1px 1px at 13% 16%, rgba(255,255,255,0.50), transparent),
+    radial-gradient(1px 1px at 45% 13%, rgba(255,255,255,0.70), transparent),
+    radial-gradient(1px 1px at 76% 18%, rgba(255,255,255,0.55), transparent),
+    radial-gradient(1px 1px at  4% 22%, rgba(255,255,255,0.40), transparent),
+    radial-gradient(1px 1px at 60% 20%, rgba(255,255,255,0.65), transparent),
+    radial-gradient(1px 1px at 88% 14%, rgba(255,255,255,0.50), transparent),
+    radial-gradient(1px 1px at 30% 22%, rgba(255,255,255,0.45), transparent);
+}
+
+/* Mountains SVG */
+.park-mtn-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  min-height: 62%;
+}
+
+/* Snowflake canvas */
+.park-snow-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+.park-snowflake {
+  position: absolute;
+  top: -30px;
+  pointer-events: none;
+  user-select: none;
+  color: rgba(255,255,255,0.80);
+  animation: parkSnowfall linear infinite;
+}
+@keyframes parkSnowfall {
+  0%   { transform: translateY(-30px) translateX(0px)  rotate(0deg);   opacity: 0.9; }
+  30%  { transform: translateY(30vh)  translateX(25px)  rotate(120deg); }
+  70%  { transform: translateY(70vh)  translateX(-20px) rotate(250deg); opacity: 0.5; }
+  100% { transform: translateY(110vh) translateX(10px)  rotate(360deg); opacity: 0; }
+}
+
+/* Ski character glide */
+.park-ski-char {
+  font-size: 3.2rem;
+  display: inline-block;
+  animation: parkSkiGlide 4s ease-in-out infinite;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45));
+  line-height: 1;
+}
+@keyframes parkSkiGlide {
+  0%,100% { transform: translateX(-14px) rotate(-7deg); }
+  50%     { transform: translateX(14px)  rotate(6deg);  }
+}
+
+/* Ski trail path */
+.park-trail-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+.park-trail-path {
+  fill: none;
+  stroke: rgba(255,255,255,0.20);
+  stroke-width: 2.5;
+  stroke-dasharray: 14 8;
+  stroke-dashoffset: 0;
+  animation: parkTrailDash 3s linear infinite;
+}
+@keyframes parkTrailDash {
+  to { stroke-dashoffset: -88; }
+}
+
+/* ── Content wrapper ── */
+.park-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.2rem;
+  width: 100%;
+}
+
+/* ── HERO section ── */
+.park-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  text-align: center;
+}
+
+.park-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.park-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.park-badge.orange {
+  background: var(--park-orange);
+  color: #fff;
+  box-shadow: 0 2px 14px rgba(255,140,26,0.50);
+}
+.park-badge.teal {
+  background: var(--park-teal);
+  color: #062a20;
+  box-shadow: 0 2px 14px rgba(0,207,170,0.45);
+}
+.park-badge.ghost {
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.28);
+  color: rgba(255,255,255,0.80);
+}
+
+/* Title */
+.park-title {
+  font-size: clamp(2.4rem, 6.5vw, 4.5rem);
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-shadow:
+    0  1px  0 rgba(255,255,255,0.50),
+    0  3px  0 rgba(160,210,255,0.30),
+    0  7px  0 rgba(0,0,0,0.28),
+    0 12px 24px rgba(0,0,0,0.45),
+    0  0  50px rgba(100,190,255,0.25);
+}
+.park-title .hl-gold {
+  background: linear-gradient(135deg, #ffe066 0%, #ff8c1a 55%, #ff4d4d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(255,160,0,0.55));
+}
+.park-title .hl-ice {
+  background: linear-gradient(135deg, #a0e0ff 0%, #60c0ff 60%, #30a0ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.park-subtitle {
+  font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+  color: rgba(210,235,255,0.85);
+  font-weight: 400;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.45);
+  max-width: 580px;
+  line-height: 1.6;
+}
+
+/* ── TICKET BOOTH ── */
+.park-booth {
+  width: 100%;
+  max-width: 720px;
+  background: var(--park-glass);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1.5px solid var(--park-glass-b);
+  border-radius: var(--park-radius);
+  padding: 1.6rem 2rem;
+  box-shadow:
+    var(--park-shadow),
+    inset 0 1.5px 0 rgba(255,255,255,0.38);
+}
+.park-booth-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1.1rem;
+}
+.park-booth-icon  { font-size: 1.4rem; }
+.park-booth-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.68);
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+}
+
+.park-booth-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+.park-input {
+  flex: 1;
+  min-width: 180px;
+  background: rgba(255,255,255,0.10);
+  border: 1.5px solid rgba(255,255,255,0.22);
+  border-radius: var(--park-radius-sm);
+  padding: 0.8rem 1.15rem;
+  color: #fff;
+  font-size: 0.98rem;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.02em;
+}
+.park-input::placeholder { color: rgba(255,255,255,0.36); }
+.park-input:focus {
+  border-color: var(--park-orange);
+  box-shadow: 0 0 0 3px rgba(255,140,26,0.22);
+  background: rgba(255,255,255,0.14);
+}
+
+.park-period {
+  background: rgba(255,255,255,0.10);
+  border: 1.5px solid rgba(255,255,255,0.22);
+  border-radius: var(--park-radius-sm);
+  padding: 0.8rem 0.9rem;
+  color: rgba(255,255,255,0.78);
+  font-size: 0.88rem;
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.park-period option { background: #12306a; color: #e4f2ff; }
+
+.park-start-btn {
+  padding: 0.8rem 1.7rem;
+  background: linear-gradient(135deg, #ff8c1a 0%, #e55200 100%);
+  border: none;
+  border-radius: var(--park-radius-sm);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.22s ease;
+  box-shadow: 0 5px 20px rgba(255,100,0,0.42), inset 0 1px 0 rgba(255,255,255,0.22);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.park-start-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(255,100,0,0.55), inset 0 1px 0 rgba(255,255,255,0.22);
+}
+.park-start-btn:active { transform: translateY(0); }
+
+/* ── LIFT TICKETS ── */
+.park-tickets-section {
+  width: 100%;
+  max-width: 780px;
+}
+.park-tickets-label {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(190,220,255,0.55);
+  margin-bottom: 0.9rem;
+}
+.park-tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+  gap: 0.7rem;
+}
+
+.park-ticket {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.9rem 0.6rem 0.8rem;
+  border-radius: var(--park-radius-sm);
+  border: 1.5px solid rgba(255,255,255,0.20);
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  text-align: center;
+  overflow: hidden;
+}
+/* Notch holes */
+.park-ticket::before,
+.park-ticket::after {
+  content: '';
+  position: absolute;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  top: 50%; transform: translateY(-50%);
+  background: rgba(0,0,0,0.30);
+  z-index: 1;
+}
+.park-ticket::before { left: -7px; }
+.park-ticket::after  { right: -7px; }
+/* Dashed center line */
+.park-ticket .ticket-dash {
+  position: absolute;
+  top: 50%; left: 16px; right: 16px;
+  height: 0;
+  border-top: 1.5px dashed rgba(255,255,255,0.18);
+  transform: translateY(-50%);
+}
+
+.park-ticket:hover {
+  transform: translateY(-5px) scale(1.05);
+  z-index: 2;
+}
+
+.park-ticket-sym {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.98rem;
+  font-weight: 900;
+  color: #fff;
+  position: relative; z-index: 2;
+}
+.park-ticket-name {
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.82);
+  font-weight: 500;
+  position: relative; z-index: 2;
+}
+
+/* Ticket color themes */
+.park-ticket[data-color="green"] {
+  background: linear-gradient(145deg, #065535 0%, #0b9060 50%, #0fc87a 100%);
+  box-shadow: 0 5px 18px rgba(15,200,122,0.38);
+}
+.park-ticket[data-color="green"]:hover {
+  box-shadow: 0 10px 28px rgba(15,200,122,0.55);
+}
+.park-ticket[data-color="red"] {
+  background: linear-gradient(145deg, #7a0000 0%, #c82020 50%, #ff4040 100%);
+  box-shadow: 0 5px 18px rgba(255,64,64,0.38);
+}
+.park-ticket[data-color="red"]:hover {
+  box-shadow: 0 10px 28px rgba(255,64,64,0.55);
+}
+.park-ticket[data-color="silver"] {
+  background: linear-gradient(145deg, #2a3a4a 0%, #5a7a90 50%, #90b8d0 100%);
+  box-shadow: 0 5px 18px rgba(144,184,208,0.35);
+}
+.park-ticket[data-color="silver"]:hover {
+  box-shadow: 0 10px 28px rgba(144,184,208,0.52);
+}
+.park-ticket[data-color="blue"] {
+  background: linear-gradient(145deg, #003890 0%, #1060c8 50%, #3090f0 100%);
+  box-shadow: 0 5px 18px rgba(48,144,240,0.38);
+}
+.park-ticket[data-color="blue"]:hover {
+  box-shadow: 0 10px 28px rgba(48,144,240,0.55);
+}
+.park-ticket[data-color="purple"] {
+  background: linear-gradient(145deg, #400070 0%, #8020d0 50%, #b050f0 100%);
+  box-shadow: 0 5px 18px rgba(176,80,240,0.38);
+}
+.park-ticket[data-color="purple"]:hover {
+  box-shadow: 0 10px 28px rgba(176,80,240,0.55);
+}
+.park-ticket[data-color="rainbow"] {
+  background: linear-gradient(145deg, #c84000 0%, #c89000 28%, #208040 55%, #0048c8 100%);
+  box-shadow: 0 5px 18px rgba(100,100,200,0.38);
+}
+.park-ticket[data-color="rainbow"]:hover {
+  box-shadow: 0 10px 28px rgba(100,100,200,0.55);
+}
+.park-ticket[data-color="tw"] {
+  background: linear-gradient(145deg, #002888 0%, #1050c8 50%, #4888f0 100%);
+  box-shadow: 0 5px 18px rgba(72,136,240,0.38);
+}
+.park-ticket[data-color="tw"]:hover {
+  box-shadow: 0 10px 28px rgba(72,136,240,0.55);
+}
+
+/* ── 3-STEP FLOW ── */
+.park-steps {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  max-width: 780px;
+}
+.park-step {
+  flex: 1;
+  background: var(--park-glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--park-glass-b);
+  padding: 1.5rem 1.2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.22s, box-shadow 0.22s, background 0.22s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.22);
+}
+.park-step:first-of-type  { border-radius: var(--park-radius) 0 0 var(--park-radius); }
+.park-step:last-of-type   { border-radius: 0 var(--park-radius) var(--park-radius) 0; }
+.park-step:hover {
+  background: var(--park-glass-thick);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.35);
+}
+/* Connector */
+.park-step + .park-step {
+  border-left: none;
+}
+.park-step-num {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--park-orange);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 12px rgba(255,140,26,0.55);
+  flex-shrink: 0;
+}
+.park-step-icon  { font-size: 2rem; line-height: 1; }
+.park-step-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #fff;
+}
+.park-step-desc {
+  font-size: 0.74rem;
+  color: var(--park-text-mist);
+  line-height: 1.55;
+}
+
+/* ── FACILITY CARDS (feature cards) ── */
+.park-facilities {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 780px;
+}
+.park-facility {
+  background: var(--park-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--park-glass-b);
+  border-radius: var(--park-radius-sm);
+  padding: 1.1rem 0.8rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.18);
+}
+.park-facility:hover {
+  background: var(--park-glass-thick);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+}
+.park-fac-icon  { font-size: 1.7rem; display: block; margin-bottom: 0.4rem; }
+.park-fac-name  { font-size: 0.82rem; font-weight: 700; color: rgba(255,255,255,0.88); }
+.park-fac-alias { font-size: 0.68rem; color: var(--park-teal); font-weight: 600; margin-top: 0.12rem; }
+
+/* ══════════════════════════════════════════════════════
+   PARK MODE — DASHBOARD OVERRIDES
+   When body.park-mode and #dashboard is visible
+   ══════════════════════════════════════════════════════ */
+
+/* Park dashboard intro banner */
+.park-dash-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.4rem;
+  margin-bottom: 1rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg,
+    rgba(255,140,26,0.18) 0%,
+    rgba(0,207,170,0.12) 50%,
+    rgba(48,120,255,0.18) 100%);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.22);
+  animation: parkBannerIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes parkBannerIn {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.park-dash-banner-icon { font-size: 2rem; flex-shrink: 0; }
+.park-dash-banner-text { flex: 1; min-width: 0; }
+.park-dash-banner-text h3 {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 0.15rem;
+}
+.park-dash-banner-text p {
+  font-size: 0.75rem;
+  color: var(--park-text-mist);
+  margin: 0;
+}
+.park-dash-ski-btn {
+  padding: 0.5rem 1.1rem;
+  background: var(--park-orange);
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  box-shadow: 0 3px 14px rgba(255,140,26,0.42);
+  flex-shrink: 0;
+}
+.park-dash-ski-btn:hover {
+  box-shadow: 0 6px 20px rgba(255,140,26,0.60);
+  transform: translateY(-2px);
+}
+
+/* Stat card park aliases */
+.park-stat-alias {
+  display: none;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--park-teal);
+  letter-spacing: 0.04em;
+  margin-top: 0.1rem;
+}
+body.park-mode .park-stat-alias { display: block; }
+body.park-mode .stat-card {
+  border-color: rgba(0,207,170,0.18);
+}
+body.park-mode .stat-card-title {
+  color: var(--park-teal);
+}
+
+/* Tab button park theme */
+body.park-mode .tab-btn.active {
+  border-color: var(--park-orange);
+  color: var(--park-orange);
+  background: rgba(255,140,26,0.12);
+  box-shadow: 0 2px 12px rgba(255,140,26,0.20);
+}
+body.park-mode .tab-btn:not(.active):hover {
+  border-color: rgba(255,140,26,0.40);
+  color: rgba(255,200,120,0.90);
+}
+
+/* Ski launch button extra glow in park mode */
+body.park-mode .ski-launch-big {
+  background: linear-gradient(135deg, #ff8c1a 0%, #ff4500 100%) !important;
+  box-shadow: 0 6px 26px rgba(255,100,0,0.50) !important;
+  animation: parkSkiPulse 2.8s ease-in-out infinite !important;
+}
+@keyframes parkSkiPulse {
+  0%,100% { box-shadow: 0 6px 26px rgba(255,100,0,0.50); }
+  50%     { box-shadow: 0 8px 36px rgba(255,100,0,0.72), 0 0 20px rgba(255,140,26,0.35); }
+}
+
+/* Education preview card in park mode */
+body.park-mode .education-preview-card {
+  border-color: rgba(0,207,170,0.28);
+}
+body.park-mode .education-preview-kicker {
+  color: var(--park-teal) !important;
+}
+body.park-mode .education-preview-badge {
+  background: rgba(0,207,170,0.18) !important;
+  color: var(--park-teal) !important;
+  border-color: rgba(0,207,170,0.35) !important;
+}
+
+/* Advice card signal badge */
+body.park-mode .signal-badge {
+  outline-color: rgba(255,140,26,0.4);
+}
+
+/* Chart card border in park mode */
+body.park-mode .chart-card {
+  border-color: rgba(255,255,255,0.10);
+}
+body.park-mode .chart-label {
+  color: rgba(200,228,255,0.70);
+}
+
+/* Stock header card */
+body.park-mode .stock-header-card {
+  background: linear-gradient(135deg,
+    rgba(18,48,106,0.75) 0%,
+    rgba(12,30,70,0.75) 100%);
+  border-color: rgba(255,255,255,0.12);
+}
+
+/* Stock action card in park mode */
+body.park-mode .stock-action-card {
+  background: linear-gradient(135deg,
+    rgba(18,48,106,0.75) 0%,
+    rgba(10,25,60,0.75) 100%);
+  border-color: rgba(0,207,170,0.20);
+}
+body.park-mode .ski-action-title { color: var(--park-orange); }
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .park-title { font-size: 2.1rem; }
+  .park-subtitle { font-size: 0.92rem; }
+  .park-booth { padding: 1.2rem 1.1rem; }
+  .park-booth-row { flex-direction: column; }
+  .park-start-btn { width: 100%; text-align: center; }
+
+  .park-steps { flex-direction: column; }
+  .park-step {
+    border-radius: var(--park-radius-sm) !important;
+    border: 1px solid var(--park-glass-b) !important;
+  }
+
+  .park-facilities { grid-template-columns: repeat(2, 1fr); }
+  .park-tickets-grid { grid-template-columns: repeat(3, 1fr); }
+
+  .park-dash-banner { flex-wrap: wrap; }
+  .park-dash-ski-btn { width: 100%; text-align: center; }
+}
+@media (max-width: 460px) {
+  .park-tickets-grid { grid-template-columns: repeat(2, 1fr); }
+  .park-content { padding: 2rem 1rem 4rem; }
+}

@@ -12,6 +12,7 @@
     rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="stylesheet" href="/static/ski-game.css" />
+  <link rel="stylesheet" href="/static/park-mode.css" />
 </head>
 
 <body>
@@ -44,6 +45,11 @@
           </div>
         </div>
       </div>
+      <!-- 模式切換按鈕 -->
+      <button class="mode-toggle-btn" id="modeToggleBtn" onclick="toggleAppMode()" title="在專業儀表板與滑雪樂園模式之間切換">
+        <span class="mtb-icon" id="modeToggleIcon">🎿</span>
+        <span id="modeToggleText">冒險模式</span>
+      </button>
     </div>
   </header>
 
@@ -177,6 +183,199 @@
         </div>
       </div>
     </div>
+
+    <!-- ═══ 金融教育樂園 歡迎頁（park mode 時顯示） ═══ -->
+    <div id="parkWelcomePage" class="hidden">
+
+      <!-- ── 背景層 ── -->
+      <div class="park-bg">
+        <div class="park-sky"></div>
+        <div class="park-stars"></div>
+        <div class="park-aurora"></div>
+
+        <!-- 山脈 SVG -->
+        <svg class="park-mtn-svg" viewBox="0 0 1440 520" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- 最遠山脈 — 深藍 -->
+          <path d="M0,520 L0,265 L80,192 L160,228 L240,158 L320,205 L400,128 L480,182 L560,100 L640,162 L720,112 L800,170 L880,92 L960,148 L1040,118 L1120,175 L1200,132 L1280,186 L1360,140 L1440,168 L1440,520 Z"
+                fill="#0e2050"/>
+          <!-- 遠山雪帽 -->
+          <path d="M392,135 L400,118 L408,132 Z" fill="rgba(255,255,255,0.75)"/>
+          <path d="M550,108 L560,90  L572,105 Z" fill="rgba(255,255,255,0.80)"/>
+          <path d="M873,99  L882,82  L893,97  Z" fill="rgba(255,255,255,0.75)"/>
+          <path d="M1122,125 L1130,110 L1140,124 Z" fill="rgba(255,255,255,0.65)"/>
+
+          <!-- 中層山脈 — 中藍 -->
+          <path d="M0,520 L0,295 L120,205 L240,258 L360,168 L480,238 L600,148 L720,218 L840,172 L960,230 L1080,162 L1200,225 L1320,178 L1440,212 L1440,520 Z"
+                fill="#1a3a82"/>
+          <!-- 中山雪帽 -->
+          <path d="M348,178 L360,158 L372,176 Z" fill="rgba(255,255,255,0.85)"/>
+          <path d="M585,158 L600,138 L616,156 Z" fill="rgba(255,255,255,0.90)"/>
+          <path d="M1066,172 L1080,152 L1094,170 Z" fill="rgba(255,255,255,0.82)"/>
+
+          <!-- 近景山脈 — 較亮藍 -->
+          <path d="M0,520 L0,352 L180,248 L360,322 L540,208 L720,288 L900,228 L1080,305 L1260,248 L1440,282 L1440,520 Z"
+                fill="#2562b0"/>
+          <!-- 近山雪帽 -->
+          <path d="M525,220 L540,200 L556,218 Z" fill="rgba(255,255,255,0.80)"/>
+          <path d="M887,240 L900,220 L914,238 Z" fill="rgba(255,255,255,0.78)"/>
+
+          <!-- 滑雪道路徑（白色虛線軌跡） -->
+          <path d="M540,208 Q600,280 680,295 Q760,310 820,270 Q880,232 940,260 Q1000,288 1080,305"
+                fill="none" stroke="rgba(255,255,255,0.30)" stroke-width="3"
+                stroke-dasharray="12 7" class="park-trail-path"/>
+
+          <!-- 雪地地面 -->
+          <path d="M0,520 L0,460 Q180,438 360,450 Q540,462 720,448 Q900,434 1080,452 Q1260,468 1440,448 L1440,520 Z"
+                fill="#c0dff5"/>
+          <!-- 雪地亮面 -->
+          <path d="M0,520 L0,488 Q360,472 720,482 Q1080,492 1440,474 L1440,520 Z"
+                fill="#ddf0fc"/>
+        </svg>
+
+        <!-- 飄雪粒子容器（JS 動態生成） -->
+        <div class="park-snow-canvas" id="parkSnowCanvas"></div>
+      </div>
+
+      <!-- ── 樂園內容 ── -->
+      <div class="park-content">
+
+        <!-- HERO -->
+        <div class="park-hero">
+          <span class="park-ski-char">⛷️</span>
+
+          <div class="park-badge-row">
+            <span class="park-badge orange">🏆 金融教育冒險平台</span>
+            <span class="park-badge teal">✨ Adventure Mode</span>
+            <span class="park-badge ghost">Beta</span>
+          </div>
+
+          <h1 class="park-title">
+            <span class="hl-ice">Stock</span> <span class="hl-gold">Ski</span> Adventure
+          </h1>
+          <p class="park-subtitle">
+            把股市走勢變成一座可以探索的滑雪樂園<br/>
+            輸入任何股票代碼，進入對應主題雪場
+          </p>
+        </div>
+
+        <!-- 售票亭 -->
+        <div class="park-booth">
+          <div class="park-booth-header">
+            <span class="park-booth-icon">🎟️</span>
+            <span class="park-booth-title">售票亭 · 輸入雪場代碼</span>
+          </div>
+          <div class="park-booth-row">
+            <input id="parkSymbolInput" class="park-input" type="text"
+              placeholder="股票代碼 e.g. NVDA, TSLA, 2330.TW"
+              autocomplete="off" spellcheck="false" />
+            <select id="parkPeriodSelect" class="park-period">
+              <option value="1mo">1 個月</option>
+              <option value="3mo" selected>3 個月</option>
+              <option value="6mo">6 個月</option>
+              <option value="1y">1 年</option>
+              <option value="2y">2 年</option>
+            </select>
+            <button class="park-start-btn" onclick="parkStartAdventure()">
+              🎿 開始探索！
+            </button>
+          </div>
+        </div>
+
+        <!-- 精選雪場門票 -->
+        <div class="park-tickets-section">
+          <div class="park-tickets-label">⛷️ 精選雪場快速入口</div>
+          <div class="park-tickets-grid">
+            <button class="park-ticket" data-color="green" onclick="parkLoadSymbol('NVDA')">
+              <div class="ticket-dash"></div>
+              <span class="park-ticket-sym">NVDA</span>
+              <span class="park-ticket-name">🧠 AI 晶片雪場</span>
+            </button>
+            <button class="park-ticket" data-color="red" onclick="parkLoadSymbol('TSLA')">
+              <div class="ticket-dash"></div>
+              <span class="park-ticket-sym">TSLA</span>
+              <span class="park-ticket-name">⚡ 電動車充電站</span>
+            </button>
+            <button class="park-ticket" data-color="silver" onclick="parkLoadSymbol('AAPL')">
+              <div class="ticket-dash"></div>
+              <span class="park-ticket-sym">AAPL</span>
+              <span class="park-ticket-name">🍎 科技展示館</span>
+            </button>
+            <button class="park-ticket" data-color="blue" onclick="parkLoadSymbol('MSFT')">
+              <div class="ticket-dash"></div>
+              <span class="park-ticket-sym">MSFT</span>
+              <span class="park-ticket-name">🪟 雲端雪山</span>
+            </button>
+            <button class="park-ticket" data-color="purple" onclick="parkLoadSymbol('META')">
+              <div class="ticket-dash"></div>
+              <span class="park-ticket-sym">META</span>
+              <span class="park-ticket-name">🌐 社群傳送門</span>
+            </button>
+            <button class="park-ticket" data-color="rainbow" onclick="parkLoadSymbol('GOOGL')">
+              <div class="ticket-dash"></div>
+              <span class="park-ticket-sym">GOOGL</span>
+              <span class="park-ticket-name">🔍 搜尋資料城</span>
+            </button>
+            <button class="park-ticket" data-color="tw" onclick="parkLoadSymbol('2330.TW')">
+              <div class="ticket-dash"></div>
+              <span class="park-ticket-sym">2330</span>
+              <span class="park-ticket-name">🇹🇼 台積電冰峰</span>
+            </button>
+            <button class="park-ticket" data-color="green" onclick="parkLoadSymbol('AMD')">
+              <div class="ticket-dash"></div>
+              <span class="park-ticket-sym">AMD</span>
+              <span class="park-ticket-name">🔥 競速算力場</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 三步驟流程 -->
+        <div class="park-steps">
+          <div class="park-step">
+            <div class="park-step-num">1</div>
+            <div class="park-step-icon">🎯</div>
+            <div class="park-step-title">選擇股票</div>
+            <div class="park-step-desc">輸入任何股票代碼，AI 自動識別產業主題並生成對應雪場風格</div>
+          </div>
+          <div class="park-step">
+            <div class="park-step-num">2</div>
+            <div class="park-step-icon">🏔️</div>
+            <div class="park-step-title">生成雪道</div>
+            <div class="park-step-desc">股價走勢轉為滑雪地圖，K線→坡度，RSI→體力值，MACD→浪潮</div>
+          </div>
+          <div class="park-step">
+            <div class="park-step-num">3</div>
+            <div class="park-step-icon">🎿</div>
+            <div class="park-step-title">邊玩邊學</div>
+            <div class="park-step-desc">在滑雪挑戰中理解趨勢，AI 嚮導纜車題目讓技術分析變得直觀</div>
+          </div>
+        </div>
+
+        <!-- 樂園設施說明 -->
+        <div class="park-facilities">
+          <div class="park-facility" onclick="parkLoadSymbol(document.getElementById('parkSymbolInput').value||'NVDA')">
+            <span class="park-fac-icon">🕯️</span>
+            <div class="park-fac-name">K線雪道</div>
+            <div class="park-fac-alias">蠟燭圖 + 均線</div>
+          </div>
+          <div class="park-facility" onclick="parkLoadSymbol(document.getElementById('parkSymbolInput').value||'NVDA')">
+            <span class="park-fac-icon">💪</span>
+            <div class="park-fac-name">體力儀表板</div>
+            <div class="park-fac-alias">RSI 強弱指數</div>
+          </div>
+          <div class="park-facility" onclick="parkLoadSymbol(document.getElementById('parkSymbolInput').value||'NVDA')">
+            <span class="park-fac-icon">🌊</span>
+            <div class="park-fac-name">浪潮雷達</div>
+            <div class="park-fac-alias">MACD 動能</div>
+          </div>
+          <div class="park-facility" onclick="parkLoadSymbol(document.getElementById('parkSymbolInput').value||'NVDA')">
+            <span class="park-fac-icon">🤖</span>
+            <div class="park-fac-name">AI 嚮導纜車</div>
+            <div class="park-fac-alias">智能投資建議</div>
+          </div>
+        </div>
+
+      </div><!-- /park-content -->
+    </div><!-- /parkWelcomePage -->
 
     <!-- 錯誤訊息 -->
     <div id="errorBox" class="error-box hidden">
@@ -381,27 +580,27 @@
       <!-- 指標數值 -->
       <div class="stats-row">
         <div class="stat-card">
-          <div class="stat-card-title">MA5</div>
+          <div class="stat-card-title">MA5<span class="park-stat-alias">🛤️短趨徑</span></div>
           <div id="stat-ma5" class="stat-card-value">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-title">MA20</div>
+          <div class="stat-card-title">MA20<span class="park-stat-alias">🗺️中趨徑</span></div>
           <div id="stat-ma20" class="stat-card-value">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-title">MA60</div>
+          <div class="stat-card-title">MA60<span class="park-stat-alias">🏔️長趨線</span></div>
           <div id="stat-ma60" class="stat-card-value">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-title">RSI(14)</div>
+          <div class="stat-card-title">RSI(14)<span class="park-stat-alias">💪體力值</span></div>
           <div id="stat-rsi" class="stat-card-value">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-title">MACD</div>
+          <div class="stat-card-title">MACD<span class="park-stat-alias">🌊浪潮儀</span></div>
           <div id="stat-macd" class="stat-card-value">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-title">Signal</div>
+          <div class="stat-card-title">Signal<span class="park-stat-alias">📡信號線</span></div>
           <div id="stat-signal" class="stat-card-value">—</div>
         </div>
       </div>
@@ -658,6 +857,172 @@
   <script src="/static/ski-difficulty.js?v=20260321b"></script>
   <script src="/static/app.js?v=20260321b"></script>
   <script src="/static/ski-game.js?v=20260321b"></script>
+
+  <!-- ═══ PARK MODE JS ═══
+       所有 park mode 邏輯獨立於此，不修改原有 app.js 任何函數
+  -->
+  <script>
+  /* ── 狀態 ─────────────────────────────────── */
+  let _parkMode = false;
+
+  /* ── 切換模式 ─────────────────────────────── */
+  function toggleAppMode() {
+    _parkMode = !_parkMode;
+    document.body.classList.toggle('park-mode', _parkMode);
+
+    // 更新按鈕文字
+    const icon = document.getElementById('modeToggleIcon');
+    const label = document.getElementById('modeToggleText');
+    if (icon)  icon.textContent  = _parkMode ? '📊' : '🎿';
+    if (label) label.textContent = _parkMode ? '分析模式' : '冒險模式';
+
+    // 判斷目前在哪個頁面
+    const dash    = document.getElementById('dashboard');
+    const onDash  = dash && !dash.classList.contains('hidden');
+
+    if (!onDash) {
+      // 在歡迎頁 → 切換哪張歡迎頁顯示
+      const pro  = document.getElementById('welcomePage');
+      const park = document.getElementById('parkWelcomePage');
+      if (pro)  pro.classList.toggle('hidden', _parkMode);
+      if (park) park.classList.toggle('hidden', !_parkMode);
+    }
+    // 在 dashboard 時不切換畫面，只更新/移除 banner
+    _updateParkBanner();
+
+    // 儲存偏好
+    try { localStorage.setItem('_stockai_park', _parkMode ? '1' : '0'); } catch(e) {}
+  }
+
+  /* ── Park dashboard banner ─────────────────── */
+  function _updateParkBanner() {
+    const dash = document.getElementById('dashboard');
+    if (!dash) return;
+    const existing = document.getElementById('_parkDashBanner');
+    const onDash   = !dash.classList.contains('hidden');
+
+    if (_parkMode && onDash) {
+      if (existing) return; // 已存在
+      const sym  = (document.getElementById('stockSymbol')?.textContent || '').trim() || '雪場';
+      const banner = document.createElement('div');
+      banner.id = '_parkDashBanner';
+      banner.className = 'park-dash-banner';
+      banner.innerHTML = `
+        <div class="park-dash-banner-icon">🏔️</div>
+        <div class="park-dash-banner-text">
+          <h3>⛷️ ${sym} 雪場技術分析</h3>
+          <p>技術指標已轉譯為滑雪地圖語言 · 分析完成後可直接啟動滑雪挑戰賽道</p>
+        </div>
+        <button class="park-dash-ski-btn"
+          onclick="document.getElementById('skiLaunchButton')?.click()">
+          🎿 開始滑雪！
+        </button>
+      `;
+      dash.insertBefore(banner, dash.firstChild);
+    } else if (existing) {
+      existing.remove();
+    }
+  }
+
+  /* ── 從樂園首頁啟動探索 ───────────────────── */
+  function parkStartAdventure() {
+    const parkInput  = document.getElementById('parkSymbolInput');
+    const parkPeriod = document.getElementById('parkPeriodSelect');
+    const sym = (parkInput?.value || '').trim().toUpperCase();
+    if (!sym) { parkInput?.focus(); return; }
+
+    // 同步至原有搜尋欄
+    const realInput  = document.getElementById('symbolInput');
+    const realPeriod = document.getElementById('periodSelect');
+    if (realInput)  realInput.value  = sym;
+    if (realPeriod && parkPeriod) realPeriod.value = parkPeriod.value;
+
+    // 隱藏樂園歡迎頁，讓 loadStock 接手
+    document.getElementById('parkWelcomePage')?.classList.add('hidden');
+    loadStock();
+  }
+
+  /* ── 從門票按鈕快速載入 ───────────────────── */
+  function parkLoadSymbol(sym) {
+    sym = (sym || '').trim().toUpperCase();
+    if (!sym) return;
+    const parkInput = document.getElementById('parkSymbolInput');
+    const realInput = document.getElementById('symbolInput');
+    if (parkInput) parkInput.value = sym;
+    if (realInput) realInput.value = sym;
+    document.getElementById('parkWelcomePage')?.classList.add('hidden');
+    loadStock();
+  }
+
+  /* ── 生成飄雪粒子 ─────────────────────────── */
+  function _initParkSnowflakes() {
+    const canvas = document.getElementById('parkSnowCanvas');
+    if (!canvas || canvas.childElementCount > 0) return;
+    const chars = ['❄','❅','❆','·','•','*','✦'];
+    for (let i = 0; i < 38; i++) {
+      const flake = document.createElement('span');
+      flake.className = 'park-snowflake';
+      flake.textContent = chars[Math.floor(Math.random() * chars.length)];
+      const size = 0.55 + Math.random() * 0.9;
+      const dur  = 7  + Math.random() * 11;
+      const delay= -Math.random() * 14;
+      const left = Math.random() * 100;
+      flake.style.cssText =
+        `left:${left}%;font-size:${size}rem;` +
+        `animation-duration:${dur}s;animation-delay:${delay}s;` +
+        `opacity:${0.35 + Math.random() * 0.55}`;
+      canvas.appendChild(flake);
+    }
+  }
+
+  /* ── MutationObserver：攔截 welcomePage 的顯示切換 ── */
+  (function _setupObservers() {
+    // 1) 當 loadStock 出錯後顯示 #welcomePage 時，若在 park mode 改為顯示 parkWelcomePage
+    const proWelcome  = document.getElementById('welcomePage');
+    const parkWelcome = document.getElementById('parkWelcomePage');
+    if (proWelcome && parkWelcome) {
+      new MutationObserver(() => {
+        if (_parkMode && !proWelcome.classList.contains('hidden')) {
+          proWelcome.classList.add('hidden');
+          parkWelcome.classList.remove('hidden');
+          const b = document.getElementById('_parkDashBanner');
+          if (b) b.remove();
+        }
+      }).observe(proWelcome, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    // 2) 當 #dashboard 顯示/隱藏時更新 park banner
+    const dash = document.getElementById('dashboard');
+    if (dash) {
+      new MutationObserver(() => {
+        if (_parkMode && !dash.classList.contains('hidden')) {
+          _updateParkBanner();
+        } else if (dash.classList.contains('hidden')) {
+          const b = document.getElementById('_parkDashBanner');
+          if (b) b.remove();
+        }
+      }).observe(dash, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    // 3) park input 按 Enter
+    const parkInput = document.getElementById('parkSymbolInput');
+    if (parkInput) {
+      parkInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') parkStartAdventure();
+      });
+    }
+
+    // 4) 生成雪花
+    _initParkSnowflakes();
+
+    // 5) 還原上次偏好設定
+    try {
+      if (localStorage.getItem('_stockai_park') === '1') {
+        toggleAppMode();
+      }
+    } catch(e) {}
+  })();
+  </script>
 </body>
 
 </html>
