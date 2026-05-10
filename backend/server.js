@@ -937,10 +937,15 @@ function normalizeEducationFolders(knowledge, companyName) {
 function buildEducationNodesFromFolders(folders, companyName) {
   return folders.map((folder, index) => {
     const quiz = folder.quizBank?.[0] || buildFolderQuizBank(folder, companyName)[0];
+    const bullets = dedupeStrings([
+      folder.summary,
+      ...(Array.isArray(folder.details) ? folder.details : []),
+    ], 4);
     return {
       title: `第${index + 1}站：${folder.title}`,
       type: index === 0 ? "history" : index === 1 ? "business" : index === 2 ? "volatility" : "technical",
       summary: folder.summary,
+      bullets,
       question: quiz.question,
       choices: quiz.choices,
       answerIndex: quiz.answerIndex,

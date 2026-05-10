@@ -351,6 +351,7 @@
   let educationData = null;
   let educationSession = null;
   let educationOverlayRects = null;
+  let introWheelLockedUntil = 0;
   let activeThemeBackground = null;
   let activeTerrainTheme = null;
   let practiceMode = false; // 練習模式開關
@@ -988,6 +989,11 @@
           title: '第一站：公司故事',
           type: 'history',
           summary: '先把公司放回產業脈絡中，會比只盯著一天漲跌更容易理解它的市場角色。',
+          bullets: [
+            '先看公司定位，不急著判斷一天的漲跌。',
+            '把產品、客戶與產業位置串起來，後面的波動才有故事。',
+            '公司故事是這趟滑雪的地圖底稿。',
+          ],
           question: '理解一家公司時，哪一件事最適合放在第一步？',
           choices: ['公司定位與商業故事', '滑雪角色的顏色', '按鈕是不是發光'],
           answerIndex: 0,
@@ -998,6 +1004,11 @@
           title: '第二站：近期波動',
           type: 'volatility',
           summary: '價格突然震盪時，應該同時看新聞、量能與價格位置，而不是只看單一漲跌。',
+          bullets: [
+            '突然變陡時，先問市場正在重新定價什麼。',
+            '新聞、量能與價格位置要一起看。',
+            '單一漲跌不等於完整原因，交叉檢查比較穩。',
+          ],
           question: '面對突然放大的震盪，第一步應該交叉檢查什麼？',
           choices: ['新聞、量能與價格', '只看股名', '只看背景圖片'],
           answerIndex: 0,
@@ -1008,6 +1019,11 @@
           title: '第三站：技術地形',
           type: 'technical',
           summary: '滑雪地形是價格路徑的遊戲化版本，坡度與轉折會讓你感覺這段行情的節奏。',
+          bullets: [
+            '坡度代表價格變化的節奏。',
+            '急轉彎通常對應較大的行情轉折。',
+            '滑雪不是只拚速度，也是在練習跟住價格路徑。',
+          ],
           question: '滑雪地形主要對應什麼？',
           choices: ['價格路徑與波動', '聊天室速度', '瀏覽器寬度'],
           answerIndex: 0,
@@ -1020,7 +1036,16 @@
 
   function buildEducationSession() {
     const data = educationData || getFallbackEducationData();
-    const nodes = Array.isArray(data.nodes) && data.nodes.length ? data.nodes.slice(0, 5) : getFallbackEducationData().nodes;
+    const folders = data.preview?.folders || [];
+    const baseNodes = Array.isArray(data.nodes) && data.nodes.length ? data.nodes.slice(0, 5) : getFallbackEducationData().nodes;
+    const nodes = baseNodes.map((node, index) => {
+      const folder = folders[index];
+      const folderBullets = folder ? [folder.summary, ...(folder.details || [])].filter(Boolean) : [];
+      return {
+        ...node,
+        bullets: Array.isArray(node.bullets) && node.bullets.length ? node.bullets : folderBullets,
+      };
+    });
     return {
       data,
       nodes,
@@ -1115,6 +1140,23 @@
     updateCursorVisibility();
   }
 
+  function moveEducationIntro(direction) {
+    if (!educationSession?.nodes?.length) {
+      startCountdown();
+      return;
+    }
+    const nextIndex = educationSession.introIndex + direction;
+    if (nextIndex < 0) {
+      enterEducationIntro(0);
+      return;
+    }
+    if (nextIndex >= educationSession.nodes.length) {
+      startCountdown();
+      return;
+    }
+    enterEducationIntro(nextIndex);
+  }
+
   function enterEducationQuiz(index, mode = 'mid') {
     if (!educationSession?.nodes?.[index]) return;
     educationSession.activeMode = mode;
@@ -1134,11 +1176,7 @@
     }
 
     if (gameState === 'education_intro') {
-      if (educationSession.introIndex < educationSession.nodes.length - 1) {
-        enterEducationIntro(educationSession.introIndex + 1);
-      } else {
-        startCountdown();
-      }
+      moveEducationIntro(1);
       return;
     }
 
@@ -1296,6 +1334,10 @@
       education: educationSession ? {
         active: gameState.startsWith('education'),
         nodeIndex: educationSession.activeNodeIndex,
+        introIndex: educationSession.introIndex,
+        introBullets: gameState === 'education_intro'
+          ? getIntroBullets(educationSession.nodes?.[educationSession.activeNodeIndex] || educationSession.nodes?.[0])
+          : [],
         answered: educationSession.answered.filter(Boolean).length,
         grade: getEducationGrade(),
       } : null,
@@ -1572,6 +1614,15 @@
 
   function onWheel(e) {
     e.preventDefault();
+    if (gameState === 'education_intro') {
+      const now = performance.now();
+      if (now < introWheelLockedUntil) return;
+      const axis = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (Math.abs(axis) < 8) return;
+      introWheelLockedUntil = now + 360;
+      moveEducationIntro(axis > 0 ? 1 : -1);
+      return;
+    }
     if (gameState !== 'playing') return;
     const moveAmount = SCROLL_SENS * (isBoosting ? BOOST_MULTIPLIER : 1);
     charTargetY += e.deltaY > 0 ? moveAmount : -moveAmount;
@@ -1598,6 +1649,14 @@
 
       if (hit(overlay.skip)) {
         skipEducationIntro();
+        return;
+      }
+      if (hit(overlay.prev)) {
+        moveEducationIntro(-1);
+        return;
+      }
+      if (hit(overlay.next)) {
+        moveEducationIntro(1);
         return;
       }
       if (overlay.choices) {
@@ -1659,6 +1718,14 @@
         if (gameState === 'education_intro' || educationSession?.awaitingContinue) continueAfterEducation();
       }
       if (gameState === 'education_intro' && (e.key === 's' || e.key === 'S')) skipEducationIntro();
+      if (gameState === 'education_intro' && (e.key === 'ArrowRight' || e.key === 'ArrowDown')) {
+        e.preventDefault();
+        moveEducationIntro(1);
+      }
+      if (gameState === 'education_intro' && (e.key === 'ArrowLeft' || e.key === 'ArrowUp')) {
+        e.preventDefault();
+        moveEducationIntro(-1);
+      }
       if ((gameState === 'education_station' || gameState === 'education_final') && /^[1-4]$/.test(e.key)) {
         handleEducationChoice(Number(e.key) - 1);
       }
@@ -3827,6 +3894,160 @@
     return Math.min(lines.length, maxLines) * lineHeight;
   }
 
+  function getIntroBullets(node) {
+    const bullets = Array.isArray(node?.bullets) ? node.bullets : [];
+    if (bullets.length) return bullets.slice(0, 4);
+    return String(node?.summary || '')
+      .split(/[。；;]\s*/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 4);
+  }
+
+  function drawEducationIntroOverlay(W, H, session, node) {
+    const total = Math.max(1, session.nodes.length);
+    const index = clamp(session.introIndex, 0, total - 1);
+    const cardW = Math.min(760, W - 56);
+    const cardH = Math.min(520, H - 84);
+    const x = W / 2 - cardW / 2;
+    const y = H / 2 - cardH / 2 + 20;
+    const pad = 30;
+    const railLeft = W * 0.16;
+    const railRight = W * 0.84;
+    const railY = Math.max(72, y - 54);
+    const travel = total > 1 ? index / (total - 1) : 0;
+    const gondolaX = railRight - (railRight - railLeft) * travel;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(2, 6, 23, 0.76)';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle = 'rgba(186,230,253,0.58)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(railRight, railY - 12);
+    ctx.lineTo(railLeft, railY + 18);
+    ctx.stroke();
+
+    session.nodes.forEach((station, stationIndex) => {
+      const t = total > 1 ? stationIndex / (total - 1) : 0;
+      const sx = railRight - (railRight - railLeft) * t;
+      const sy = railY - 12 + 30 * t;
+      const active = stationIndex === index;
+      ctx.fillStyle = active ? '#fbbf24' : 'rgba(148, 163, 184, 0.72)';
+      ctx.strokeStyle = active ? 'rgba(254, 240, 138, 0.9)' : 'rgba(15, 23, 42, 0.88)';
+      ctx.lineWidth = active ? 4 : 2;
+      ctx.beginPath();
+      ctx.arc(sx, sy, active ? 8 : 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    ctx.strokeStyle = 'rgba(103, 232, 249, 0.72)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(gondolaX, railY - 11 + 30 * travel);
+    ctx.lineTo(gondolaX, railY + 18 + 30 * travel);
+    ctx.stroke();
+    ctx.fillStyle = '#0f172a';
+    ctx.strokeStyle = '#67e8f9';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(gondolaX - 38, railY + 14 + 30 * travel, 76, 46, 12);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#bae6fd';
+    ctx.font = '800 13px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${index + 1}/${total}`, gondolaX, railY + 38 + 30 * travel);
+
+    ctx.fillStyle = 'rgba(8, 16, 32, 0.95)';
+    ctx.strokeStyle = 'rgba(125, 211, 252, 0.36)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(x, y, cardW, cardH, 22);
+    ctx.fill();
+    ctx.stroke();
+
+    const ghostW = 64;
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.62)';
+    ctx.strokeStyle = 'rgba(96, 165, 250, 0.18)';
+    if (index > 0) {
+      ctx.beginPath();
+      ctx.roundRect(x - ghostW - 12, y + 54, ghostW, cardH - 108, 18);
+      ctx.fill();
+      ctx.stroke();
+    }
+    if (index < total - 1) {
+      ctx.beginPath();
+      ctx.roundRect(x + cardW + 12, y + 54, ghostW, cardH - 108, 18);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#67e8f9';
+    ctx.font = '900 13px Inter, sans-serif';
+    ctx.fillText('開場纜車導覽 · 滾輪滑動換站', x + pad, y + pad);
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '900 28px Inter, sans-serif';
+    ctx.fillText(node.title || '教育節點', x + pad, y + pad + 30);
+
+    ctx.fillStyle = 'rgba(148, 163, 184, 0.92)';
+    ctx.font = '700 15px Inter, sans-serif';
+    ctx.fillText('這裡只放預習小抄，題目會留到滑雪途中或終點驗證。', x + pad, y + pad + 70);
+
+    let cursorY = y + pad + 112;
+    const bullets = getIntroBullets(node);
+    bullets.forEach((bullet) => {
+      ctx.fillStyle = '#67e8f9';
+      ctx.font = '900 22px Inter, sans-serif';
+      ctx.fillText('•', x + pad + 4, cursorY - 2);
+      ctx.fillStyle = 'rgba(226, 232, 240, 0.96)';
+      ctx.font = '700 17px Inter, sans-serif';
+      const usedH = drawWrappedText(bullet, x + pad + 30, cursorY, cardW - pad * 2 - 30, 26, 2);
+      cursorY += Math.max(34, usedH + 12);
+    });
+
+    const footerY = y + cardH - pad - 44;
+    const prevRect = { x: x + pad, y: footerY, w: 92, h: 44 };
+    const skipRect = { x: prevRect.x + prevRect.w + 10, y: footerY, w: 126, h: 44 };
+    const nextW = index < total - 1 ? 132 : 150;
+    const nextRect = { x: x + cardW - pad - nextW, y: footerY, w: nextW, h: 44 };
+    educationOverlayRects.prev = prevRect;
+    educationOverlayRects.skip = skipRect;
+    educationOverlayRects.next = nextRect;
+    educationOverlayRects.continue = nextRect;
+
+    const drawButton = (rect, label, primary, disabled = false) => {
+      ctx.fillStyle = disabled ? 'rgba(30, 41, 59, 0.34)' : primary ? '#0e7490' : 'rgba(30, 41, 59, 0.78)';
+      ctx.strokeStyle = primary ? 'rgba(125, 211, 252, 0.62)' : 'rgba(148, 163, 184, 0.28)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rect.x, rect.y, rect.w, rect.h, 12);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = disabled ? 'rgba(148, 163, 184, 0.45)' : '#f8fafc';
+      ctx.font = '800 15px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, rect.x + rect.w / 2, rect.y + rect.h / 2);
+    };
+    drawButton(prevRect, '上一站', false, index === 0);
+    drawButton(skipRect, '跳過導覽', false);
+    drawButton(nextRect, index < total - 1 ? '下一站' : '開始滑雪', true);
+
+    ctx.fillStyle = 'rgba(148, 163, 184, 0.78)';
+    ctx.font = '700 13px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('滾輪向下：往左到下一站｜滾輪向上：回上一站', W / 2, y + cardH + 16);
+
+    ctx.restore();
+  }
+
   function drawEducationOverlay(W, H) {
     educationOverlayRects = { choices: [] };
     const session = educationSession || buildEducationSession();
@@ -3835,6 +4056,10 @@
 
     const isIntro = gameState === 'education_intro';
     const isFinal = gameState === 'education_final';
+    if (isIntro) {
+      drawEducationIntroOverlay(W, H, session, node);
+      return;
+    }
     const cardW = Math.min(720, W - 48);
     const cardH = isIntro ? Math.min(500, H - 72) : Math.min(620, H - 72);
     const x = W / 2 - cardW / 2;

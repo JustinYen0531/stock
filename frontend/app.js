@@ -710,19 +710,6 @@ function buildEducationFolderMarkup(education) {
             <div class="education-folder-section-label">閱讀全文</div>
             ${formatEducationParagraphs(folder.fullText || [folder.summary, ...(folder.details || [])].join("\n\n"))}
           </div>
-          <div class="education-quiz-bank">
-            <div class="education-folder-section-label">題庫預覽</div>
-            ${(folder.quizBank || []).map((quiz, quizIndex) => `
-              <article class="education-quiz-item">
-                <div class="education-quiz-question">Q${quizIndex + 1}. ${escapeHtml(quiz.question)}</div>
-                <div class="education-quiz-choices">
-                  ${(quiz.choices || []).map((choice, choiceIndex) => `
-                    <span class="${choiceIndex === quiz.answerIndex ? "is-answer" : ""}">${escapeHtml(choice)}</span>
-                  `).join("")}
-                </div>
-              </article>
-            `).join("")}
-          </div>
         </div>
       </details>
     `).join("")}
