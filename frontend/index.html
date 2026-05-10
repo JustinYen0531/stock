@@ -50,6 +50,11 @@
         <span class="mtb-icon" id="modeToggleIcon">🎿</span>
         <span id="modeToggleText">冒險模式</span>
       </button>
+      <!-- 個人資料按鈕（park mode 才顯示） -->
+      <button class="park-profile-btn" id="parkProfileBtn" onclick="toggleParkProfile()">
+        <span>⛷️</span>
+        <span id="parkProfileLabel">冒險者</span>
+      </button>
     </div>
   </header>
 
@@ -666,6 +671,52 @@
     <span>資料來源：Yahoo Finance（via yfinance）｜僅供學習研究，不構成投資建議</span>
   </footer>
 
+  <!-- ═══ 個人資料面板（park mode） ═══ -->
+  <div id="parkProfilePanel" class="park-profile-panel hidden">
+    <div class="park-pp-inner">
+      <!-- Header -->
+      <div class="park-pp-header">
+        <div class="park-pp-avatar">⛷️</div>
+        <div>
+          <div class="park-pp-name">雪山冒險者</div>
+          <div class="park-pp-level" id="parkPpLevel">Lv.1 入門探索者</div>
+        </div>
+        <button class="park-pp-close" onclick="toggleParkProfile()">✕</button>
+      </div>
+      <!-- 數據 -->
+      <div class="park-pp-stats">
+        <div class="park-pp-stat">
+          <span class="park-pp-stat-num" id="parkPpExplored">0</span>
+          <span class="park-pp-stat-label">探索股票</span>
+        </div>
+        <div class="park-pp-stat">
+          <span class="park-pp-stat-num" id="parkPpVisits">0</span>
+          <span class="park-pp-stat-label">闖關次數</span>
+        </div>
+        <div class="park-pp-stat">
+          <span class="park-pp-stat-num" id="parkPpBestSki">--</span>
+          <span class="park-pp-stat-label">最高滑雪分</span>
+        </div>
+      </div>
+      <!-- 成就 -->
+      <div class="park-pp-section" style="padding-bottom:0.6rem">
+        <div class="park-pp-section-title">🏅 滑雪成就</div>
+        <div class="park-pp-medal-row" id="parkPpMedals">
+          <span class="park-pp-medal locked">🥉 一般完成</span>
+          <span class="park-pp-medal locked">🥈 纜車全對</span>
+          <span class="park-pp-medal locked">🥇 雙 AA</span>
+        </div>
+      </div>
+      <!-- 闖關紀錄 -->
+      <div class="park-pp-section" style="padding-bottom:0">
+        <div class="park-pp-section-title">📜 最近闖關紀錄</div>
+      </div>
+      <div id="parkPpHistoryList" class="park-pp-history-list">
+        <div class="park-pp-empty">還沒有闖關紀錄，快去探索吧！⛷️</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══ AI 聊天視窗 ═══ -->
   <!-- 浮動開關按鈕 -->
   <button id="chatToggleBtn" class="chat-toggle-btn" onclick="toggleChat()" title="AI 股票專家">
@@ -999,9 +1050,10 @@
   }
 
   /* ── 從門票按鈕快速載入 ───────────────────── */
-  function parkLoadSymbol(sym) {
+  function parkLoadSymbol(sym, name) {
     sym = (sym || '').trim().toUpperCase();
     if (!sym) return;
+    _logParkQuest(sym, name || '');
     const parkInput = document.getElementById('parkSymbolInput');
     const realInput = document.getElementById('symbolInput');
     if (parkInput) parkInput.value = sym;
@@ -1017,6 +1069,41 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  /* ── 股票主題漸層色 ── */
+  function _getSymbolTheme(sym) {
+    const palette = [
+      ['#00cfaa','#0080c0'],['#ff7043','#d32f2f'],
+      ['#7c4dff','#2979ff'],['#ffb300','#f57c00'],
+      ['#00bcd4','#00838f'],['#66bb6a','#2e7d32'],
+      ['#ec407a','#ad1457'],['#ab47bc','#6a1b9a'],
+    ];
+    let idx = 0;
+    for (let i = 0; i < (sym||'').length; i++) idx += sym.charCodeAt(i);
+    return palette[idx % palette.length];
+  }
+
+  /* ── 迷你折線 SVG ── */
+  function _buildSparklineSvg(series) {
+    if (!series || series.length < 2) return '';
+    const vals = series.map(Number).filter(v => !isNaN(v));
+    if (vals.length < 2) return '';
+    const mn = Math.min(...vals), mx = Math.max(...vals);
+    const range = mx - mn || 1;
+    const W = 120, H = 40;
+    const pts = vals.map((v, i) => {
+      const x = (i / (vals.length - 1)) * W;
+      const y = H - ((v - mn) / range) * (H - 4) - 2;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    const up = vals[vals.length - 1] >= vals[0];
+    const clr = up ? '#00cfaa' : '#ff5252';
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"
+      width="${W}" height="${H}" class="park-daily-thumb-spark" style="display:block">
+      <polyline points="${pts}" fill="none" stroke="${clr}"
+        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  }
+
   function buildParkDailyQuest() {
     const f = homepageRecommendationData?.featured;
     if (!f) return `<div class="park-rec-loading">今日關卡準備中，請稍候...</div>`;
@@ -1028,8 +1115,23 @@
     ).join('');
     const diff  = Math.min(5, Math.max(2, (f.chips?.length||3)));
     const stars = '★'.repeat(diff) + '☆'.repeat(5-diff);
+    const [c1, c2] = _getSymbolTheme(f.symbol||'');
+    const spark = _buildSparklineSvg(f.series||[]);
+    const icon  = (f.chips||[]).length > 3 ? '🔥' : '⛷️';
     return `
       <div class="park-daily-card" onclick="parkLoadSymbol('${_escHtml(f.symbol)}')">
+        <div class="park-daily-thumb">
+          <svg class="park-daily-thumb-bg" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="pdg_${_escHtml(f.symbol)}" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="${c1}"/>
+              <stop offset="100%" stop-color="${c2}"/>
+            </linearGradient></defs>
+            <rect width="100%" height="100%" fill="url(#pdg_${_escHtml(f.symbol)})"/>
+          </svg>
+          <span class="park-daily-thumb-icon">${icon}</span>
+          <span class="park-daily-thumb-sym">${_escHtml(f.symbol)}</span>
+          ${spark}
+        </div>
         <div class="park-daily-left">
           <div class="park-daily-sym-row">
             <span class="park-daily-symbol">${_escHtml(f.symbol)}</span>
@@ -1057,19 +1159,17 @@
 
   function buildParkHotQuests() {
     const list = homepageRecommendationData?.hot || [];
-    if (!list.length) return `<div class="park-rec-loading" style="grid-column:1/-1">熱門關卡同步中...</div>`;
+    if (!list.length) return `<div class="park-rec-loading">熱門關卡同步中...</div>`;
     const rankCls = ['rank-1','rank-2','rank-3','rank-4'];
     return list.slice(0,4).map((item,i) => `
       <div class="park-hot-card ${item.trend==='down'?'is-down':'is-up'}"
            onclick="parkLoadSymbol('${_escHtml(item.symbol)}')">
-        <div class="park-hot-card-top">
-          <div class="park-hot-rank ${rankCls[i]||''}">#${i+1}</div>
-          <div class="park-hot-sym-group">
-            <span class="park-hot-symbol">${_escHtml(item.symbol)}</span>
-            <span class="park-hot-name">${_escHtml(item.name)}</span>
-          </div>
-          <span class="park-hot-change">${_escHtml(item.change)}</span>
+        <div class="park-hot-rank ${rankCls[i]||''}">#${i+1}</div>
+        <div class="park-hot-sym-group">
+          <span class="park-hot-symbol">${_escHtml(item.symbol)}</span>
+          <span class="park-hot-name">${_escHtml(item.name)}</span>
         </div>
+        <span class="park-hot-change">${_escHtml(item.change)}</span>
         <p class="park-hot-blurb">${_escHtml(item.blurb||'')}</p>
         <button class="park-hot-btn"
           onclick="event.stopPropagation();parkLoadSymbol('${_escHtml(item.symbol)}')">
@@ -1109,6 +1209,115 @@
     if (d) d.innerHTML = buildParkDailyQuest();
     if (h) h.innerHTML = buildParkHotQuests();
     if (t) t.innerHTML = buildParkThemeQuests();
+  }
+
+  /* ── 個人資料：闖關紀錄 ─────────────────── */
+  function _logParkQuest(symbol, name) {
+    if (!symbol) return;
+    let log = [];
+    try { const s = localStorage.getItem('_parkQuestLog'); if (s) log = JSON.parse(s); } catch(e) {}
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('zh-TW') + ' ' +
+      now.toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'});
+    const idx = log.findIndex(q => q.symbol === symbol);
+    if (idx >= 0) {
+      log[idx].count = (log[idx].count || 1) + 1;
+      log[idx].time  = timeStr;
+      if (name) log[idx].name = name;
+      const item = log.splice(idx, 1)[0];
+      log.push(item);
+    } else {
+      log.push({ symbol, name: name || '', time: timeStr, count: 1 });
+    }
+    if (log.length > 50) log = log.slice(-50);
+    try { localStorage.setItem('_parkQuestLog', JSON.stringify(log)); } catch(e) {}
+    // Update profile button label
+    const lbl = document.getElementById('parkProfileLabel');
+    if (lbl) lbl.textContent = symbol;
+  }
+
+  function toggleParkProfile() {
+    const panel = document.getElementById('parkProfilePanel');
+    if (!panel) return;
+    if (panel.classList.contains('hidden')) {
+      renderParkProfile();
+      panel.classList.remove('hidden');
+    } else {
+      panel.classList.add('hidden');
+    }
+  }
+
+  function renderParkProfile() {
+    let progress = {}, medals = {}, questLog = [];
+    try { const s = localStorage.getItem('skiProgress');  if (s) progress = JSON.parse(s); } catch(e) {}
+    try { const s = localStorage.getItem('skiMedals');    if (s) medals   = JSON.parse(s); } catch(e) {}
+    try { const s = localStorage.getItem('_parkQuestLog');if (s) questLog = JSON.parse(s); } catch(e) {}
+
+    const explored = questLog.length;
+    const visits   = questLog.reduce((sum, q) => sum + (q.count || 1), 0);
+    const bestSki  = progress.bestSkiScore || 0;
+    const level    = explored >= 20 ? '⛷️ 滑雪大師' :
+                     explored >= 10 ? '🎿 中級滑手' :
+                     explored >=  3 ? '🌨️ 初級探險者' : '🎪 新手滑手';
+
+    const medalHtml = [
+      { icon:'🥇', label:'金牌', key:'gold'   },
+      { icon:'🥈', label:'銀牌', key:'silver' },
+      { icon:'🥉', label:'銅牌', key:'bronze' },
+    ].map(m => {
+      const cnt = medals[m.key] || progress[m.key] || 0;
+      return `<span class="park-pp-medal ${cnt>0?'earned':'locked'}">${m.icon} ${m.label} ×${cnt}</span>`;
+    }).join('');
+
+    const recent = [...questLog].reverse().slice(0, 20);
+    const historyHtml = recent.length
+      ? recent.map(q => `
+        <div class="park-pp-record"
+          onclick="parkLoadSymbol('${_escHtml(q.symbol)}');toggleParkProfile()">
+          <span class="park-pp-rec-sym">${_escHtml(q.symbol)}</span>
+          <span class="park-pp-rec-info">
+            <span class="park-pp-rec-name">${_escHtml(q.name||'')}</span>
+            <span class="park-pp-rec-time">${_escHtml(q.time||'')}</span>
+          </span>
+          <span class="park-pp-rec-badge">×${q.count||1}</span>
+        </div>`).join('')
+      : `<div class="park-pp-empty">尚無闖關紀錄，開始探索吧！</div>`;
+
+    const panel = document.getElementById('parkProfilePanel');
+    if (!panel) return;
+    panel.innerHTML = `
+      <div class="park-pp-inner">
+        <div class="park-pp-header">
+          <div class="park-pp-avatar">⛷️</div>
+          <div>
+            <div class="park-pp-name">冒險者</div>
+            <div class="park-pp-level">${level}</div>
+          </div>
+          <button class="park-pp-close" onclick="toggleParkProfile()">✕</button>
+        </div>
+        <div class="park-pp-stats">
+          <div class="park-pp-stat">
+            <span class="park-pp-stat-num">${explored}</span>
+            <span class="park-pp-stat-label">探索股票數</span>
+          </div>
+          <div class="park-pp-stat">
+            <span class="park-pp-stat-num">${visits}</span>
+            <span class="park-pp-stat-label">總探索次數</span>
+          </div>
+          <div class="park-pp-stat">
+            <span class="park-pp-stat-num">${bestSki}</span>
+            <span class="park-pp-stat-label">最佳滑雪分</span>
+          </div>
+        </div>
+        <div class="park-pp-section">
+          <div class="park-pp-section-title">🏅 獎牌紀錄</div>
+          <div class="park-pp-medal-row">${medalHtml}</div>
+        </div>
+        <div class="park-pp-section" style="padding-bottom:0.4rem">
+          <div class="park-pp-section-title">📋 闖關紀錄</div>
+        </div>
+        <div class="park-pp-history-list">${historyHtml}</div>
+      </div>`;
   }
 
   /* ── 生成飄雪粒子 ─────────────────────────── */
