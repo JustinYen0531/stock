@@ -185,11 +185,9 @@
       { prop: 'jpm-column-crown', band: 0.72, depthRatio: 0.44, size: 170, anchor: 'hero' },
     ],
     AAPL: [
-      { prop: 'aapl-coin-stack', band: 0.18, depthRatio: 0.18, size: 196, anchor: 'hero' },
-      { prop: 'aapl-laptop-chart', band: 0.34, depthRatio: 0.34, size: 176, anchor: 'hero' },
-      { prop: 'aapl-glass-chart', band: 0.52, depthRatio: 0.36, size: 184, anchor: 'hero' },
-      { prop: 'aapl-airpods-platform', band: 0.68, depthRatio: 0.42, size: 168, anchor: 'hero' },
-      { prop: 'aapl-hover-device', band: 0.82, depthRatio: 0.48, size: 182, anchor: 'hero' },
+      { prop: 'aapl-coin-stack', band: 0.22, depthRatio: 0.18, size: 184, anchor: 'hero' },
+      { prop: 'aapl-glass-chart', band: 0.54, depthRatio: 0.36, size: 172, anchor: 'hero' },
+      { prop: 'aapl-hover-device', band: 0.82, depthRatio: 0.48, size: 174, anchor: 'hero' },
     ],
     AMD: [
       { prop: 'amd-core-fabric', band: 0.22, depthRatio: 0.16, size: 180, anchor: 'hero' },
@@ -810,16 +808,22 @@
 
   function buildPropPlacements(symbol, props, stats, heroSpecs = []) {
     if (!terrainPoints.length) return [];
+    const symbolKey = normalizeThemeSymbol(symbol);
+    const compactSpriteMode = symbolKey === 'AAPL';
     const rng = createRng(`${symbol}:${terrainPoints.length}:${stats.trend.toFixed(3)}:${stats.volatility.toFixed(3)}`);
     const totalX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     const viewportH = canvas?.height || terrainYMax || 720;
     const mountainFloorY = Math.max(terrainYMax + 110, viewportH - 28);
     const baseProps = props.length ? props : ['signal-beam', 'chip', 'coin', 'parcel'];
-    const anchors = getTerrainFeatureAnchors(Math.max(5, Math.min(8, baseProps.length + 4)));
-    const count = clamp(Math.round((baseProps.length || 3) * (2.5 + stats.volatility * 22)), 12, 22);
+    const anchorLimit = compactSpriteMode ? 3 : Math.max(5, Math.min(8, baseProps.length + 4));
+    const anchors = getTerrainFeatureAnchors(anchorLimit);
+    const count = compactSpriteMode
+      ? clamp(Math.round((baseProps.length || 3) * (0.28 + stats.volatility * 3)), 3, 5)
+      : clamp(Math.round((baseProps.length || 3) * (2.5 + stats.volatility * 22)), 12, 22);
     const placements = [];
     const anchorStrength = [...anchors].sort((a, b) => b.prominence - a.prominence);
-    const heroAnchorSet = new Set(anchorStrength.slice(0, Math.min(3, Math.max(2, Math.round(baseProps.length / 2)))).map((item) => item.worldX));
+    const heroAnchorCount = compactSpriteMode ? 1 : Math.min(3, Math.max(2, Math.round(baseProps.length / 2)));
+    const heroAnchorSet = new Set(anchorStrength.slice(0, heroAnchorCount).map((item) => item.worldX));
 
     for (let i = 0; i < anchors.length; i++) {
       const anchor = anchors[i];
@@ -835,7 +839,7 @@
         alpha: isHero ? 0.46 + rng() * 0.12 : 0.96,
       });
 
-      const flankCount = isHero ? 3 : 2;
+      const flankCount = compactSpriteMode ? (isHero ? 1 : 0) : isHero ? 3 : 2;
       for (let j = 0; j < flankCount; j++) {
         const direction = j % 2 === 0 ? -1 : 1;
         const offset = direction * (34 + rng() * 74) + (j > 1 ? direction * (46 + rng() * 54) : 0);
@@ -890,7 +894,7 @@
       });
     }
 
-    const lowerBandCount = clamp(Math.round(baseProps.length * (1.6 + stats.volatility * 12)), 6, 12);
+    const lowerBandCount = compactSpriteMode ? 2 : clamp(Math.round(baseProps.length * (1.6 + stats.volatility * 12)), 6, 12);
     for (let i = 0; i < lowerBandCount; i++) {
       const band = (i + 0.6) / (lowerBandCount + 0.4);
       const anchor = anchors.length ? anchors[(i * 2 + 1) % anchors.length] : null;
@@ -927,23 +931,25 @@
       });
     }
 
-    const heroCount = Math.min(3, Math.max(2, Math.round((baseProps.length || 2) / 2)));
-    for (let i = 0; i < heroCount; i++) {
-      const anchor = anchorStrength[i];
-      const band = heroCount === 1 ? 0.58 : 0.2 + i * (0.56 / Math.max(1, heroCount - 1));
-      const worldX = anchor
-        ? clamp(anchor.worldX + (rng() - 0.5) * 36, totalX * 0.14, totalX * 0.9)
-        : totalX * clamp(band + (rng() - 0.5) * 0.05, 0.14, 0.9);
-      const ridgeY = getLineYAt(worldX);
-      placements.push({
-        prop: baseProps[(i * 2 + 1) % baseProps.length],
-        worldX,
-        ridgeY,
-        depth: Math.max(72, mountainFloorY - ridgeY - 36) * (0.22 + rng() * 0.16),
-        size: 138 + rng() * 56,
-        anchor: 'hero',
-        alpha: 0.4 + rng() * 0.12,
-      });
+    if (!compactSpriteMode) {
+      const heroCount = Math.min(3, Math.max(2, Math.round((baseProps.length || 2) / 2)));
+      for (let i = 0; i < heroCount; i++) {
+        const anchor = anchorStrength[i];
+        const band = heroCount === 1 ? 0.58 : 0.2 + i * (0.56 / Math.max(1, heroCount - 1));
+        const worldX = anchor
+          ? clamp(anchor.worldX + (rng() - 0.5) * 36, totalX * 0.14, totalX * 0.9)
+          : totalX * clamp(band + (rng() - 0.5) * 0.05, 0.14, 0.9);
+        const ridgeY = getLineYAt(worldX);
+        placements.push({
+          prop: baseProps[(i * 2 + 1) % baseProps.length],
+          worldX,
+          ridgeY,
+          depth: Math.max(72, mountainFloorY - ridgeY - 36) * (0.22 + rng() * 0.16),
+          size: 138 + rng() * 56,
+          anchor: 'hero',
+          alpha: 0.4 + rng() * 0.12,
+        });
+      }
     }
     return placements;
   }
@@ -2833,7 +2839,7 @@
       cachedPatterns.themeSrc = themeSrcKey;
     }
 
-    if (cachedPatterns.terrain) {
+    if (!useHighDetailTerrain && cachedPatterns.terrain) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
       ctx.globalAlpha = useHighDetailTerrain ? 0.18 : clamp(0.45 + (theme.textureDensity - 0.7) * 0.22, 0.45, 0.75);
@@ -2842,7 +2848,7 @@
       ctx.restore();
     }
 
-    if (cachedPatterns.detail) {
+    if (!useHighDetailTerrain && cachedPatterns.detail) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.08 + theme.stats.volatility * 2.8)) % 384), -18);
       ctx.globalCompositeOperation = 'overlay';
@@ -2861,19 +2867,9 @@
       const xOffset = -((terrainScrollX * 0.34) % 512);
       ctx.translate(xOffset, -((terrainScrollX * 0.035) % 512));
       ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = 0.54;
+      ctx.globalAlpha = 0.42;
       ctx.fillStyle = cachedPatterns.hd;
       ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 280);
-      ctx.restore();
-
-      ctx.save();
-      const frost = ctx.createLinearGradient(0, terrainYMin - 60, 0, H);
-      frost.addColorStop(0, 'rgba(255,255,255,0.34)');
-      frost.addColorStop(0.28, 'rgba(190,235,255,0.08)');
-      frost.addColorStop(1, 'rgba(4,12,24,0.34)');
-      ctx.globalCompositeOperation = 'soft-light';
-      ctx.fillStyle = frost;
-      ctx.fillRect(-40, terrainYMin - 80, W + 80, H - terrainYMin + 140);
       ctx.restore();
     }
 
@@ -2962,6 +2958,20 @@
     ctx.translate(x, y);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+
+    if (spriteEntry?.status === 'ready' && spriteEntry.raw && spriteEntry.img?.naturalWidth) {
+      const wobble = ((x * 0.013 + y * 0.007) % 0.18) - 0.09;
+      const pad = size * 0.68;
+      const aspect = spriteEntry.img.naturalWidth / Math.max(1, spriteEntry.img.naturalHeight);
+      const drawW = aspect >= 1 ? pad * 2 : pad * 2 * aspect;
+      const drawH = aspect >= 1 ? (pad * 2) / aspect : pad * 2;
+      ctx.rotate(wobble);
+      ctx.globalAlpha = clamp(alphaScale * 1.72, 0.62, 1);
+      ctx.drawImage(spriteEntry.img, -drawW / 2, -drawH / 2, drawW, drawH);
+      ctx.restore();
+      return;
+    }
+
     const halo = ctx.createRadialGradient(0, 0, size * 0.06, 0, 0, size * 0.72);
     halo.addColorStop(0, withAlpha(theme.palette.glow, 0.26 * alphaScale));
     halo.addColorStop(1, 'rgba(0,0,0,0)');
@@ -2976,18 +2986,8 @@
       ctx.save();
       const wobble = ((x * 0.013 + y * 0.007) % 0.18) - 0.09;
       ctx.rotate(wobble);
-      ctx.globalAlpha = spriteEntry.raw ? clamp(alphaScale * 2.05, 0.72, 1) : clamp(alphaScale * 1.65, 0.46, 1);
+      ctx.globalAlpha = clamp(alphaScale * 1.65, 0.46, 1);
       const pad = size * 0.58;
-      if (spriteEntry.raw) {
-        const aspect = spriteEntry.img.naturalWidth / Math.max(1, spriteEntry.img.naturalHeight);
-        const rawPad = pad * 1.18;
-        const drawW = aspect >= 1 ? rawPad * 2 : rawPad * 2 * aspect;
-        const drawH = aspect >= 1 ? (rawPad * 2) / aspect : rawPad * 2;
-        ctx.drawImage(spriteEntry.img, -drawW / 2, -drawH / 2, drawW, drawH);
-        ctx.restore();
-        ctx.restore();
-        return;
-      }
       ctx.fillStyle = withAlpha(theme.palette.shadow, 0.22 + alphaScale * 0.18);
       ctx.beginPath();
       ctx.roundRect(-pad * 0.72, -pad * 0.72, pad * 1.44, pad * 1.44, Math.max(10, size * 0.08));
@@ -3394,6 +3394,14 @@
 
   function drawTerrainProps(theme, fillPath, W, H) {
     if (!theme?.placements?.length) return;
+    const rawSpriteBudget = theme.key === 'AAPL' ? 5 : Infinity;
+    let rawSpritesDrawn = 0;
+    const shouldDrawPlacement = (placement) => {
+      if (theme.key !== 'AAPL' || !String(placement.prop || '').startsWith('aapl-')) return true;
+      if (rawSpritesDrawn >= rawSpriteBudget) return false;
+      rawSpritesDrawn++;
+      return true;
+    };
     ctx.save();
     ctx.clip(fillPath);
     for (const placement of theme.placements) {
@@ -3402,6 +3410,7 @@
       if (screenX < -40 || screenX > W + 40) continue;
       const y = placement.ridgeY + placement.depth;
       if (y > H + 40) continue;
+      if (!shouldDrawPlacement(placement)) continue;
       const scale =
         placement.anchor === 'hero' ? 1
         : placement.anchor === 'lower-band' ? 0.88
@@ -3416,6 +3425,7 @@
       if (placement.anchor !== 'ridge') continue;
       const screenX = placement.worldX - terrainScrollX;
       if (screenX < -40 || screenX > W + 40) continue;
+      if (!shouldDrawPlacement(placement)) continue;
       const y = placement.ridgeY - placement.size * 0.44;
       drawTerrainPropSprite(placement.prop, screenX, y, placement.size, theme, placement.alpha);
     }
