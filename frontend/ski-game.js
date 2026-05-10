@@ -351,7 +351,6 @@
   let educationData = null;
   let educationSession = null;
   let educationOverlayRects = null;
-  let introWheelLockedUntil = 0;
   let activeThemeBackground = null;
   let activeTerrainTheme = null;
   let practiceMode = false; // 練習模式開關
@@ -1050,6 +1049,7 @@
       data,
       nodes,
       introIndex: 0,
+      introProgress: 0,
       activeNodeIndex: -1,
       activeMode: 'intro',
       answered: new Array(nodes.length).fill(false),
@@ -1121,18 +1121,36 @@
   function startCountdown() {
     countdownVal = 3;
     countdownTimer = 0;
+    terrainScrollX = 0;
     gameState = 'countdown';
     updateCursorVisibility();
   }
 
-  function enterEducationIntro(index = 0) {
+  function getEducationIntroProgressMax() {
+    return educationSession?.nodes?.length || 0;
+  }
+
+  function syncEducationIntroFromProgress() {
+    if (!educationSession?.nodes?.length) return;
+    const maxProgress = getEducationIntroProgressMax();
+    educationSession.introProgress = clamp(educationSession.introProgress || 0, 0, maxProgress);
+    const activeIndex = clamp(Math.floor(educationSession.introProgress), 0, educationSession.nodes.length - 1);
+    educationSession.introIndex = activeIndex;
+    educationSession.activeNodeIndex = activeIndex;
+
+    const maxCameraX = getMaxCameraX();
+    const normalized = maxProgress > 0 ? educationSession.introProgress / maxProgress : 0;
+    terrainScrollX = maxCameraX * (1 - normalized);
+  }
+
+  function enterEducationIntro(index = 0, progress = index) {
     if (!educationSession?.nodes?.length) {
       startCountdown();
       return;
     }
-    educationSession.introIndex = clamp(index, 0, educationSession.nodes.length - 1);
+    educationSession.introProgress = progress;
+    syncEducationIntroFromProgress();
     educationSession.activeMode = 'intro';
-    educationSession.activeNodeIndex = educationSession.introIndex;
     educationSession.selectedChoice = null;
     educationSession.feedback = '';
     educationSession.awaitingContinue = false;
@@ -1140,21 +1158,29 @@
     updateCursorVisibility();
   }
 
+  function setEducationIntroProgress(nextProgress) {
+    if (!educationSession?.nodes?.length) {
+      startCountdown();
+      return;
+    }
+    const maxProgress = getEducationIntroProgressMax();
+    if (nextProgress >= maxProgress) {
+      startCountdown();
+      return;
+    }
+    enterEducationIntro(0, Math.max(0, nextProgress));
+  }
+
   function moveEducationIntro(direction) {
     if (!educationSession?.nodes?.length) {
       startCountdown();
       return;
     }
-    const nextIndex = educationSession.introIndex + direction;
-    if (nextIndex < 0) {
-      enterEducationIntro(0);
-      return;
-    }
-    if (nextIndex >= educationSession.nodes.length) {
-      startCountdown();
-      return;
-    }
-    enterEducationIntro(nextIndex);
+    const currentStep = educationSession.introProgress || 0;
+    const targetStep = direction > 0
+      ? Math.floor(currentStep) + 1
+      : Math.max(0, Math.ceil(currentStep) - 1);
+    setEducationIntroProgress(targetStep);
   }
 
   function enterEducationQuiz(index, mode = 'mid') {
@@ -1335,6 +1361,7 @@
         active: gameState.startsWith('education'),
         nodeIndex: educationSession.activeNodeIndex,
         introIndex: educationSession.introIndex,
+        introProgress: Number((educationSession.introProgress || 0).toFixed(3)),
         introBullets: gameState === 'education_intro'
           ? getIntroBullets(educationSession.nodes?.[educationSession.activeNodeIndex] || educationSession.nodes?.[0])
           : [],
@@ -1567,9 +1594,11 @@
 
     gameState = educationSession?.nodes?.length ? 'education_intro' : 'countdown';
     if (gameState === 'education_intro') {
+      educationSession.introProgress = 0;
       educationSession.introIndex = 0;
       educationSession.activeNodeIndex = 0;
       educationSession.activeMode = 'intro';
+      syncEducationIntroFromProgress();
     }
     bindInput();
     updateCursorVisibility();
@@ -1615,12 +1644,10 @@
   function onWheel(e) {
     e.preventDefault();
     if (gameState === 'education_intro') {
-      const now = performance.now();
-      if (now < introWheelLockedUntil) return;
       const axis = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      if (Math.abs(axis) < 8) return;
-      introWheelLockedUntil = now + 360;
-      moveEducationIntro(axis > 0 ? 1 : -1);
+      if (Math.abs(axis) < 1) return;
+      const progressDelta = axis / 520;
+      setEducationIntroProgress((educationSession?.introProgress || 0) + progressDelta);
       return;
     }
     if (gameState !== 'playing') return;
@@ -3907,6 +3934,8 @@
   function drawEducationIntroOverlay(W, H, session, node) {
     const total = Math.max(1, session.nodes.length);
     const index = clamp(session.introIndex, 0, total - 1);
+    const maxProgress = Math.max(1, getEducationIntroProgressMax());
+    const progress = clamp(session.introProgress || 0, 0, maxProgress);
     const cardW = Math.min(760, W - 56);
     const cardH = Math.min(520, H - 84);
     const x = W / 2 - cardW / 2;
@@ -3915,7 +3944,7 @@
     const railLeft = W * 0.16;
     const railRight = W * 0.84;
     const railY = Math.max(72, y - 54);
-    const travel = total > 1 ? index / (total - 1) : 0;
+    const travel = progress / maxProgress;
     const gondolaX = railRight - (railRight - railLeft) * travel;
 
     ctx.save();
