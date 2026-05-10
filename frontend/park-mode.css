@@ -797,3 +797,82 @@ body.park-mode .ski-action-title { color: var(--park-orange); }
   .park-tickets-grid { grid-template-columns: repeat(2, 1fr); }
   .park-content { padding: 2rem 1rem 4rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PATCH A: 背景全屏修正
+   park-bg 改為 position:fixed，突破 main-container 的寬度限制
+   當 #parkWelcomePage 被 display:none 時，fixed 子元素也一起消失
+   ═══════════════════════════════════════════════════════════ */
+.park-bg {
+  position: fixed !important;
+  inset: 0;
+  z-index: 0;
+}
+/* park content 確保在 fixed 背景之上 */
+.park-content {
+  position: relative;
+  z-index: 10;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PATCH B: Header 搜尋欄樂園化
+   把深色專業風格的 input / select / 分析按鈕 改為冰晶玻璃 + 橙色
+   ═══════════════════════════════════════════════════════════ */
+
+/* Logo 圖示換成滑雪人 */
+body.park-mode .logo-icon {
+  font-size: 0;
+}
+body.park-mode .logo-icon::before {
+  content: '⛷️';
+  font-size: 1.4rem;
+}
+/* Logo 文字 → 冰藍/青色漸層 */
+body.park-mode .logo-text {
+  background: linear-gradient(135deg, #60c8ff 0%, #00cfaa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+body.park-mode .logo-sub {
+  color: rgba(180,220,255,0.55);
+  -webkit-text-fill-color: rgba(180,220,255,0.55);
+}
+
+/* 搜尋輸入框 → 玻璃風 */
+body.park-mode #symbolInput {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.22);
+  color: #e8f4ff;
+  font-family: 'JetBrains Mono', monospace;
+}
+body.park-mode #symbolInput::placeholder {
+  color: rgba(255,255,255,0.35);
+}
+body.park-mode #symbolInput:focus {
+  border-color: var(--park-orange);
+  box-shadow: 0 0 0 3px rgba(255,140,26,0.22);
+  background: rgba(255,255,255,0.15);
+}
+
+/* 時間段選擇器 → 玻璃風 */
+body.park-mode #periodSelect {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.78);
+}
+body.park-mode #periodSelect option {
+  background: #12306a;
+  color: #e4f2ff;
+}
+
+/* 分析按鈕 → 橙色冒險感 */
+body.park-mode .btn-search {
+  background: linear-gradient(135deg, #ff8c1a 0%, #e55200 100%) !important;
+  box-shadow: 0 4px 16px rgba(255,100,0,0.40);
+}
+body.park-mode .btn-search:hover {
+  opacity: 1;
+  box-shadow: 0 6px 22px rgba(255,100,0,0.58);
+  transform: translateY(-1px);
+}
