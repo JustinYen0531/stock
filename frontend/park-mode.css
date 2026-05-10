@@ -2699,7 +2699,7 @@ body.park-mode #dashboard.park-intel-open .stats-row {
 .park-dash-thumb {
   display: none;
 }
-/* Park mode: 縮圖層完全關閉 — 背景由 .park-bg 山景+下雪處理 */
+/* Park mode: keep the actual thumbnail source available for cards that reuse it. */
 body.park-mode .park-dash-thumb {
   display: none !important;
 }
@@ -2772,7 +2772,8 @@ body.park-mode .stock-header-card {
   padding: 3.4rem 2rem 16.5rem !important;
   background:
     radial-gradient(ellipse 90% 42% at 50% 4%, rgba(80, 180, 255, 0.10), transparent 68%),
-    linear-gradient(180deg, rgba(3, 9, 24, 0.18) 0%, rgba(3, 9, 24, 0.42) 46%, rgba(3, 9, 24, 0.72) 100%) !important;
+    linear-gradient(180deg, rgba(3, 9, 24, 0.34) 0%, rgba(3, 9, 24, 0.56) 46%, rgba(3, 9, 24, 0.84) 100%),
+    var(--park-quest-thumb, transparent) !important;
   background-size: cover !important;
   background-position: center center !important;
   box-shadow:

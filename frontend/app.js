@@ -658,15 +658,19 @@ function renderDashboard(data, education = currentEducationData) {
 }
 
 function setParkDashboardThumb(imageUrl) {
-  // Park dashboard uses the shared snowy home background now, not chart thumbnails.
+  const symbol = window.currentGameData?.symbol || $("symbolInput")?.value || "AMD";
+  const thumbUrl = imageUrl || getHomepageBackgroundFile(symbol);
+  const thumbImage = thumbUrl ? `url("${thumbUrl}")` : "";
   const dash = $("dashboard");
   const thumb = $("parkDashThumb");
   const actionCard = document.querySelector(".stock-action-card");
-  dash?.style.removeProperty("--park-quest-thumb");
-  actionCard?.style.removeProperty("--park-quest-thumb");
+  const headerCard = document.querySelector(".stock-header-card");
+  if (dash && thumbImage) dash.style.setProperty("--park-quest-thumb", thumbImage);
+  if (actionCard && thumbImage) actionCard.style.setProperty("--park-quest-thumb", thumbImage);
+  if (headerCard && thumbImage) headerCard.style.setProperty("--park-quest-thumb", thumbImage);
   if (thumb) {
-    thumb.style.backgroundImage = "";
-    thumb.classList.remove("thumb-loaded");
+    thumb.style.backgroundImage = thumbImage;
+    thumb.classList.toggle("thumb-loaded", Boolean(thumbImage));
   }
 }
 
