@@ -4471,10 +4471,10 @@
     const labelX = x + 24 * tableScale;
     const valueX = x + cardW - 24 * tableScale;
     const rows = [
-      ['基準追蹤', `${getBandPct('perfect').toFixed(0)}% / ${getBandPct('light').toFixed(0)}% / ${getBandPct('mild').toFixed(0)}%`],
-      ['偏離值', `${getBandPct('medium').toFixed(0)}% / ${getBandPct('heavy').toFixed(0)}%`],
-      ['結算工期 / 目標期限 / 效率溢價', `${getElapsedSeconds().toFixed(2)}s / ${getQualifyingSeconds().toFixed(2)}s / +${earlyFinishBonus}`],
-      ['連續獲利週 / 峰值紀律', `+${streakBonusScore} / ${getBestPerfectPct().toFixed(0)}%`],
+      ['完美滑行', `${getBandPct('perfect').toFixed(0)}% / ${getBandPct('light').toFixed(0)}% / ${getBandPct('mild').toFixed(0)}%`],
+      ['驚險擦邊', `${getBandPct('medium').toFixed(0)}% / ${getBandPct('heavy').toFixed(0)}%`],
+      ['通關時間 / 挑戰目標 / 速通加分', `${getElapsedSeconds().toFixed(2)}s / ${getQualifyingSeconds().toFixed(2)}s / +${earlyFinishBonus}`],
+      ['連段加分 / 完美節奏', `+${streakBonusScore} / ${getBestPerfectPct().toFixed(0)}%`],
     ];
 
     ctx.save();
@@ -4495,12 +4495,12 @@
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#f8fafc';
-    ctx.fillText('交易報告', labelX, y + headerH * 0.34);
+    ctx.fillText('闖關戰績', labelX, y + headerH * 0.34);
 
     ctx.font = '600 12px Inter, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(191, 219, 254, 0.9)';
-    ctx.fillText('收益模型：追蹤 10/12/14/16/18/20，低偏離 7，偏離 5，高偏離 3，極端 1', labelX, y + headerH * 0.72);
+    ctx.fillText('路線評分：完美 10/12/14/16/18/20，輕擦 7，搖晃 5，重摔 3，極限 1', labelX, y + headerH * 0.72);
 
     rows.forEach((row, index) => {
       const rowY = y + headerH + index * rowH;
@@ -4544,7 +4544,7 @@
     ctx.textBaseline = 'middle';
     ctx.font = '800 15px Inter, sans-serif';
     ctx.fillStyle = '#bae6fd';
-    ctx.fillText('教育理解評級', x + 22, y + 24);
+    ctx.fillText('知識試煉評級', x + 22, y + 24);
     ctx.font = '600 13px Inter, sans-serif';
     ctx.fillStyle = 'rgba(226, 232, 240, 0.82)';
     ctx.fillText(`${rating.correct}/${rating.total} 題正確 · ${rating.summary}`, x + 22, y + 50);
@@ -4564,7 +4564,7 @@
     const startX = W / 2 - totalW / 2;
     const labels = [
       { text: retryLabel, x: startX, colorA: '#1d4ed8', colorB: '#0891b2', border: 'rgba(147,197,253,0.7)' },
-      { text: '獲利了結', x: startX + btnW + gap, colorA: '#1e293b', colorB: '#334155', border: 'rgba(148,163,184,0.45)' },
+      { text: '結束冒險', x: startX + btnW + gap, colorA: '#1e293b', colorB: '#334155', border: 'rgba(148,163,184,0.45)' },
     ];
     resultButtonRects = {
       retry: { x: startX, y, w: btnW, h: btnH },
@@ -4611,30 +4611,30 @@
     ctx.fillStyle = '#f87171';
     ctx.shadowColor = '#f87171';
     ctx.shadowBlur  = 20;
-    ctx.fillText(getElapsedSeconds() > timeLimitSeconds ? '⏰ 錯失執行窗口！' : '💥 強制平倉！', W / 2, centerY - 52);
+    ctx.fillText(getElapsedSeconds() > timeLimitSeconds ? '⏰ 時間耗盡！' : '💥 挑戰失敗！', W / 2, centerY - 52);
 
     // 績效
     ctx.font = '700 32px JetBrains Mono, monospace';
     ctx.fillStyle = '#e8f0fe';
     ctx.shadowBlur = 0;
-    ctx.fillText(`投資收益：${getFinalScore()}`, W / 2, centerY + 18);
+    ctx.fillText(`闖關分數：${getFinalScore()}`, W / 2, centerY + 18);
 
     if (mouseOnlyRun) {
       ctx.font = '700 16px Inter, sans-serif';
       ctx.fillStyle = '#4ade80';
-      ctx.fillText('非系統性風險溢酬 1.3x', W / 2, centerY + 50);
+      ctx.fillText('滑鼠操控加成 1.3x', W / 2, centerY + 50);
     }
     const eduBottom = drawEducationResult(W, centerY + 74);
     const tableBottom = drawResultTable(W, eduBottom + 18);
 
     // 方向提示
     const tip = getElapsedSeconds() > timeLimitSeconds
-      ? '策略執行延遲，建議提高換手效率並把建倉壓回目標期限內'
-      : isDangerAbove ? '操作過度槓桿，建議下調風險權重 🖱️↓' : '部位曝險不足，建議上調風險權重 🖱️↑';
+      ? '時間拖太久了，試著更早衝過終點'
+      : isDangerAbove ? '貼線太近了，滑鼠往下讓角色降一點 🖱️↓' : '離路線太遠了，滑鼠往上把節奏拉回來 🖱️↑';
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
     ctx.fillText(tip, W / 2, tableBottom + 30);
-    drawResultButtons(W, tableBottom + 56, '重新建倉');
+    drawResultButtons(W, tableBottom + 56, '再挑戰');
 
     ctx.restore();
   }
@@ -4654,17 +4654,17 @@
     ctx.fillStyle = '#4ade80';
     ctx.shadowColor = '#4ade80';
     ctx.shadowBlur  = 25;
-    ctx.fillText('策略執行完成！', W / 2, centerY - 34);
+    ctx.fillText('闖關成功！', W / 2, centerY - 34);
 
     ctx.font = '700 32px JetBrains Mono, monospace';
     ctx.fillStyle = '#fde68a';
     ctx.shadowBlur = 0;
-    ctx.fillText(`累計淨值：${getFinalScore()}`, W / 2, centerY + 34);
+    ctx.fillText(`總分：${getFinalScore()}`, W / 2, centerY + 34);
 
     if (mouseOnlyRun) {
       ctx.font = '700 16px Inter, sans-serif';
       ctx.fillStyle = '#4ade80';
-      ctx.fillText('非系統性風險溢酬 1.3x', W / 2, centerY + 66);
+      ctx.fillText('滑鼠操控加成 1.3x', W / 2, centerY + 66);
     }
 
     const rating = getExecutionRating();
@@ -4674,10 +4674,10 @@
 
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
-    ctx.fillText(`風控評級：${rating.summary}`, W / 2, centerY + 146);
+    ctx.fillText(`冒險評級：${rating.summary}`, W / 2, centerY + 146);
     const eduBottom = drawEducationResult(W, centerY + 168);
     const tableBottom = drawResultTable(W, eduBottom + 18);
-    drawResultButtons(W, tableBottom + 26, '重新建倉');
+    drawResultButtons(W, tableBottom + 26, '再挑戰');
 
     ctx.restore();
   }
