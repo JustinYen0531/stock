@@ -4681,7 +4681,7 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    const centerY = H / 2 - 36;
+    const centerY = H / 2 - 76;
 
     // 標題
     ctx.font      = '900 56px Inter, sans-serif';
@@ -4725,7 +4725,7 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    const centerY = H / 2 - 52;
+    const centerY = H / 2 - 112;
 
     ctx.font      = '900 52px Inter, sans-serif';
     ctx.fillStyle = '#4ade80';
