@@ -447,6 +447,9 @@
     <!-- 股票資訊區 -->
     <div id="dashboard" class="dashboard hidden">
 
+      <!-- Park mode: blurred chart thumbnail background -->
+      <div id="parkDashThumb" class="park-dash-thumb"></div>
+
       <!-- 股票基本資訊 -->
       <div class="stock-header-card">
         <div class="stock-header-main">
@@ -1088,6 +1091,9 @@
     if (parkInput) parkInput.value = sym;
     if (realInput) realInput.value = sym;
     document.getElementById('parkWelcomePage')?.classList.add('hidden');
+    // 清除舊縮圖（切換到新股票時）
+    const _thumbEl = document.getElementById('parkDashThumb');
+    if (_thumbEl) { _thumbEl.style.backgroundImage = ''; _thumbEl.classList.remove('thumb-loaded'); }
     // 重置 mission intel（新股票 → 收合分析面板）
     const _ld = document.getElementById('dashboard');
     if (_ld) {
@@ -1375,6 +1381,22 @@
     let idx = 0;
     for (let i = 0; i < (sym||'').length; i++) idx += sym.charCodeAt(i);
     return palette[idx % palette.length];
+  }
+
+  /* ── 真實縮圖擷取 ── */
+  function _captureParkThumb() {
+    if (!_parkMode) return;
+    const canvas = document.getElementById('priceChart');
+    if (!canvas || canvas.width === 0 || canvas.height === 0) return;
+    try {
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.60);
+      const el = document.getElementById('parkDashThumb');
+      if (!el) return;
+      el.style.backgroundImage = `url("${dataUrl}")`;
+      // 觸發淡入動畫（先移除再加回來）
+      el.classList.remove('thumb-loaded');
+      requestAnimationFrame(() => el.classList.add('thumb-loaded'));
+    } catch(e) { /* cross-origin canvas 會拋錯，靜默處理 */ }
   }
 
   /* ── 迷你折線 SVG ── */
@@ -1740,7 +1762,17 @@
     // 立即嘗試渲染一次（若資料已就緒）
     renderParkRecommendations();
 
-    // 5) 生成雪花
+    // 5) 監聽股票名稱變化 → 等圖表渲染後擷取縮圖
+    const stockNameEl = document.getElementById('stockName');
+    if (stockNameEl) {
+      new MutationObserver(() => {
+        if (!_parkMode) return;
+        // 等 Chart.js 完成繪製（約 600ms）
+        setTimeout(_captureParkThumb, 700);
+      }).observe(stockNameEl, { childList: true, subtree: true, characterData: true });
+    }
+
+    // 7) 生成雪花
     _initParkSnowflakes();
 
     // 5) 還原上次偏好設定

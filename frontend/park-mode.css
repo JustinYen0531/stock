@@ -2532,3 +2532,31 @@ body.park-mode #dashboard.park-intel-open .stats-row {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── 5. 真實縮圖背景 (park-dash-thumb) ── */
+/* 預設隱藏（專業模式） */
+.park-dash-thumb {
+  display: none;
+}
+/* Park mode: 固定佔滿視窗，模糊縮圖做背景 */
+body.park-mode .park-dash-thumb {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -2;          /* 在 #dashboard::before 的深色遮罩 (z:-1) 後面 */
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  filter: blur(22px) brightness(0.22) saturate(1.5);
+  transform: scale(1.08); /* 稍微放大，隱藏 blur 邊緣虛化 */
+  pointer-events: none;
+  transition: background-image 0.6s ease;
+}
+/* 縮圖出現時的淡入動畫 */
+body.park-mode .park-dash-thumb.thumb-loaded {
+  animation: park-thumb-in 0.8s ease forwards;
+}
+@keyframes park-thumb-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
