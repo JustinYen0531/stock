@@ -561,6 +561,15 @@
         </div>
       </div>
 
+      <!-- Park mode: Mission Intel toggle (hidden in pro mode via CSS) -->
+      <div class="park-intel-toggle-wrap">
+        <button class="park-intel-toggle-btn" onclick="toggleParkIntel()">
+          <span>🔍</span>
+          <span class="park-intel-label">MISSION INTEL</span>
+          <span class="park-intel-arrow">▾</span>
+        </button>
+      </div>
+
       <!-- 教育纜車預習 -->
       <section id="educationPreviewCard" class="education-preview-card" data-state="loading">
         <div class="education-preview-header">
@@ -999,6 +1008,14 @@
     // 在 dashboard 時不切換畫面，只更新/移除 banner
     _updateParkBanner();
 
+    // 切換時關閉 mission intel（避免舊狀態殘留）
+    const _dashEl = document.getElementById('dashboard');
+    if (_dashEl) {
+      _dashEl.classList.remove('park-intel-open');
+      const lbl = document.querySelector('.park-intel-label');
+      if (lbl) lbl.textContent = 'MISSION INTEL';
+    }
+
     // 儲存偏好
     try { localStorage.setItem('_stockai_park', _parkMode ? '1' : '0'); } catch(e) {}
   }
@@ -1071,6 +1088,13 @@
     if (parkInput) parkInput.value = sym;
     if (realInput) realInput.value = sym;
     document.getElementById('parkWelcomePage')?.classList.add('hidden');
+    // 重置 mission intel（新股票 → 收合分析面板）
+    const _ld = document.getElementById('dashboard');
+    if (_ld) {
+      _ld.classList.remove('park-intel-open');
+      const _ll = document.querySelector('.park-intel-label');
+      if (_ll) _ll.textContent = 'MISSION INTEL';
+    }
     loadStock();
   }
 
@@ -1513,6 +1537,15 @@
     // Update profile button label
     const lbl = document.getElementById('parkProfileLabel');
     if (lbl) lbl.textContent = symbol;
+  }
+
+  /* ── Mission Intel 收合 ─────────────────────── */
+  function toggleParkIntel() {
+    const dash = document.getElementById('dashboard');
+    if (!dash) return;
+    const open = dash.classList.toggle('park-intel-open');
+    const label = document.querySelector('.park-intel-label');
+    if (label) label.textContent = open ? 'HIDE INTEL' : 'MISSION INTEL';
   }
 
   function toggleParkProfile() {
