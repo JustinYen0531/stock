@@ -37,6 +37,7 @@
   const CAMERA_DYNAMIC_ZOOM = 1.12;
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
   const PROP_SPRITE_BASE = '/static/assets/ski-props';
+  const AAPL_PROP_BASE = '/static/assets/themes/AAPL/props';
   const PERIOD_TUNING = {
     "1mo": { mapWidth: 3.2, heightScale: 1.45, slopeAccel: 0.095, dangerTolerance: 38 },
     "3mo": { mapWidth: 4.2, heightScale: 1.2, slopeAccel: 0.085, dangerTolerance: 42 },
@@ -143,6 +144,17 @@
     { prop: 'amat-toolframe-gate', band: 0.22, depthRatio: 0.16, size: 184, anchor: 'hero' },
     { prop: 'amat-cleanroom-crane', band: 0.76, depthRatio: 0.48, size: 176, anchor: 'hero' },
   ];
+  const AAPL_PROP_PACK = [
+    'aapl-ice-cube',
+    'aapl-candlestick-board',
+    'aapl-airpods-case',
+    'aapl-laptop-chart',
+    'aapl-coin-stack',
+    'aapl-glass-chart',
+    'aapl-airpods-platform',
+    'aapl-ice-mountain',
+    'aapl-hover-device',
+  ];
   const STOCK_HERO_PACKS = {
     META: [
       { prop: 'meta-social-window', band: 0.18, depthRatio: 0.16, size: 184, anchor: 'hero' },
@@ -173,8 +185,11 @@
       { prop: 'jpm-column-crown', band: 0.72, depthRatio: 0.44, size: 170, anchor: 'hero' },
     ],
     AAPL: [
-      { prop: 'aapl-vision-dome', band: 0.24, depthRatio: 0.18, size: 182, anchor: 'hero' },
-      { prop: 'aapl-device-arch', band: 0.76, depthRatio: 0.44, size: 170, anchor: 'hero' },
+      { prop: 'aapl-coin-stack', band: 0.18, depthRatio: 0.18, size: 196, anchor: 'hero' },
+      { prop: 'aapl-laptop-chart', band: 0.34, depthRatio: 0.34, size: 176, anchor: 'hero' },
+      { prop: 'aapl-glass-chart', band: 0.52, depthRatio: 0.36, size: 184, anchor: 'hero' },
+      { prop: 'aapl-airpods-platform', band: 0.68, depthRatio: 0.42, size: 168, anchor: 'hero' },
+      { prop: 'aapl-hover-device', band: 0.82, depthRatio: 0.48, size: 182, anchor: 'hero' },
     ],
     AMD: [
       { prop: 'amd-core-fabric', band: 0.22, depthRatio: 0.16, size: 180, anchor: 'hero' },
@@ -295,6 +310,15 @@
     'jpm-column-crown': 'jpm-column-crown',
     'aapl-vision-dome': 'aapl-vision-dome',
     'aapl-device-arch': 'aapl-device-arch',
+    'aapl-ice-cube': 'aapl-ice-cube',
+    'aapl-candlestick-board': 'aapl-candlestick-board',
+    'aapl-airpods-case': 'aapl-airpods-case',
+    'aapl-laptop-chart': 'aapl-laptop-chart',
+    'aapl-coin-stack': 'aapl-coin-stack',
+    'aapl-glass-chart': 'aapl-glass-chart',
+    'aapl-airpods-platform': 'aapl-airpods-platform',
+    'aapl-ice-mountain': 'aapl-ice-mountain',
+    'aapl-hover-device': 'aapl-hover-device',
     'amd-core-fabric': 'amd-core-fabric',
     'amd-radeon-array': 'amd-radeon-array',
     'avgo-signal-backbone': 'avgo-signal-backbone',
@@ -341,6 +365,17 @@
     'mu-data-lattice': 'mu-data-lattice',
     'amat-toolframe-gate': 'amat-toolframe-gate',
     'amat-cleanroom-crane': 'amat-cleanroom-crane',
+  };
+  const PROP_SPRITE_ASSETS = {
+    'aapl-ice-cube': { src: `${AAPL_PROP_BASE}/ice-cube.png`, raw: true },
+    'aapl-candlestick-board': { src: `${AAPL_PROP_BASE}/candlestick-board.png`, raw: true },
+    'aapl-airpods-case': { src: `${AAPL_PROP_BASE}/airpods-case.png`, raw: true },
+    'aapl-laptop-chart': { src: `${AAPL_PROP_BASE}/laptop-chart.png`, raw: true },
+    'aapl-coin-stack': { src: `${AAPL_PROP_BASE}/coin-stack.png`, raw: true },
+    'aapl-glass-chart': { src: `${AAPL_PROP_BASE}/glass-chart.png`, raw: true },
+    'aapl-airpods-platform': { src: `${AAPL_PROP_BASE}/airpods-platform.png`, raw: true },
+    'aapl-ice-mountain': { src: `${AAPL_PROP_BASE}/ice-mountain.png`, raw: true },
+    'aapl-hover-device': { src: `${AAPL_PROP_BASE}/hover-device.png`, raw: true },
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
@@ -647,15 +682,27 @@
     return PROP_SPRITE_ALIASES[kind] || null;
   }
 
-  function ensurePropSprite(kind) {
+  function getPropSpriteSpec(kind) {
     const key = getPropSpriteKey(kind);
     if (!key) return null;
-    let entry = propSpriteCache.get(key);
+    const asset = PROP_SPRITE_ASSETS[key];
+    return {
+      key,
+      src: asset?.src || `${PROP_SPRITE_BASE}/${key}.svg`,
+      raw: !!asset?.raw,
+    };
+  }
+
+  function ensurePropSprite(kind) {
+    const spec = getPropSpriteSpec(kind);
+    if (!spec) return null;
+    let entry = propSpriteCache.get(spec.key);
     if (!entry) {
       const img = new Image();
       entry = {
-        key,
-        src: `${PROP_SPRITE_BASE}/${key}.svg`,
+        key: spec.key,
+        src: spec.src,
+        raw: spec.raw,
         img,
         status: 'loading',
       };
@@ -663,7 +710,7 @@
       img.onload = () => { entry.status = 'ready'; };
       img.onerror = () => { entry.status = 'error'; };
       img.src = entry.src;
-      propSpriteCache.set(key, entry);
+      propSpriteCache.set(spec.key, entry);
     }
     return entry;
   }
@@ -690,6 +737,11 @@
 
   function getStockHeroPack(symbol) {
     return STOCK_HERO_PACKS[normalizeThemeSymbol(symbol)] || [];
+  }
+
+  function getStockPropPack(symbol, manifestProps) {
+    if (normalizeThemeSymbol(symbol) === 'AAPL') return AAPL_PROP_PACK;
+    return Array.isArray(manifestProps) ? manifestProps : [];
   }
 
   function analyzeMarketShape(closes) {
@@ -903,13 +955,14 @@
     const glowBase = stats.trend >= 0 ? mixHex(preset.glow, '#facc15', 0.32) : mixHex(preset.glow, '#fb7185', 0.75);
     const textureDensity = clamp(0.75 + stats.volatility * 12 + Math.abs(stats.trend) * 1.4, 0.7, 1.85);
     const heroProps = getStockHeroPack(symbol);
+    const companyProps = getStockPropPack(symbol, entry?.companyProps);
     return {
       key: normalizeThemeSymbol(symbol),
       symbol: symbol || '',
       name: entry?.name || symbol || '',
       industryClass: entry?.industryClass || 'Theme',
       environmentBiome: entry?.environmentBiome || '滑雪山體',
-      props: entry?.companyProps || [],
+      props: companyProps,
       heroProps,
       mixerLogic: entry?.mixerLogic || '',
       palette: preset,
@@ -920,7 +973,7 @@
       glowColor: glowBase,
       textureDensity,
       spriteDensity: clamp(0.8 + stats.volatility * 11, 0.8, 1.8),
-      placements: buildPropPlacements(symbol, entry?.companyProps || [], stats, heroProps),
+      placements: buildPropPlacements(symbol, companyProps, stats, heroProps),
     };
   }
 
@@ -2716,11 +2769,12 @@
   function drawTerrainFill(theme, fillPath, W, H) {
     ctx.save();
     ctx.clip(fillPath);
+    const useHighDetailTerrain = highDetailMode && themeAssets.texture && theme?.key === 'AAPL';
 
     const baseGrad = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
-    baseGrad.addColorStop(0, withAlpha(theme.palette.base, 0.94));
-    baseGrad.addColorStop(0.58, withAlpha(theme.palette.mid, 0.82));
-    baseGrad.addColorStop(1, withAlpha(theme.palette.shadow, 0.92));
+    baseGrad.addColorStop(0, useHighDetailTerrain ? 'rgba(222,244,255,0.86)' : withAlpha(theme.palette.base, 0.94));
+    baseGrad.addColorStop(0.58, useHighDetailTerrain ? 'rgba(67,118,156,0.78)' : withAlpha(theme.palette.mid, 0.82));
+    baseGrad.addColorStop(1, useHighDetailTerrain ? 'rgba(8,22,38,0.92)' : withAlpha(theme.palette.shadow, 0.92));
     ctx.fillStyle = baseGrad;
     ctx.fillRect(-60, terrainYMin - 80, W + 120, H - terrainYMin + 140);
 
@@ -2737,7 +2791,7 @@
     if (cachedPatterns.terrain) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
-      ctx.globalAlpha = clamp(0.45 + (theme.textureDensity - 0.7) * 0.22, 0.45, 0.75);
+      ctx.globalAlpha = useHighDetailTerrain ? 0.18 : clamp(0.45 + (theme.textureDensity - 0.7) * 0.22, 0.45, 0.75);
       ctx.fillStyle = cachedPatterns.terrain;
       ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 240);
       ctx.restore();
@@ -2747,9 +2801,34 @@
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.08 + theme.stats.volatility * 2.8)) % 384), -18);
       ctx.globalCompositeOperation = 'overlay';
-      ctx.globalAlpha = clamp(0.38 + (theme.textureDensity - 0.7) * 0.18, 0.38, 0.62);
+      ctx.globalAlpha = useHighDetailTerrain ? 0.14 : clamp(0.38 + (theme.textureDensity - 0.7) * 0.18, 0.38, 0.62);
       ctx.fillStyle = cachedPatterns.detail;
       ctx.fillRect(-768, terrainYMin - 180, W + 1536, H - terrainYMin + 320);
+      ctx.restore();
+    }
+
+    if (useHighDetailTerrain) {
+      ctx.save();
+      if (cachedPatterns.hdSrc !== themeAssets.texture) {
+        cachedPatterns.hd = ctx.createPattern(themeAssets.texture, 'repeat');
+        cachedPatterns.hdSrc = themeAssets.texture;
+      }
+      const xOffset = -((terrainScrollX * 0.34) % 512);
+      ctx.translate(xOffset, -((terrainScrollX * 0.035) % 512));
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 0.54;
+      ctx.fillStyle = cachedPatterns.hd;
+      ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 280);
+      ctx.restore();
+
+      ctx.save();
+      const frost = ctx.createLinearGradient(0, terrainYMin - 60, 0, H);
+      frost.addColorStop(0, 'rgba(255,255,255,0.34)');
+      frost.addColorStop(0.28, 'rgba(190,235,255,0.08)');
+      frost.addColorStop(1, 'rgba(4,12,24,0.34)');
+      ctx.globalCompositeOperation = 'soft-light';
+      ctx.fillStyle = frost;
+      ctx.fillRect(-40, terrainYMin - 80, W + 80, H - terrainYMin + 140);
       ctx.restore();
     }
 
@@ -2782,7 +2861,7 @@
     ctx.fillStyle = sheen;
     ctx.fillRect(-20, terrainYMin - 30, W + 40, H - terrainYMin + 60);
     // ── 高細節：材質疊加模式 (Overlay Texture) ──
-    if (highDetailMode && themeAssets.texture) {
+    if (highDetailMode && themeAssets.texture && !useHighDetailTerrain) {
       ctx.save();
       // hd Pattern 同樣只在圖片換掉時重建
       if (cachedPatterns.hdSrc !== themeAssets.texture) {
@@ -2852,8 +2931,18 @@
       ctx.save();
       const wobble = ((x * 0.013 + y * 0.007) % 0.18) - 0.09;
       ctx.rotate(wobble);
-      ctx.globalAlpha = clamp(alphaScale * 1.65, 0.46, 1);
+      ctx.globalAlpha = spriteEntry.raw ? clamp(alphaScale * 2.05, 0.72, 1) : clamp(alphaScale * 1.65, 0.46, 1);
       const pad = size * 0.58;
+      if (spriteEntry.raw) {
+        const aspect = spriteEntry.img.naturalWidth / Math.max(1, spriteEntry.img.naturalHeight);
+        const rawPad = pad * 1.18;
+        const drawW = aspect >= 1 ? rawPad * 2 : rawPad * 2 * aspect;
+        const drawH = aspect >= 1 ? (rawPad * 2) / aspect : rawPad * 2;
+        ctx.drawImage(spriteEntry.img, -drawW / 2, -drawH / 2, drawW, drawH);
+        ctx.restore();
+        ctx.restore();
+        return;
+      }
       ctx.fillStyle = withAlpha(theme.palette.shadow, 0.22 + alphaScale * 0.18);
       ctx.beginPath();
       ctx.roundRect(-pad * 0.72, -pad * 0.72, pad * 1.44, pad * 1.44, Math.max(10, size * 0.08));
