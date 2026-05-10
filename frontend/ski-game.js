@@ -41,11 +41,11 @@
   const MSFT_PROP_BASE = '/static/assets/themes/MSFT/props';
   const GOOGL_PROP_BASE = '/static/assets/themes/GOOGL/props';
   const PERIOD_TUNING = {
-    "1mo": { mapWidth: 3.2, heightScale: 1.45, slopeAccel: 0.095, dangerTolerance: 38 },
-    "3mo": { mapWidth: 4.2, heightScale: 1.2, slopeAccel: 0.085, dangerTolerance: 42 },
-    "6mo": { mapWidth: 5.0, heightScale: 1.0, slopeAccel: 0.075, dangerTolerance: 45 },
-    "1y":  { mapWidth: 7.5, heightScale: 0.82, slopeAccel: 0.065, dangerTolerance: 50 },
-    "2y":  { mapWidth: 10.5, heightScale: 0.68, slopeAccel: 0.055, dangerTolerance: 56 },
+    "1mo": { mapWidth: 3.2, heightScale: 1.45, localSensitivity: 1.0, slopeAccel: 0.095, dangerTolerance: 38 },
+    "3mo": { mapWidth: 4.2, heightScale: 1.2, localSensitivity: 1.0, slopeAccel: 0.085, dangerTolerance: 42 },
+    "6mo": { mapWidth: 5.0, heightScale: 1.0, localSensitivity: 1.0, slopeAccel: 0.075, dangerTolerance: 45 },
+    "1y":  { mapWidth: 7.0, heightScale: 0.92, localSensitivity: 1.12, slopeAccel: 0.07, dangerTolerance: 50 },
+    "2y":  { mapWidth: 8.2, heightScale: 1.02, localSensitivity: 1.28, slopeAccel: 0.075, dangerTolerance: 54 },
   };
   // 練習模式係數 (乘以一般值)
   const PRACTICE_HEIGHT_SCALE_MULT  = 0.55; // 地形高度縮減到 55% (更平緩)
@@ -1119,6 +1119,7 @@
     return {
       mapWidth:        base.mapWidth,
       heightScale:     base.heightScale * heightMult,
+      localSensitivity: base.localSensitivity,
       slopeAccel:      base.slopeAccel  * slopeMult,
       dangerTolerance: Math.round(base.dangerTolerance * PRACTICE_DANGER_TOL_MULT),
     };
@@ -1668,10 +1669,15 @@
     terrainYMax = yMax;
     terrainCameraFloorOffsetY = -(H * CAMERA_FLOOR_MARGIN_RATIO);
 
-      terrainPoints = closes.map((c, i) => ({
+    const localSensitivity = Math.max(1, config.localSensitivity || 1);
+    terrainPoints = closes.map((c, i) => {
+      const normalized = (c - minP) / range;
+      const sensitive = clamp(0.5 + (normalized - 0.5) * localSensitivity, 0, 1);
+      return {
         x: i * segW,
-        y: yMax - ((c - minP) / range) * (yMax - yMin),
-      }));
+        y: yMax - sensitive * (yMax - yMin),
+      };
+    });
       activeMapDifficulty = window.SkiDifficulty?.calculateDifficulty
         ? window.SkiDifficulty.calculateDifficulty({
             closes,

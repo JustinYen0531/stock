@@ -1,10 +1,10 @@
 (() => {
   const PERIOD_TUNING = {
-    "1mo": { mapWidth: 3.2, heightScale: 1.45, slopeAccel: 0.095, dangerTolerance: 38 },
-    "3mo": { mapWidth: 4.2, heightScale: 1.2, slopeAccel: 0.085, dangerTolerance: 42 },
-    "6mo": { mapWidth: 5.0, heightScale: 1.0, slopeAccel: 0.075, dangerTolerance: 45 },
-    "1y":  { mapWidth: 7.5, heightScale: 0.82, slopeAccel: 0.065, dangerTolerance: 50 },
-    "2y":  { mapWidth: 10.5, heightScale: 0.68, slopeAccel: 0.055, dangerTolerance: 56 },
+    "1mo": { mapWidth: 3.2, heightScale: 1.45, localSensitivity: 1.0, slopeAccel: 0.095, dangerTolerance: 38 },
+    "3mo": { mapWidth: 4.2, heightScale: 1.2, localSensitivity: 1.0, slopeAccel: 0.085, dangerTolerance: 42 },
+    "6mo": { mapWidth: 5.0, heightScale: 1.0, localSensitivity: 1.0, slopeAccel: 0.075, dangerTolerance: 45 },
+    "1y":  { mapWidth: 7.0, heightScale: 0.92, localSensitivity: 1.12, slopeAccel: 0.07, dangerTolerance: 50 },
+    "2y":  { mapWidth: 8.2, heightScale: 1.02, localSensitivity: 1.28, slopeAccel: 0.075, dangerTolerance: 54 },
   };
   const PRACTICE_DANGER_TOL_MULT = 2.5;
   const TIME_LIMIT_RATIO = 0.8;
@@ -78,6 +78,7 @@
     return {
       mapWidth: base.mapWidth,
       heightScale: base.heightScale * heightMult,
+      localSensitivity: base.localSensitivity,
       slopeAccel: base.slopeAccel * slopeMult,
       dangerTolerance: Math.round(base.dangerTolerance * PRACTICE_DANGER_TOL_MULT),
     };
@@ -107,7 +108,12 @@
     const segW = totalW / Math.max(1, closes.length - 1);
     const amplitude = Math.min(height * 0.42, height * 0.35 * derivedConfig.heightScale);
     const ySpan = amplitude * 2;
-    const screenY = closes.map((close) => ySpan - ((close - minP) / range) * ySpan);
+    const localSensitivity = Math.max(1, derivedConfig.localSensitivity || 1);
+    const screenY = closes.map((close) => {
+      const normalized = (close - minP) / range;
+      const sensitive = clamp(0.5 + (normalized - 0.5) * localSensitivity, 0, 1);
+      return ySpan - sensitive * ySpan;
+    });
     const slopes = [];
     const slopeChanges = [];
     let signChanges = 0;
