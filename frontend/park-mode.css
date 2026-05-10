@@ -343,6 +343,8 @@ body.park-mode .footer {
   box-shadow:
     var(--park-shadow),
     inset 0 1.5px 0 rgba(255,255,255,0.38);
+  position: relative;
+  z-index: 20;
 }
 .park-booth-header {
   display: flex;
@@ -1707,3 +1709,329 @@ body.park-mode .btn-search:hover {
   box-shadow: 0 6px 22px rgba(255,100,0,0.58);
   transform: translateY(-1px);
 }
+
+/* ══════════════════════════════════════════════════════
+   PATCH E: 主題關卡地圖 — 進度條 + 任務流程燈
+   ══════════════════════════════════════════════════════ */
+
+/* 主題卡進度條 */
+.park-theme-prog-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0.5rem 0 0.15rem;
+}
+.park-theme-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00cfaa, #00ff88);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 6px rgba(0,207,170,0.45);
+}
+.park-theme-prog-label {
+  font-size: 0.60rem;
+  color: rgba(180,210,255,0.45);
+  text-align: center;
+  margin-bottom: 0.25rem;
+}
+.park-theme-crown { font-size: 0.85rem; margin-left: 0.25rem; }
+.park-theme-card.is-complete {
+  border-color: rgba(255,220,50,0.45) !important;
+  box-shadow: 0 0 24px rgba(255,220,50,0.14), 0 8px 28px rgba(0,0,0,0.30);
+}
+
+/* ── 關卡流程 Modal ── */
+.park-quest-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 8, 20, 0.86);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: parkFadeIn 0.20s ease;
+}
+@keyframes parkFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.park-quest-overlay.hidden { display: none !important; }
+
+.park-quest-modal {
+  width: min(600px, 94vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: rgba(8, 16, 38, 0.98);
+  border: 1.5px solid rgba(0, 207, 170, 0.25);
+  border-radius: 24px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.75);
+  animation: parkPickerIn 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.park-quest-modal::-webkit-scrollbar { width: 4px; }
+.park-quest-modal::-webkit-scrollbar-thumb { background: rgba(0,207,170,0.28); border-radius: 2px; }
+
+.park-quest-modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.8rem 1.8rem 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.park-quest-modal-icon { font-size: 2.5rem; line-height: 1; flex-shrink: 0; }
+.park-quest-modal-title {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 0.3rem;
+}
+.park-quest-modal-desc {
+  font-size: 0.78rem;
+  color: rgba(180, 210, 255, 0.60);
+  line-height: 1.5;
+}
+.park-quest-modal-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.40);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 50%;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+.park-quest-modal-close:hover { color: #fff; background: rgba(255,255,255,0.10); }
+
+.park-quest-progress-section {
+  padding: 1rem 1.8rem 0.6rem;
+}
+.park-quest-prog-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.35rem;
+}
+.park-quest-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00cfaa, #00ff88);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+  box-shadow: 0 0 8px rgba(0, 207, 170, 0.50);
+}
+.park-quest-prog-label {
+  font-size: 0.70rem;
+  color: rgba(180, 210, 255, 0.50);
+  text-align: right;
+}
+
+.park-quest-complete-banner {
+  margin: 0 1.8rem 0.8rem;
+  padding: 0.9rem 1.2rem;
+  background: linear-gradient(135deg, rgba(255,220,50,0.15), rgba(0,207,120,0.10));
+  border: 1px solid rgba(255, 220, 50, 0.32);
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffe066;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* Stage list — vertical timeline */
+.park-quest-stage-list {
+  padding: 1.2rem 1.8rem 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.park-quest-stage-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.park-quest-stage-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 38px;
+}
+
+.park-quest-stage-indicator {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  border: 2px solid;
+  transition: all 0.3s;
+}
+.park-quest-stage-row.done   .park-quest-stage-indicator {
+  background: rgba(0, 207, 100, 0.18);
+  border-color: #00cf64;
+  color: #00cf88;
+}
+.park-quest-stage-row.active .park-quest-stage-indicator {
+  background: rgba(255, 180, 0, 0.18);
+  border-color: #ffb300;
+  color: #ffb300;
+  box-shadow: 0 0 14px rgba(255,180,0,0.40);
+  animation: parkPulse 2s infinite;
+}
+@keyframes parkPulse {
+  0%, 100% { box-shadow: 0 0 14px rgba(255,180,0,0.40); }
+  50%       { box-shadow: 0 0 22px rgba(255,180,0,0.70); }
+}
+.park-quest-stage-row.locked .park-quest-stage-indicator {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 0.78rem;
+}
+
+.park-quest-connector {
+  width: 2px;
+  flex: 1;
+  min-height: 28px;
+  background: rgba(255, 255, 255, 0.10);
+  margin: 4px 0;
+  border-radius: 1px;
+  transition: background 0.4s;
+}
+.park-quest-stage-row.done .park-quest-connector {
+  background: rgba(0, 207, 100, 0.35);
+}
+
+.park-quest-stage-content {
+  flex: 1;
+  padding-bottom: 1.6rem;
+  min-width: 0;
+}
+.park-quest-stage-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.28rem;
+  flex-wrap: wrap;
+}
+.park-quest-stage-sym {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.park-quest-stage-row.done   .park-quest-stage-sym { color: #00cf88; }
+.park-quest-stage-row.active .park-quest-stage-sym { color: #ffe066; }
+.park-quest-stage-row.locked .park-quest-stage-sym { color: rgba(255,255,255,0.30); }
+.park-quest-stage-name {
+  font-size: 0.82rem;
+  color: rgba(200, 225, 255, 0.58);
+}
+.park-quest-stage-num {
+  margin-left: auto;
+  font-size: 0.62rem;
+  color: rgba(180, 210, 255, 0.32);
+  font-weight: 600;
+}
+.park-quest-stage-desc {
+  font-size: 0.75rem;
+  color: rgba(180, 210, 255, 0.48);
+  line-height: 1.5;
+  margin-bottom: 0.55rem;
+}
+.park-quest-stage-action { margin-top: 0.3rem; }
+.park-quest-stage-btn {
+  padding: 0.42rem 1.2rem;
+  background: linear-gradient(135deg, #ffb300, #ff8c1a);
+  border: none;
+  border-radius: 999px;
+  color: #1a0800;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.18s;
+  box-shadow: 0 3px 12px rgba(255,180,0,0.38);
+}
+.park-quest-stage-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(255,180,0,0.55);
+}
+.park-quest-stage-done-label {
+  font-size: 0.75rem;
+  color: #00cf88;
+  font-weight: 700;
+}
+.park-quest-stage-locked-label {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.26);
+}
+
+/* Theme medals in profile */
+.park-pp-theme-medals {
+  padding: 0 1.2rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.park-pp-theme-medal {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 10px;
+  background: rgba(255, 220, 50, 0.09);
+  border: 1px solid rgba(255, 220, 50, 0.22);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffe066;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.park-pp-theme-medal:hover {
+  background: rgba(255, 220, 50, 0.17);
+  border-color: rgba(255, 220, 50, 0.40);
+}
+.park-pp-theme-medal-icon { font-size: 1.1rem; }
+.park-pp-theme-medal-info { flex: 1; }
+.park-pp-theme-medal-title { font-size: 0.78rem; font-weight: 800; color: #ffe066; }
+.park-pp-theme-medal-sub { font-size: 0.62rem; color: rgba(255,220,50,0.58); font-weight: 500; }
+.park-pp-theme-medal-badge {
+  font-size: 0.62rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255,220,50,0.15);
+  border: 1px solid rgba(255,220,50,0.30);
+  color: #ffe066;
+  flex-shrink: 0;
+}
+
+/* 繼續任務 banner hint */
+.park-dash-banner-task {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.32rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(255,220,50,0.12);
+  border: 1px solid rgba(255,220,50,0.25);
+  color: #ffe066;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.park-dash-banner-task:hover { background: rgba(255,220,50,0.22); }

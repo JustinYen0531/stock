@@ -1016,12 +1016,22 @@
       const banner = document.createElement('div');
       banner.id = '_parkDashBanner';
       banner.className = 'park-dash-banner';
+      let activeThemeIdx = _activeThemeIdx;
+      if (activeThemeIdx === null) {
+        try { const v = localStorage.getItem('_parkActiveTheme'); if (v !== null) activeThemeIdx = parseInt(v); } catch(e) {}
+      }
+      const activeTheme = (activeThemeIdx !== null) ? _PARK_THEME_DEFS[activeThemeIdx] : null;
+      const taskBtn = activeTheme
+        ? `<button class="park-dash-banner-task" onclick="openThemeQuest(${activeThemeIdx})">
+             🗺️ ${_escHtml(activeTheme.icon)} ${_escHtml(activeTheme.title)} 繼續任務
+           </button>` : '';
       banner.innerHTML = `
         <div class="park-dash-banner-icon">🏔️</div>
         <div class="park-dash-banner-text">
           <h3>⛷️ ${sym} 雪場技術分析</h3>
           <p>技術指標已轉譯為滑雪地圖語言 · 分析完成後可直接啟動滑雪挑戰賽道</p>
         </div>
+        ${taskBtn}
         <button class="park-dash-ski-btn"
           onclick="document.getElementById('skiLaunchButton')?.click()">
           🎿 開始滑雪！
@@ -1062,6 +1072,159 @@
     if (realInput) realInput.value = sym;
     document.getElementById('parkWelcomePage')?.classList.add('hidden');
     loadStock();
+  }
+
+  /* ── 主題關卡定義（每主題 6 關）─────────────── */
+  const _PARK_THEME_DEFS = [
+    {
+      id:'ai_chip', title:'AI 晶片', icon:'🧠',
+      desc:'聚焦算力與伺服器 GPU 主線，探索 AI 晶片供應鏈從設計到封裝的完整生態。',
+      stages:[
+        {sym:'NVDA',    name:'Nvidia',    disp:'NVDA',    desc:'AI GPU 算力核心，全球市場領頭羊'},
+        {sym:'AMD',     name:'AMD',       disp:'AMD',     desc:'挑戰 Nvidia 的 AI 加速晶片新秀'},
+        {sym:'2454.TW', name:'聯發科',   disp:'2454',    desc:'台灣 IC 設計龍頭，端側 AI 芯片佈局'},
+        {sym:'AVGO',    name:'Broadcom',  disp:'AVGO',    desc:'AI 網路晶片與客製化 ASIC 霸主'},
+        {sym:'QCOM',    name:'Qualcomm',  disp:'QCOM',    desc:'Snapdragon 平台端側 AI 推理先鋒'},
+        {sym:'INTC',    name:'Intel',     disp:'INTC',    desc:'Gaudi AI 加速卡，老將的強力反攻'},
+      ]
+    },
+    {
+      id:'us_tech', title:'美股科技', icon:'💻',
+      desc:'從 FAANG 到 AI 轉型股，逐一解鎖美國科技龍頭的核心競爭力。',
+      stages:[
+        {sym:'AAPL',  name:'Apple',     disp:'AAPL',  desc:'消費電子生態護城河，Apple Intelligence 押注'},
+        {sym:'MSFT',  name:'Microsoft', disp:'MSFT',  desc:'Azure 雲端 + Copilot AI，企業軟體王者'},
+        {sym:'GOOGL', name:'Google',    disp:'GOOGL', desc:'搜尋廣告霸主，Gemini AI 強力迎戰'},
+        {sym:'META',  name:'Meta',      disp:'META',  desc:'社群廣告巨頭，Llama AI + AR 眼鏡'},
+        {sym:'AMZN',  name:'Amazon',    disp:'AMZN',  desc:'電商 + AWS 雲端雙引擎，AI 全面佈局'},
+        {sym:'NFLX',  name:'Netflix',   disp:'NFLX',  desc:'串流媒體獲利轉型先驅，廣告層加速成長'},
+      ]
+    },
+    {
+      id:'tw_dragon', title:'台灣龍頭', icon:'🇹🇼',
+      desc:'台灣半導體護城河，從晶圓代工到 AI 伺服器供應鏈全面制霸。',
+      stages:[
+        {sym:'2330.TW', name:'台積電', disp:'2330', desc:'全球晶圓代工霸主，先進製程護城河無人能敵'},
+        {sym:'2454.TW', name:'聯發科', disp:'2454', desc:'IC 設計台灣第一，AI 手機芯片全球佈局'},
+        {sym:'2317.TW', name:'鴻海',   disp:'2317', desc:'AI 伺服器代工最大受惠者，GB200 組裝'},
+        {sym:'3711.TW', name:'日月光', disp:'3711', desc:'CoWoS 先進封裝 AI 關鍵卡位，毛利持續提升'},
+        {sym:'2308.TW', name:'台達電', disp:'2308', desc:'AI 伺服器電源管理核心，綠能轉型受惠'},
+        {sym:'2382.TW', name:'廣達',   disp:'2382', desc:'AI 伺服器 ODM 出貨量龍頭，GB200 大單'},
+      ]
+    },
+    {
+      id:'ev', title:'電動車', icon:'⚡',
+      desc:'最能反映市場情緒起伏的題材，從領頭羊到新能源全面解鎖。',
+      stages:[
+        {sym:'TSLA', name:'Tesla',      disp:'TSLA', desc:'電動車龍頭，FSD 自動駕駛 + Robotaxi 催化'},
+        {sym:'RIVN', name:'Rivian',     disp:'RIVN', desc:'亞馬遜背書的電動皮卡新星，R2 量產在即'},
+        {sym:'NIO',  name:'蔚來 NIO',  disp:'NIO',  desc:'中國高端電動車領導品牌，換電模式差異化'},
+        {sym:'LCID', name:'Lucid',      disp:'LCID', desc:'豪華電動車長航程技術，沙烏地資本加持'},
+        {sym:'ENPH', name:'Enphase',    disp:'ENPH', desc:'家用太陽能逆變器龍頭，儲能業務高速成長'},
+        {sym:'PLUG', name:'Plug Power', disp:'PLUG', desc:'氫能燃料電池先驅，綠氫佈局長線題材'},
+      ]
+    },
+  ];
+
+  /* ── 主題任務輔助 ── */
+  function _getParkQuestLog() {
+    try { return JSON.parse(localStorage.getItem('_parkQuestLog') || '[]'); } catch(e) { return []; }
+  }
+
+  let _activeThemeIdx = null;
+
+  function openThemeQuest(idx) {
+    _activeThemeIdx = idx;
+    try { localStorage.setItem('_parkActiveTheme', String(idx)); } catch(e) {}
+    _buildQuestModal(idx);
+    const overlay = document.getElementById('parkQuestModalOverlay');
+    if (overlay) { overlay.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+  }
+
+  function closeThemeQuest() {
+    const overlay = document.getElementById('parkQuestModalOverlay');
+    if (overlay) overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+    _activeThemeIdx = null;
+    // refresh theme band to show updated progress
+    if (_parkMode) {
+      const t = document.getElementById('parkThemeQuests');
+      if (t) t.innerHTML = buildParkThemeQuests();
+    }
+  }
+
+  function _buildQuestModal(idx) {
+    const theme = _PARK_THEME_DEFS[idx];
+    if (!theme) return;
+    const visitedSyms = new Set(_getParkQuestLog().map(q => q.symbol));
+    const done  = theme.stages.filter(s => visitedSyms.has(s.sym)).length;
+    const total = theme.stages.length;
+    const pct   = Math.round((done / total) * 100);
+    const allDone = done === total;
+
+    const stagesHtml = theme.stages.map((s, i) => {
+      const isDone   = visitedSyms.has(s.sym);
+      const isActive = !isDone && (i === 0 || visitedSyms.has(theme.stages[i-1].sym));
+      const isLocked = !isDone && !isActive;
+      const cls      = isDone ? 'done' : isActive ? 'active' : 'locked';
+      const ind      = isDone ? '✓'   : isActive ? '▶'      : '🔒';
+      const action   = isDone
+        ? `<span class="park-quest-stage-done-label">✓ 已完成</span>`
+        : isActive
+          ? `<button class="park-quest-stage-btn"
+               onclick="_enterThemeStage('${_escHtml(s.sym)}','${_escHtml(s.name)}',${idx})">
+               ⛷️ 進入關卡
+             </button>`
+          : `<span class="park-quest-stage-locked-label">🔒 請先完成上一關</span>`;
+      const connector = i < theme.stages.length - 1
+        ? `<div class="park-quest-connector"></div>` : '';
+      return `
+        <div class="park-quest-stage-row ${cls}">
+          <div class="park-quest-stage-left">
+            <div class="park-quest-stage-indicator">${ind}</div>
+            ${connector}
+          </div>
+          <div class="park-quest-stage-content">
+            <div class="park-quest-stage-header">
+              <span class="park-quest-stage-sym">${_escHtml(s.disp||s.sym)}</span>
+              <span class="park-quest-stage-name">${_escHtml(s.name)}</span>
+              <span class="park-quest-stage-num">第 ${i+1} 關</span>
+            </div>
+            <div class="park-quest-stage-desc">${_escHtml(s.desc)}</div>
+            <div class="park-quest-stage-action">${action}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    const completeBanner = allDone
+      ? `<div class="park-quest-complete-banner">
+           🎉 恭喜完成「${_escHtml(theme.title)}」主題全 ${total} 關！獲得專屬勳章 ${_escHtml(theme.icon)}
+         </div>` : '';
+
+    document.getElementById('parkQuestModalContent').innerHTML = `
+      <div class="park-quest-modal-header">
+        <div class="park-quest-modal-icon">${_escHtml(theme.icon)}</div>
+        <div>
+          <div class="park-quest-modal-title">${_escHtml(theme.title)} 主題關卡</div>
+          <div class="park-quest-modal-desc">${_escHtml(theme.desc)}</div>
+        </div>
+        <button class="park-quest-modal-close" onclick="closeThemeQuest()">✕</button>
+      </div>
+      <div class="park-quest-progress-section">
+        <div class="park-quest-prog-bar">
+          <div class="park-quest-prog-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="park-quest-prog-label">${done} / ${total} 關卡完成 · ${pct}%</div>
+      </div>
+      ${completeBanner}
+      <div class="park-quest-stage-list">${stagesHtml}</div>`;
+  }
+
+  function _enterThemeStage(sym, name, themeIdx) {
+    closeThemeQuest();
+    _activeThemeIdx = themeIdx;
+    try { localStorage.setItem('_parkActiveTheme', String(themeIdx)); } catch(e) {}
+    parkLoadSymbol(sym, name);
   }
 
   /* ── 售票亭選股資料 ─────────────────────────── */
@@ -1289,24 +1452,30 @@
   }
 
   function buildParkThemeQuests() {
-    const themes = homepageRecommendationData?.themes || [];
-    if (!themes.length) return `<div class="park-rec-loading" style="grid-column:1/-1">主題地圖準備中...</div>`;
-    return themes.slice(0,4).map(theme => {
-      const picks = (theme.picks||[]).slice(0,3).map(p =>
+    const visitedSyms = new Set(_getParkQuestLog().map(q => q.symbol));
+    return _PARK_THEME_DEFS.map((theme, idx) => {
+      const done    = theme.stages.filter(s => visitedSyms.has(s.sym)).length;
+      const total   = theme.stages.length;
+      const pct     = Math.round((done / total) * 100);
+      const allDone = done === total;
+      const picks   = theme.stages.slice(0, 4).map(s =>
         `<span class="park-theme-pick"
-           onclick="event.stopPropagation();parkLoadSymbol('${_escHtml(p.symbol)}')"
-         >${_escHtml(p.symbol)}</span>`
+           onclick="event.stopPropagation();parkLoadSymbol('${_escHtml(s.sym)}','${_escHtml(s.name)}')"
+         >${_escHtml(s.disp||s.sym)}</span>`
       ).join('');
-      const first = theme.picks?.[0]?.symbol || '';
       return `
-        <div class="park-theme-card" onclick="parkLoadSymbol('${_escHtml(first)}')">
-          <div class="park-theme-card-icon">${_escHtml(theme.icon)}</div>
+        <div class="park-theme-card${allDone?' is-complete':''}" onclick="openThemeQuest(${idx})">
+          <div class="park-theme-card-icon">${_escHtml(theme.icon)}${allDone?'<span class="park-theme-crown">👑</span>':''}</div>
           <div class="park-theme-card-title">${_escHtml(theme.title)}</div>
           <div class="park-theme-card-desc">${_escHtml(theme.desc)}</div>
+          <div class="park-theme-prog-bar">
+            <div class="park-theme-prog-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="park-theme-prog-label">${done}/${total} 關卡${allDone?' · 全部通關！':''}</div>
           <div class="park-theme-picks">${picks}</div>
           <button class="park-theme-btn"
-            onclick="event.stopPropagation();parkLoadSymbol('${_escHtml(first)}')">
-            🗺️ 探索
+            onclick="event.stopPropagation();openThemeQuest(${idx})">
+            🗺️ 探索關卡
           </button>
         </div>`;
     }).join('');
@@ -1393,6 +1562,27 @@
         </div>`).join('')
       : `<div class="park-pp-empty">尚無闖關紀錄，開始探索吧！</div>`;
 
+    // Theme completion medals
+    const visitedSyms = new Set(questLog.map(q => q.symbol));
+    const completedThemes = _PARK_THEME_DEFS.filter(t => t.stages.every(s => visitedSyms.has(s.sym)));
+    const themeMedalsHtml = completedThemes.length
+      ? `<div class="park-pp-section" style="padding-bottom:0">
+           <div class="park-pp-section-title">🗺️ 主題通關勳章</div>
+         </div>
+         <div class="park-pp-theme-medals">
+           ${completedThemes.map((t, i) => {
+             const tIdx = _PARK_THEME_DEFS.indexOf(t);
+             return `<div class="park-pp-theme-medal" onclick="toggleParkProfile();openThemeQuest(${tIdx})">
+               <span class="park-pp-theme-medal-icon">${_escHtml(t.icon)}</span>
+               <span class="park-pp-theme-medal-info">
+                 <span class="park-pp-theme-medal-title">${_escHtml(t.title)}</span>
+                 <span class="park-pp-theme-medal-sub">全 ${t.stages.length} 關通關</span>
+               </span>
+               <span class="park-pp-theme-medal-badge">👑 完成</span>
+             </div>`;
+           }).join('')}
+         </div>` : '';
+
     const panel = document.getElementById('parkProfilePanel');
     if (!panel) return;
     panel.innerHTML = `
@@ -1420,9 +1610,10 @@
           </div>
         </div>
         <div class="park-pp-section">
-          <div class="park-pp-section-title">🏅 獎牌紀錄</div>
+          <div class="park-pp-section-title">🏅 滑雪獎牌</div>
           <div class="park-pp-medal-row">${medalHtml}</div>
         </div>
+        ${themeMedalsHtml}
         <div class="park-pp-section" style="padding-bottom:0.4rem">
           <div class="park-pp-section-title">📋 闖關紀錄</div>
         </div>
@@ -1527,6 +1718,14 @@
     } catch(e) {}
   })();
   </script>
+
+  <!-- 主題關卡流程 Modal -->
+  <div id="parkQuestModalOverlay" class="park-quest-overlay hidden"
+    onclick="if(event.target===this)closeThemeQuest()">
+    <div class="park-quest-modal">
+      <div id="parkQuestModalContent"></div>
+    </div>
+  </div>
 </body>
 
 </html>
