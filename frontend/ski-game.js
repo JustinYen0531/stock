@@ -475,6 +475,7 @@
   let rightKeyDown = false;
   let leftMouseDown = false;
   let rightMouseDown = false;
+  let educationProgressDrag = null;
 
   // 角色
   let charY = 200;        // 角色中心 Y
@@ -1234,6 +1235,21 @@
     enterEducationIntro(0, Math.max(0, nextProgress));
   }
 
+  function getEducationProgressFromPoint(x, y, rail) {
+    if (!rail) return educationSession?.introProgress || 0;
+    const vx = rail.endX - rail.startX;
+    const vy = rail.endY - rail.startY;
+    const lenSq = Math.max(1, vx * vx + vy * vy);
+    const t = clamp(((x - rail.startX) * vx + (y - rail.startY) * vy) / lenSq, 0, 1);
+    return t * rail.maxProgress;
+  }
+
+  function updateEducationProgressDrag(x, y) {
+    if (!educationProgressDrag || gameState !== 'education_intro') return;
+    const nextProgress = getEducationProgressFromPoint(x, y, educationProgressDrag.rail);
+    setEducationIntroProgress(nextProgress);
+  }
+
   function moveEducationIntro(direction) {
     if (!educationSession?.nodes?.length) {
       startCountdown();
@@ -1607,6 +1623,7 @@
     rightMouseDown = false;
     mouseOnlyRun   = true;
     spaceBoostDown = false;
+    educationProgressDrag = null;
     perfectStreakDistance = 0;
     bestPerfectStreakDistance = 0;
     streakBonusScore = 0;
@@ -1670,6 +1687,7 @@
   function bindInput() {
     canvas.addEventListener('wheel', onWheel, { passive: false });
     canvas.addEventListener('mousedown', onMouseDown);
+    canvas.addEventListener('mousemove', onMouseMove);
     canvas.addEventListener('mouseup', onMouseUp);
     canvas.addEventListener('mouseleave', onMouseUp);
     canvas.addEventListener('contextmenu', onContextMenu);
@@ -1680,6 +1698,7 @@
   function unbindInput() {
     canvas?.removeEventListener('wheel', onWheel);
     canvas?.removeEventListener('mousedown', onMouseDown);
+    canvas?.removeEventListener('mousemove', onMouseMove);
     canvas?.removeEventListener('mouseup', onMouseUp);
     canvas?.removeEventListener('mouseleave', onMouseUp);
     canvas?.removeEventListener('contextmenu', onContextMenu);
@@ -1735,6 +1754,18 @@
       const overlay = educationOverlayRects || {};
       const hit = (r) => r && x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
 
+      if (gameState === 'education_intro' && hit(overlay.progressHandle)) {
+        e.preventDefault();
+        educationProgressDrag = { rail: overlay.progressRail };
+        updateEducationProgressDrag(x, y);
+        return;
+      }
+      if (gameState === 'education_intro' && hit(overlay.progressRailHit)) {
+        e.preventDefault();
+        educationProgressDrag = { rail: overlay.progressRail };
+        updateEducationProgressDrag(x, y);
+        return;
+      }
       if (hit(overlay.skip)) {
         skipEducationIntro();
         return;
@@ -1786,7 +1817,21 @@
     }
   }
 
+  function onMouseMove(e) {
+    if (!educationProgressDrag || gameState !== 'education_intro') return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    updateEducationProgressDrag(e.clientX - rect.left, e.clientY - rect.top);
+  }
+
   function onMouseUp(e) {
+    if (educationProgressDrag) {
+      educationProgressDrag = null;
+      if (e?.button === 0) {
+        leftMouseDown = false;
+        return;
+      }
+    }
     if (!e || e.button === 1) {
       isBoosting = spaceBoostDown;
     }
@@ -4064,6 +4109,26 @@
     const railY = Math.max(72, y - 54);
     const travel = progress / maxProgress;
     const gondolaX = railRight - (railRight - railLeft) * travel;
+    const gondolaY = railY - 12 + 30 * travel;
+    educationOverlayRects.progressRail = {
+      startX: railRight,
+      startY: railY - 12,
+      endX: railLeft,
+      endY: railY + 18,
+      maxProgress,
+    };
+    educationOverlayRects.progressRailHit = {
+      x: railLeft - 24,
+      y: railY - 40,
+      w: railRight - railLeft + 48,
+      h: 84,
+    };
+    educationOverlayRects.progressHandle = {
+      x: gondolaX - 22,
+      y: gondolaY - 22,
+      w: 44,
+      h: 44,
+    };
 
     ctx.save();
     ctx.fillStyle = 'rgba(2, 6, 23, 0.76)';
@@ -4077,7 +4142,7 @@
     ctx.stroke();
 
     session.nodes.forEach((station, stationIndex) => {
-      const t = total > 1 ? stationIndex / (total - 1) : 0;
+      const t = stationIndex / maxProgress;
       const sx = railRight - (railRight - railLeft) * t;
       const sy = railY - 12 + 30 * t;
       const active = stationIndex === index;
@@ -4093,21 +4158,28 @@
     ctx.strokeStyle = 'rgba(103, 232, 249, 0.72)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(gondolaX, railY - 11 + 30 * travel);
-    ctx.lineTo(gondolaX, railY + 18 + 30 * travel);
+    ctx.moveTo(gondolaX, gondolaY + 1);
+    ctx.lineTo(gondolaX, gondolaY + 30);
+    ctx.stroke();
+    ctx.fillStyle = '#fbbf24';
+    ctx.strokeStyle = 'rgba(254, 240, 138, 0.95)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(gondolaX, gondolaY, 9, 0, Math.PI * 2);
+    ctx.fill();
     ctx.stroke();
     ctx.fillStyle = '#0f172a';
     ctx.strokeStyle = '#67e8f9';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(gondolaX - 38, railY + 14 + 30 * travel, 76, 46, 12);
+    ctx.roundRect(gondolaX - 38, gondolaY + 26, 76, 46, 12);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = '#bae6fd';
     ctx.font = '800 13px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${index + 1}/${total}`, gondolaX, railY + 38 + 30 * travel);
+    ctx.fillText(`${index + 1}/${total}`, gondolaX, gondolaY + 50);
 
     ctx.fillStyle = 'rgba(8, 16, 32, 0.95)';
     ctx.strokeStyle = 'rgba(125, 211, 252, 0.36)';
@@ -4137,7 +4209,7 @@
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#67e8f9';
     ctx.font = '900 13px Inter, sans-serif';
-    ctx.fillText('開場纜車導覽 · 滾輪滑動換站', x + pad, y + pad);
+    ctx.fillText('開場纜車導覽 · 拖曳黃點或滾輪換站', x + pad, y + pad);
 
     ctx.fillStyle = '#f8fafc';
     ctx.font = '900 28px Inter, sans-serif';
@@ -4190,7 +4262,7 @@
     ctx.fillStyle = 'rgba(148, 163, 184, 0.78)';
     ctx.font = '700 13px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('滾輪向下：往左到下一站｜滾輪向上：回上一站', W / 2, y + cardH + 16);
+    ctx.fillText('拖曳上方黃點：預覽任意位置｜跨過節點會切換下一站', W / 2, y + cardH + 16);
 
     ctx.restore();
   }
