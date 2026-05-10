@@ -26,7 +26,6 @@
   const BELOW_LINE_DANGER_MULTIPLIER = 0.45; // 在線下方時放慢 danger 累積，避免看起來像被卡住
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
-  const EDUCATION_TIME_LIMIT_MULTIPLIER = 1.2; // segmented quizzes consume run time, so add 20%
   const CAMERA_STATE_FREE = 'free';
   const CAMERA_STATE_LOCKED = 'locked';
   const CAMERA_STATE_DYNAMIC = 'dynamic';
@@ -39,6 +38,8 @@
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
   const PROP_SPRITE_BASE = '/static/assets/ski-props';
   const AAPL_PROP_BASE = '/static/assets/themes/AAPL/props';
+  const AMZN_PROP_BASE = '/static/assets/themes/AMZN/props';
+  const META_PROP_BASE = '/static/assets/themes/META/props';
   const MSFT_PROP_BASE = '/static/assets/themes/MSFT/props';
   const GOOGL_PROP_BASE = '/static/assets/themes/GOOGL/props';
   const PERIOD_TUNING = {
@@ -180,9 +181,33 @@
     'googl-neural-globe',
     'googl-orbit-node',
   ];
-  const HIGH_DETAIL_RAW_PROP_THEMES = new Set(['AAPL', 'MSFT', 'GOOGL']);
+  const AMZN_PROP_PACK = [
+    'amzn-orange-ring',
+    'amzn-delivery-capsule',
+    'amzn-cloud-crate',
+    'amzn-data-crystal',
+    'amzn-glass-rail',
+    'amzn-forest-platform',
+    'amzn-market-coin',
+    'amzn-vine-bridge',
+    'amzn-cloud-island',
+  ];
+  const META_PROP_PACK = [
+    'meta-portal-ring',
+    'meta-crystal-cluster',
+    'meta-network-orb',
+    'meta-glass-cube',
+    'meta-floating-island',
+    'meta-cloud-platform',
+    'meta-portal-gate',
+    'meta-neural-sphere',
+    'meta-neon-path',
+  ];
+  const HIGH_DETAIL_RAW_PROP_THEMES = new Set(['AAPL', 'AMZN', 'META', 'MSFT', 'GOOGL']);
   const HIGH_DETAIL_RAW_PROP_PREFIXES = {
     AAPL: 'aapl-',
+    AMZN: 'amzn-',
+    META: 'meta-',
     MSFT: 'msft-',
     GOOGL: 'googl-',
   };
@@ -325,8 +350,26 @@
     container: 'container-stack',
     'meta-social-window': 'meta-social-window',
     'meta-creator-portal': 'meta-creator-portal',
+    'meta-portal-ring': 'meta-portal-ring',
+    'meta-crystal-cluster': 'meta-crystal-cluster',
+    'meta-network-orb': 'meta-network-orb',
+    'meta-glass-cube': 'meta-glass-cube',
+    'meta-floating-island': 'meta-floating-island',
+    'meta-cloud-platform': 'meta-cloud-platform',
+    'meta-portal-gate': 'meta-portal-gate',
+    'meta-neural-sphere': 'meta-neural-sphere',
+    'meta-neon-path': 'meta-neon-path',
     'amzn-box-wall': 'amzn-box-wall',
     'amzn-fulfillment-hub': 'amzn-fulfillment-hub',
+    'amzn-orange-ring': 'amzn-orange-ring',
+    'amzn-delivery-capsule': 'amzn-delivery-capsule',
+    'amzn-cloud-crate': 'amzn-cloud-crate',
+    'amzn-data-crystal': 'amzn-data-crystal',
+    'amzn-glass-rail': 'amzn-glass-rail',
+    'amzn-forest-platform': 'amzn-forest-platform',
+    'amzn-market-coin': 'amzn-market-coin',
+    'amzn-vine-bridge': 'amzn-vine-bridge',
+    'amzn-cloud-island': 'amzn-cloud-island',
     'nvda-chip-monolith': 'nvda-chip-monolith',
     'nvda-neural-core': 'nvda-neural-core',
     'tsla-cyber-body': 'tsla-cyber-body',
@@ -441,6 +484,24 @@
     'googl-data-platform': { src: `${GOOGL_PROP_BASE}/data-platform.png`, raw: true },
     'googl-neural-globe': { src: `${GOOGL_PROP_BASE}/neural-globe.png`, raw: true },
     'googl-orbit-node': { src: `${GOOGL_PROP_BASE}/orbit-node.png`, raw: true },
+    'amzn-orange-ring': { src: `${AMZN_PROP_BASE}/orange-ring.png`, raw: true },
+    'amzn-delivery-capsule': { src: `${AMZN_PROP_BASE}/delivery-capsule.png`, raw: true },
+    'amzn-cloud-crate': { src: `${AMZN_PROP_BASE}/cloud-crate.png`, raw: true },
+    'amzn-data-crystal': { src: `${AMZN_PROP_BASE}/data-crystal.png`, raw: true },
+    'amzn-glass-rail': { src: `${AMZN_PROP_BASE}/glass-rail.png`, raw: true },
+    'amzn-forest-platform': { src: `${AMZN_PROP_BASE}/forest-platform.png`, raw: true },
+    'amzn-market-coin': { src: `${AMZN_PROP_BASE}/market-coin.png`, raw: true },
+    'amzn-vine-bridge': { src: `${AMZN_PROP_BASE}/vine-bridge.png`, raw: true },
+    'amzn-cloud-island': { src: `${AMZN_PROP_BASE}/cloud-island.png`, raw: true },
+    'meta-portal-ring': { src: `${META_PROP_BASE}/portal-ring.png`, raw: true },
+    'meta-crystal-cluster': { src: `${META_PROP_BASE}/crystal-cluster.png`, raw: true },
+    'meta-network-orb': { src: `${META_PROP_BASE}/network-orb.png`, raw: true },
+    'meta-glass-cube': { src: `${META_PROP_BASE}/glass-cube.png`, raw: true },
+    'meta-floating-island': { src: `${META_PROP_BASE}/floating-island.png`, raw: true },
+    'meta-cloud-platform': { src: `${META_PROP_BASE}/cloud-platform.png`, raw: true },
+    'meta-portal-gate': { src: `${META_PROP_BASE}/portal-gate.png`, raw: true },
+    'meta-neural-sphere': { src: `${META_PROP_BASE}/neural-sphere.png`, raw: true },
+    'meta-neon-path': { src: `${META_PROP_BASE}/neon-path.png`, raw: true },
   };
 
   /* ── 狀態 ───────────────────────────────────────── */
@@ -664,10 +725,6 @@
     return elapsedMs / 1000;
   }
 
-  function isRunTimerActive() {
-    return gameState === 'playing' || gameState === 'education_station' || gameState === 'education_final';
-  }
-
   function frameAdjustedLerp(baseAmount, deltaFactor) {
     return 1 - Math.pow(1 - baseAmount, Math.max(0, deltaFactor || 1));
   }
@@ -834,6 +891,8 @@
   function getStockPropPack(symbol, manifestProps) {
     const symbolKey = normalizeThemeSymbol(symbol);
     if (symbolKey === 'AAPL') return AAPL_PROP_PACK;
+    if (symbolKey === 'AMZN') return AMZN_PROP_PACK;
+    if (symbolKey === 'META') return META_PROP_PACK;
     if (symbolKey === 'MSFT') return MSFT_PROP_PACK;
     if (symbolKey === 'GOOGL') return GOOGL_PROP_PACK;
     return Array.isArray(manifestProps) ? manifestProps : [];
@@ -1253,10 +1312,7 @@
       selectedChoice: null,
       feedback: '',
       awaitingContinue: false,
-      routeTriggers: nodes.map((_, index) => {
-        if (nodes.length <= 1) return 0.5;
-        return lerp(0.18, 0.82, index / (nodes.length - 1));
-      }),
+      routeTriggers: nodes.map((_, index) => (index + 1) / (nodes.length + 1)),
       triggered: new Set(),
       finalQuizStarted: false,
       finalQuizComplete: false,
@@ -1460,10 +1516,14 @@
 
     if (gameState === 'education_final') {
       if (!educationSession.awaitingContinue) return;
-      educationSession.finalQuizComplete = true;
-      recordRunProgress();
-      gameState = 'complete';
-      updateCursorVisibility();
+      const nextIndex = educationSession.nodes.findIndex((_, index) => !educationSession.answered[index]);
+      if (nextIndex >= 0) enterEducationQuiz(nextIndex, 'final');
+      else {
+        educationSession.finalQuizComplete = true;
+        recordRunProgress();
+        gameState = 'complete';
+        updateCursorVisibility();
+      }
     }
   }
 
@@ -1499,7 +1559,12 @@
   }
 
   function startFinalEducationQuizIfNeeded() {
-    return false;
+    if (!educationSession || educationSession.finalQuizStarted) return false;
+    const pendingIndex = educationSession.nodes.findIndex((_, index) => !educationSession.answered[index]);
+    if (pendingIndex < 0) return false;
+    educationSession.finalQuizStarted = true;
+    enterEducationQuiz(pendingIndex, 'final');
+    return true;
   }
 
   /* ══════════════════════════════════════════════════
@@ -1614,7 +1679,7 @@
     const steps = Math.max(1, Math.round(ms / (1000 / 60)));
     for (let i = 0; i < steps; i++) {
       update();
-      if (isRunTimerActive()) elapsedMs += 1000 / 60;
+      if (gameState === 'playing') elapsedMs += 1000 / 60;
     }
     render();
   };
@@ -1819,7 +1884,7 @@
     // 我們粗略估計：總距離 / 平均速度 = 總幀數 * 10
     const lastX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     maxPossibleScore = Math.floor((lastX / SCROLL_SPEED) * 10);
-    timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO * EDUCATION_TIME_LIMIT_MULTIPLIER);
+    timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO);
 
     // 角色與橘線固定在較低的畫面錨點，山體則對齊到這條線
     const charX = getCharX();
@@ -2069,7 +2134,7 @@
     lastFrameTs = now;
     const deltaFactor = deltaMs / (1000 / 60);
     update(deltaFactor);
-    if (isRunTimerActive()) {
+    if (gameState === 'playing') {
       elapsedMs += deltaMs;
     }
     render();
@@ -2113,15 +2178,6 @@
       updateVerticalCameraOffset(frameScale);
       updateCharacterVisualOffset(frameScale);
       updateParticles();
-      return;
-    }
-
-    if (gameState === 'education_station' || gameState === 'education_final') {
-      if (getElapsedSeconds() > timeLimitSeconds) {
-        triggerDeath(getScreenLineYAt(getCharWorldX()));
-        return;
-      }
-      updateEducationQuestionTimer();
       return;
     }
 
