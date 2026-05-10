@@ -940,6 +940,8 @@
       const park = document.getElementById('parkWelcomePage');
       if (pro)  pro.classList.toggle('hidden', _parkMode);
       if (park) park.classList.toggle('hidden', !_parkMode);
+      // 切換到 park mode 時，資料可能已就緒，立即渲染推薦區
+      if (_parkMode) renderParkRecommendations();
     }
     // 在 dashboard 時不切換畫面，只更新/移除 banner
     _updateParkBanner();
@@ -1016,7 +1018,7 @@
   }
 
   function buildParkDailyQuest() {
-    const f = window.homepageRecommendationData?.featured;
+    const f = homepageRecommendationData?.featured;
     if (!f) return `<div class="park-rec-loading">今日關卡準備中，請稍候...</div>`;
     const chips = (f.chips||[]).map(c =>
       `<span class="park-quest-chip ${_escHtml(c.tone||'')}">${_escHtml(c.label)}</span>`
@@ -1054,7 +1056,7 @@
   }
 
   function buildParkHotQuests() {
-    const list = window.homepageRecommendationData?.hot || [];
+    const list = homepageRecommendationData?.hot || [];
     if (!list.length) return `<div class="park-rec-loading" style="grid-column:1/-1">熱門關卡同步中...</div>`;
     const rankCls = ['rank-1','rank-2','rank-3','rank-4'];
     return list.slice(0,4).map((item,i) => `
@@ -1077,7 +1079,7 @@
   }
 
   function buildParkThemeQuests() {
-    const themes = window.homepageRecommendationData?.themes || [];
+    const themes = homepageRecommendationData?.themes || [];
     if (!themes.length) return `<div class="park-rec-loading" style="grid-column:1/-1">主題地圖準備中...</div>`;
     return themes.slice(0,4).map(theme => {
       const picks = (theme.picks||[]).slice(0,3).map(p =>
