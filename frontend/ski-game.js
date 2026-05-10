@@ -346,8 +346,11 @@
   /* ── 狀態 ───────────────────────────────────────── */
   let canvas, ctx;
   let animId;
-  let gameState = 'idle'; // idle | countdown | playing | dead | complete
+  let gameState = 'idle'; // idle | education_intro | education_station | education_final | countdown | playing | dead | complete
   let stockData = null;   // { symbol, closes, dates, period }
+  let educationData = null;
+  let educationSession = null;
+  let educationOverlayRects = null;
   let activeThemeBackground = null;
   let activeTerrainTheme = null;
   let practiceMode = false; // 練習模式開關
@@ -972,12 +975,195 @@
     };
   }
 
+  function getFallbackEducationData() {
+    const symbol = stockData?.symbol || '這檔股票';
+    return {
+      symbol,
+      preview: {
+        headline: `${symbol} 纜車預習`,
+        summary: '教育資料暫時不可用，先用通用節點帶你看公司故事、波動與技術地形。',
+      },
+      nodes: [
+        {
+          title: '第一站：公司故事',
+          type: 'history',
+          summary: '先把公司放回產業脈絡中，會比只盯著一天漲跌更容易理解它的市場角色。',
+          question: '理解一家公司時，哪一件事最適合放在第一步？',
+          choices: ['公司定位與商業故事', '滑雪角色的顏色', '按鈕是不是發光'],
+          answerIndex: 0,
+          explanation: '公司定位能讓後面的價格波動變得有脈絡。',
+          sourceKind: 'fallback',
+        },
+        {
+          title: '第二站：近期波動',
+          type: 'volatility',
+          summary: '價格突然震盪時，應該同時看新聞、量能與價格位置，而不是只看單一漲跌。',
+          question: '面對突然放大的震盪，第一步應該交叉檢查什麼？',
+          choices: ['新聞、量能與價格', '只看股名', '只看背景圖片'],
+          answerIndex: 0,
+          explanation: '事件、量能與價格一起看，才比較不會誤判。',
+          sourceKind: 'fallback',
+        },
+        {
+          title: '第三站：技術地形',
+          type: 'technical',
+          summary: '滑雪地形是價格路徑的遊戲化版本，坡度與轉折會讓你感覺這段行情的節奏。',
+          question: '滑雪地形主要對應什麼？',
+          choices: ['價格路徑與波動', '聊天室速度', '瀏覽器寬度'],
+          answerIndex: 0,
+          explanation: '地形起伏來自股價資料，所以滑雪同時也是讀圖練習。',
+          sourceKind: 'fallback',
+        },
+      ],
+    };
+  }
+
+  function buildEducationSession() {
+    const data = educationData || getFallbackEducationData();
+    const nodes = Array.isArray(data.nodes) && data.nodes.length ? data.nodes.slice(0, 5) : getFallbackEducationData().nodes;
+    return {
+      data,
+      nodes,
+      introIndex: 0,
+      activeNodeIndex: -1,
+      activeMode: 'intro',
+      answered: new Array(nodes.length).fill(false),
+      correct: new Array(nodes.length).fill(false),
+      selectedChoice: null,
+      feedback: '',
+      awaitingContinue: false,
+      routeTriggers: nodes.map((_, index) => (index + 1) / (nodes.length + 1)),
+      triggered: new Set(),
+      finalQuizStarted: false,
+      finalQuizComplete: false,
+    };
+  }
+
+  function getEducationGrade() {
+    if (!educationSession?.nodes?.length) return { grade: 'C', correct: 0, total: 0, summary: '尚未完成教育題' };
+    const total = educationSession.nodes.length;
+    const correct = educationSession.correct.filter(Boolean).length;
+    const ratio = correct / Math.max(1, total);
+    if (ratio >= 0.95) return { grade: 'S', correct, total, summary: '公司脈絡掌握得很完整' };
+    if (ratio >= 0.75) return { grade: 'A', correct, total, summary: '理解穩定，少數節點可複習' };
+    if (ratio >= 0.5) return { grade: 'B', correct, total, summary: '已抓到主軸，但震盪原因還能再看一次' };
+    return { grade: 'C', correct, total, summary: '建議回纜車站重新預習' };
+  }
+
+  function startCountdown() {
+    countdownVal = 3;
+    countdownTimer = 0;
+    gameState = 'countdown';
+    updateCursorVisibility();
+  }
+
+  function enterEducationIntro(index = 0) {
+    if (!educationSession?.nodes?.length) {
+      startCountdown();
+      return;
+    }
+    educationSession.introIndex = clamp(index, 0, educationSession.nodes.length - 1);
+    educationSession.activeMode = 'intro';
+    educationSession.activeNodeIndex = educationSession.introIndex;
+    educationSession.selectedChoice = null;
+    educationSession.feedback = '';
+    educationSession.awaitingContinue = false;
+    gameState = 'education_intro';
+    updateCursorVisibility();
+  }
+
+  function enterEducationQuiz(index, mode = 'mid') {
+    if (!educationSession?.nodes?.[index]) return;
+    educationSession.activeMode = mode;
+    educationSession.activeNodeIndex = index;
+    educationSession.selectedChoice = null;
+    educationSession.feedback = '';
+    educationSession.awaitingContinue = false;
+    gameState = mode === 'final' ? 'education_final' : 'education_station';
+    updateCursorVisibility();
+  }
+
+  function continueAfterEducation() {
+    if (!educationSession) {
+      startCountdown();
+      return;
+    }
+
+    if (gameState === 'education_intro') {
+      if (educationSession.introIndex < educationSession.nodes.length - 1) {
+        enterEducationIntro(educationSession.introIndex + 1);
+      } else {
+        startCountdown();
+      }
+      return;
+    }
+
+    if (gameState === 'education_station') {
+      if (!educationSession.awaitingContinue) return;
+      gameState = 'playing';
+      updateCursorVisibility();
+      return;
+    }
+
+    if (gameState === 'education_final') {
+      if (!educationSession.awaitingContinue) return;
+      const nextIndex = educationSession.nodes.findIndex((_, index) => !educationSession.answered[index]);
+      if (nextIndex >= 0) enterEducationQuiz(nextIndex, 'final');
+      else {
+        educationSession.finalQuizComplete = true;
+        gameState = 'complete';
+        updateCursorVisibility();
+      }
+    }
+  }
+
+  function skipEducationIntro() {
+    startCountdown();
+  }
+
+  function handleEducationChoice(choiceIndex) {
+    if (!educationSession) return;
+    const index = educationSession.activeNodeIndex;
+    const node = educationSession.nodes[index];
+    if (!node || educationSession.awaitingContinue) return;
+    const isCorrect = choiceIndex === node.answerIndex;
+    educationSession.selectedChoice = choiceIndex;
+    educationSession.answered[index] = true;
+    educationSession.correct[index] = isCorrect;
+    educationSession.feedback = isCorrect ? `答對了。${node.explanation}` : `再看一次會更穩。${node.explanation}`;
+    educationSession.awaitingContinue = true;
+  }
+
+  function maybeTriggerEducationStation() {
+    if (!educationSession || gameState !== 'playing') return false;
+    if (getElapsedSeconds() <= 30) return false;
+    const lastX = terrainPoints[terrainPoints.length - 1]?.x || 1;
+    const progress = (terrainScrollX + getCharX()) / Math.max(1, lastX);
+    const nextIndex = educationSession.routeTriggers.findIndex((trigger, index) => (
+      progress >= trigger && !educationSession.triggered.has(index) && !educationSession.answered[index]
+    ));
+    if (nextIndex < 0) return false;
+    educationSession.triggered.add(nextIndex);
+    enterEducationQuiz(nextIndex, 'mid');
+    return true;
+  }
+
+  function startFinalEducationQuizIfNeeded() {
+    if (!educationSession || educationSession.finalQuizStarted) return false;
+    const pendingIndex = educationSession.nodes.findIndex((_, index) => !educationSession.answered[index]);
+    if (pendingIndex < 0) return false;
+    educationSession.finalQuizStarted = true;
+    enterEducationQuiz(pendingIndex, 'final');
+    return true;
+  }
+
   /* ══════════════════════════════════════════════════
      公開 API — 從 app.js 呼叫
   ══════════════════════════════════════════════════ */
   window.SkiGame = {
     launch(data, options = {}) {
       stockData    = data; // { symbol, closes: [], dates: [], period }
+      educationData = options.education || data.education || null;
       highDetailMode = !!options.highDetail;
       practiceMode   = !!options.practice;
 
@@ -1055,6 +1241,12 @@
         elapsedSeconds: Number(getElapsedSeconds().toFixed(2)),
         dangerRatio: Number(getDangerRatio().toFixed(3)),
       },
+      education: educationSession ? {
+        active: gameState.startsWith('education'),
+        nodeIndex: educationSession.activeNodeIndex,
+        answered: educationSession.answered.filter(Boolean).length,
+        grade: getEducationGrade(),
+      } : null,
     });
   };
 
@@ -1247,6 +1439,8 @@
       heavy: 0,
     };
     resultButtonRects = null;
+    educationOverlayRects = null;
+    educationSession = buildEducationSession();
     charVisualOffsetY = 0;
     terrainCameraOffsetY = 0;
     terrainCameraTargetOffsetY = 0;
@@ -1277,7 +1471,12 @@
     updateVerticalCameraOffset();
     updateCharacterVisualOffset();
 
-    gameState = 'countdown';
+    gameState = educationSession?.nodes?.length ? 'education_intro' : 'countdown';
+    if (gameState === 'education_intro') {
+      educationSession.introIndex = 0;
+      educationSession.activeNodeIndex = 0;
+      educationSession.activeMode = 'intro';
+    }
     bindInput();
     updateCursorVisibility();
     animId = requestAnimationFrame(loop);
@@ -1311,7 +1510,11 @@
 
   function updateCursorVisibility() {
     if (!canvas) return;
-    const showCursor = gameState === 'dead' || gameState === 'complete';
+    const showCursor = gameState === 'dead'
+      || gameState === 'complete'
+      || gameState === 'education_intro'
+      || gameState === 'education_station'
+      || gameState === 'education_final';
     canvas.classList.toggle('ski-canvas-show-cursor', showCursor);
   }
 
@@ -1334,6 +1537,30 @@
   }
 
   function onMouseDown(e) {
+    if (e.button === 0 && (gameState === 'education_intro' || gameState === 'education_station' || gameState === 'education_final')) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const overlay = educationOverlayRects || {};
+      const hit = (r) => r && x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+
+      if (hit(overlay.skip)) {
+        skipEducationIntro();
+        return;
+      }
+      if (overlay.choices) {
+        const choiceIndex = overlay.choices.findIndex(hit);
+        if (choiceIndex >= 0) {
+          handleEducationChoice(choiceIndex);
+          return;
+        }
+      }
+      if (hit(overlay.continue)) {
+        continueAfterEducation();
+        return;
+      }
+    }
+
     if (e.button === 0 && (gameState === 'dead' || gameState === 'complete')) {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -1374,6 +1601,17 @@
 
   function onKey(e) {
     if (e.key === 'Escape') closeGame();
+    if (gameState === 'education_intro' || gameState === 'education_station' || gameState === 'education_final') {
+      if (e.key === 'Enter' || e.code === 'Space') {
+        e.preventDefault();
+        if (gameState === 'education_intro' || educationSession?.awaitingContinue) continueAfterEducation();
+      }
+      if (gameState === 'education_intro' && (e.key === 's' || e.key === 'S')) skipEducationIntro();
+      if ((gameState === 'education_station' || gameState === 'education_final') && /^[1-4]$/.test(e.key)) {
+        handleEducationChoice(Number(e.key) - 1);
+      }
+      return;
+    }
     if ((e.key === 'r' || e.key === 'R') && (gameState === 'dead' || gameState === 'complete')) {
       initGame();
     }
@@ -1575,17 +1813,23 @@
       streakBonusScore += frameScore - 10;
     }
 
+    if (maybeTriggerEducationStation()) {
+      return;
+    }
+
     // 關卡完成：捲過地形最後一點
     const lastX = terrainPoints[terrainPoints.length - 1].x;
     if (terrainScrollX + charX >= lastX) {
       const secondsEarly = Math.max(0, getQualifyingSeconds() - getElapsedSeconds());
       earlyFinishBonus = Math.round(secondsEarly * 50);
-      gameState = 'complete';
       disableWheelInput();
-      updateCursorVisibility();
       unlockMedal(practiceMode ? 'practiceComplete' : 'normalComplete');
       if (getEarnedStars() >= 3) unlockMedal('threeStars');
       spawnPartyParticles();
+      if (!startFinalEducationQuizIfNeeded()) {
+        gameState = 'complete';
+        updateCursorVisibility();
+      }
     }
 
     // 粒子更新
@@ -1803,7 +2047,7 @@
     drawParticles(true);
 
     // 角色
-    if (gameState === 'countdown' || gameState === 'playing' || gameState === 'dead') {
+    if (gameState === 'countdown' || gameState === 'playing' || gameState === 'dead' || gameState === 'education_station' || gameState === 'education_final') {
       drawCharacter(W);
     }
 
@@ -1825,6 +2069,10 @@
     // 倒數
     if (gameState === 'countdown') {
       drawCountdown(W, H);
+    }
+
+    if (gameState === 'education_intro' || gameState === 'education_station' || gameState === 'education_final') {
+      drawEducationOverlay(W, H);
     }
 
     // 結果畫面
@@ -3504,6 +3752,171 @@
     ctx.restore();
   }
 
+  function drawWrappedText(text, x, y, maxWidth, lineHeight, maxLines = 4) {
+    const raw = String(text || '');
+    const words = /\s/.test(raw) ? raw.split(/\s+/) : Array.from(raw);
+    const lines = [];
+    let line = '';
+    words.forEach((word) => {
+      const test = line && /\s/.test(raw) ? `${line} ${word}` : `${line}${word}`;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+    lines.slice(0, maxLines).forEach((entry, index) => {
+      const suffix = index === maxLines - 1 && lines.length > maxLines ? '...' : '';
+      ctx.fillText(entry + suffix, x, y + index * lineHeight);
+    });
+    return Math.min(lines.length, maxLines) * lineHeight;
+  }
+
+  function drawEducationOverlay(W, H) {
+    educationOverlayRects = { choices: [] };
+    const session = educationSession || buildEducationSession();
+    const node = session.nodes?.[session.activeNodeIndex] || session.nodes?.[0];
+    if (!node) return;
+
+    const isIntro = gameState === 'education_intro';
+    const isFinal = gameState === 'education_final';
+    const cardW = Math.min(720, W - 48);
+    const cardH = isIntro ? Math.min(500, H - 72) : Math.min(620, H - 72);
+    const x = W / 2 - cardW / 2;
+    const y = H / 2 - cardH / 2;
+    const pad = 28;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(2, 6, 23, 0.72)';
+    ctx.fillRect(0, 0, W, H);
+
+    if (isIntro) {
+      const cableY = Math.max(80, y - 34);
+      ctx.strokeStyle = 'rgba(186,230,253,0.55)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(W * 0.12, cableY);
+      ctx.lineTo(W * 0.88, cableY - 34);
+      ctx.stroke();
+      const gondolaX = x + cardW * ((session.introIndex + 1) / (session.nodes.length + 1));
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#67e8f9';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(gondolaX - 34, cableY - 4, 68, 44, 10);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#bae6fd';
+      ctx.font = '700 13px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${session.introIndex + 1}/${session.nodes.length}`, gondolaX, cableY + 22);
+    }
+
+    ctx.fillStyle = 'rgba(8, 16, 32, 0.94)';
+    ctx.strokeStyle = 'rgba(125, 211, 252, 0.34)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(x, y, cardW, cardH, 22);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#67e8f9';
+    ctx.font = '800 13px Inter, sans-serif';
+    const kicker = isIntro ? '開場纜車導覽' : isFinal ? '終點知識驗證' : '纜車站知識驗證';
+    ctx.fillText(kicker, x + pad, y + pad);
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '900 28px Inter, sans-serif';
+    ctx.fillText(node.title || '教育節點', x + pad, y + pad + 28);
+
+    ctx.fillStyle = 'rgba(203, 213, 225, 0.94)';
+    ctx.font = '500 17px Inter, sans-serif';
+    const summaryY = y + pad + 78;
+    const usedSummaryH = drawWrappedText(node.summary, x + pad, summaryY, cardW - pad * 2, 27, isIntro ? 5 : 4);
+    let cursorY = summaryY + usedSummaryH + 22;
+
+    if (!isIntro) {
+      ctx.fillStyle = '#e0f2fe';
+      ctx.font = '800 18px Inter, sans-serif';
+      drawWrappedText(node.question, x + pad, cursorY, cardW - pad * 2, 26, 2);
+      cursorY += 62;
+
+      (node.choices || []).slice(0, 4).forEach((choice, index) => {
+        const choiceH = 44;
+        const choiceY = cursorY + index * (choiceH + 10);
+        const selected = session.selectedChoice === index;
+        const answered = session.awaitingContinue;
+        const correct = index === node.answerIndex;
+        let fill = 'rgba(15, 23, 42, 0.9)';
+        let stroke = 'rgba(148, 163, 184, 0.22)';
+        if (answered && correct) {
+          fill = 'rgba(22, 101, 52, 0.68)';
+          stroke = 'rgba(74, 222, 128, 0.7)';
+        } else if (answered && selected && !correct) {
+          fill = 'rgba(127, 29, 29, 0.72)';
+          stroke = 'rgba(248, 113, 113, 0.7)';
+        } else if (selected) {
+          fill = 'rgba(14, 116, 144, 0.65)';
+          stroke = 'rgba(103, 232, 249, 0.75)';
+        }
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(x + pad, choiceY, cardW - pad * 2, choiceH, 12);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = '700 16px Inter, sans-serif';
+        ctx.fillText(`${index + 1}. ${choice}`, x + pad + 16, choiceY + 12);
+        educationOverlayRects.choices.push({ x: x + pad, y: choiceY, w: cardW - pad * 2, h: choiceH });
+      });
+
+      cursorY += (node.choices || []).slice(0, 4).length * 54 + 8;
+      if (session.feedback) {
+        ctx.fillStyle = session.correct[session.activeNodeIndex] ? '#bbf7d0' : '#fecaca';
+        ctx.font = '700 15px Inter, sans-serif';
+        drawWrappedText(session.feedback, x + pad, cursorY, cardW - pad * 2, 22, 3);
+      }
+    }
+
+    const btnH = 44;
+    const continueW = isIntro ? 154 : 138;
+    const continueRect = { x: x + cardW - pad - continueW, y: y + cardH - pad - btnH, w: continueW, h: btnH };
+    educationOverlayRects.continue = continueRect;
+    ctx.fillStyle = session.awaitingContinue || isIntro ? '#0e7490' : 'rgba(51, 65, 85, 0.75)';
+    ctx.strokeStyle = 'rgba(125, 211, 252, 0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(continueRect.x, continueRect.y, continueRect.w, continueRect.h, 12);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '800 16px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(isIntro ? (session.introIndex < session.nodes.length - 1 ? '下一站' : '開始滑雪') : '繼續', continueRect.x + continueRect.w / 2, continueRect.y + btnH / 2);
+
+    if (isIntro) {
+      const skipRect = { x: x + pad, y: continueRect.y, w: 128, h: btnH };
+      educationOverlayRects.skip = skipRect;
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.75)';
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
+      ctx.beginPath();
+      ctx.roundRect(skipRect.x, skipRect.y, skipRect.w, skipRect.h, 12);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillText('跳過導覽', skipRect.x + skipRect.w / 2, skipRect.y + btnH / 2);
+    }
+
+    ctx.restore();
+  }
+
   function drawCountdown(W, H) {
     ctx.save();
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -3593,6 +4006,35 @@
     return y + cardH;
   }
 
+  function drawEducationResult(W, y) {
+    const rating = getEducationGrade();
+    const cardW = 360;
+    const cardH = 74;
+    const x = W / 2 - cardW / 2;
+    ctx.save();
+    ctx.fillStyle = 'rgba(8, 47, 73, 0.78)';
+    ctx.strokeStyle = 'rgba(103, 232, 249, 0.32)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(x, y, cardW, cardH, 16);
+    ctx.fill();
+    ctx.stroke();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.font = '800 15px Inter, sans-serif';
+    ctx.fillStyle = '#bae6fd';
+    ctx.fillText('教育理解評級', x + 22, y + 24);
+    ctx.font = '600 13px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(226, 232, 240, 0.82)';
+    ctx.fillText(`${rating.correct}/${rating.total} 題正確 · ${rating.summary}`, x + 22, y + 50);
+    ctx.textAlign = 'right';
+    ctx.font = '900 42px Inter, sans-serif';
+    ctx.fillStyle = rating.grade === 'S' ? '#fde68a' : rating.grade === 'A' ? '#86efac' : rating.grade === 'B' ? '#93c5fd' : '#fca5a5';
+    ctx.fillText(rating.grade, x + cardW - 24, y + 39);
+    ctx.restore();
+    return y + cardH;
+  }
+
   function drawResultButtons(W, y, retryLabel) {
     const btnW = 150;
     const btnH = 46;
@@ -3661,7 +4103,8 @@
       ctx.fillStyle = '#4ade80';
       ctx.fillText('非系統性風險溢酬 1.3x', W / 2, centerY + 50);
     }
-    const tableBottom = drawResultTable(W, centerY + 82);
+    const eduBottom = drawEducationResult(W, centerY + 74);
+    const tableBottom = drawResultTable(W, eduBottom + 18);
 
     // 方向提示
     const tip = getElapsedSeconds() > timeLimitSeconds
@@ -3711,7 +4154,8 @@
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
     ctx.fillText(`風控評級：${rating.summary}`, W / 2, centerY + 146);
-    const tableBottom = drawResultTable(W, centerY + 178);
+    const eduBottom = drawEducationResult(W, centerY + 168);
+    const tableBottom = drawResultTable(W, eduBottom + 18);
     drawResultButtons(W, tableBottom + 26, '重新建倉');
 
     ctx.restore();

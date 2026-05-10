@@ -234,6 +234,197 @@ function dedupeStrings(items, maxCount = 3) {
   return result;
 }
 
+function normalizeEducationSymbol(symbol) {
+  return String(symbol || "").toUpperCase().replace("-", "_");
+}
+
+const EDUCATION_KNOWLEDGE = {
+  NVDA: {
+    name: "NVIDIA",
+    origin: "NVIDIA 由 Jensen Huang、Chris Malachowsky 與 Curtis Priem 在 1993 年創立，早期以圖形處理器切入 PC 遊戲與專業視覺市場。",
+    business: "公司核心是 GPU、AI 加速器、資料中心平台與軟體生態。近年資料中心與 AI 訓練需求成為市場解讀 NVIDIA 的主軸。",
+    event: "代表事件包含 GeForce 遊戲 GPU、CUDA 生態、資料中心 GPU，以及 AI 伺服器需求推升市場關注。",
+    focus: "玩家應注意 AI 需求、資料中心營收、供應鏈產能與高估值下的波動。",
+  },
+  TSLA: {
+    name: "Tesla",
+    origin: "Tesla 成立於 2003 年，後來由 Elon Musk 帶入更大規模的資金、產品與品牌敘事，讓電動車從小眾科技品變成大眾市場焦點。",
+    business: "公司核心包含電動車、電池、能源儲存、充電網路與自動駕駛軟體。市場常同時用車廠與科技平台兩種角度看它。",
+    event: "代表事件包含 Model S、Model 3 放量、全球超級充電網路、價格戰與自動駕駛功能迭代。",
+    focus: "玩家應注意交車量、毛利率、降價策略、自動駕駛進展與市場對成長敘事的信心。",
+  },
+  "2330_TW": {
+    name: "台積電",
+    origin: "台積電成立於 1987 年，是晶圓代工模式的代表公司，讓晶片設計公司可以不自建晶圓廠也能量產先進晶片。",
+    business: "公司核心是先進製程、晶圓代工、封裝與全球半導體客戶服務。市場通常把它視為 AI、手機、HPC 與全球科技供應鏈的核心節點。",
+    event: "代表事件包含純晶圓代工模式、先進製程領先、海外設廠，以及 AI/HPC 需求帶動高階製程產能。",
+    focus: "玩家應注意先進製程需求、資本支出、匯率、地緣政治與大客戶訂單變化。",
+  },
+};
+
+function getEducationKnowledge(symbol, quote = {}) {
+  const key = normalizeEducationSymbol(symbol);
+  const known = EDUCATION_KNOWLEDGE[key];
+  if (known) return known;
+
+  const name = quote.longName || quote.shortName || symbol;
+  return {
+    name,
+    origin: `${name} 的完整背景資料尚未放入本地知識庫，第一版會先用可取得的市場資料與通用公司分析框架帶玩家理解。`,
+    business: `${name} 的商業模式可先從產品服務、營收來源、客戶族群與產業位置四個角度閱讀。`,
+    event: "這檔股票的代表事件會在後續題庫擴充時補齊，現在先以價格、量能與技術面變化建立學習節點。",
+    focus: "玩家應先觀察近期漲跌幅、成交量是否放大、技術指標是否同向，以及市場是否正在重新定價它的成長故事。",
+  };
+}
+
+function buildEducationStats(quotes) {
+  const clean = (quotes || []).filter((q) => q.close !== null && q.close !== undefined);
+  const closes = clean.map((q) => +q.close);
+  const volumes = clean.map((q) => q.volume || 0);
+  const last = closes[closes.length - 1] || 0;
+  const prev = closes[closes.length - 2] || last;
+  const first = closes[0] || last || 1;
+  const change = prev ? ((last - prev) / prev) * 100 : 0;
+  const periodChange = first ? ((last - first) / first) * 100 : 0;
+  const swings = closes.slice(1).map((value, index) => Math.abs((value - closes[index]) / Math.max(1, closes[index])));
+  const volatility = average(swings) * 100;
+  const avgVolume = average(volumes.slice(-20).filter((value) => value > 0));
+  const volumePulse = avgVolume > 0 ? (volumes[volumes.length - 1] || 0) / avgVolume : 1;
+
+  return {
+    last,
+    change,
+    periodChange,
+    volatility,
+    volumePulse,
+    directionLabel: periodChange >= 0 ? "上行" : "回落",
+    changeLabel: formatPct(change),
+    periodChangeLabel: formatPct(periodChange),
+  };
+}
+
+async function fetchEducationNews(symbol, name) {
+  try {
+    const result = await yahooFinance.search(symbol, { newsCount: 4, quotesCount: 0 });
+    const news = (result?.news || []).slice(0, 3).map((item) => ({
+      title: item.title || "",
+      publisher: item.publisher || "",
+      link: item.link || "",
+      publishedAt: item.providerPublishTime
+        ? new Date(item.providerPublishTime * 1000).toISOString()
+        : null,
+    })).filter((item) => item.title);
+
+    if (!news.length) return null;
+
+    const headlineText = news.map((item, index) => `${index + 1}. ${item.title}`).join("\n");
+    let summary = `${name} 最近新聞焦點包含：${news.map((item) => item.title).join("；")}。`;
+
+    if (GEMINI_API_KEY) {
+      const prompt = `請用繁體中文把以下 ${symbol} / ${name} 的近期新聞標題整理成一段 80 字以內的遊戲教學摘要，聚焦「可能造成股價震盪的原因」。不要給投資建議，不要誇大因果。\n\n${headlineText}`;
+      try {
+        summary = await generateGeminiText(prompt, { temperature: 0.35, maxOutputTokens: 180 });
+      } catch (error) {
+        console.error("[Education Gemini News]", error.message);
+      }
+    }
+
+    return {
+      summary: String(summary || "").trim(),
+      headlines: news,
+      generatedAt: new Date().toISOString(),
+      sourceKind: GEMINI_API_KEY ? "live_news" : "fallback",
+    };
+  } catch (error) {
+    console.error("[Education News]", error.message);
+    return null;
+  }
+}
+
+function buildEducationPayload({ symbol, period, quote, chart, advice }) {
+  const knowledge = getEducationKnowledge(symbol, quote);
+  const stats = buildEducationStats(chart?.quotes || []);
+  const name = quote.longName || quote.shortName || knowledge.name || symbol;
+  const signal = advice?.signal || "中性觀望";
+  const reason = advice?.reasons?.[0]?.label || "近期技術面需要搭配價格與量能一起觀察";
+
+  return {
+    symbol,
+    period,
+    company: {
+      name,
+      exchange: quote.exchange || "",
+      story: knowledge.origin,
+      business: knowledge.business,
+      keyEvent: knowledge.event,
+      focus: knowledge.focus,
+    },
+    marketSnapshot: {
+      lastClose: stats.last ? +stats.last.toFixed(2) : null,
+      changePercent: +stats.change.toFixed(2),
+      periodChangePercent: +stats.periodChange.toFixed(2),
+      volatilityPercent: +stats.volatility.toFixed(2),
+      volumePulse: +stats.volumePulse.toFixed(2),
+      technicalSignal: signal,
+      generatedAt: new Date().toISOString(),
+    },
+    preview: {
+      headline: `${name} 纜車預習`,
+      summary: `${knowledge.origin} 這趟滑雪會把公司背景、商業模式、近期震盪與技術面拆成 4 個停靠站。`,
+      learningPoints: [
+        "這家公司從哪裡開始，市場為什麼認得它",
+        "它主要靠什麼產品或服務賺錢",
+        "近期價格震盪可能跟哪些新聞或市場情緒有關",
+        "滑雪地形如何對應這段期間的技術面變化",
+      ],
+    },
+    nodes: [
+      {
+        title: "第一站：公司起源",
+        type: "history",
+        summary: knowledge.origin,
+        question: `${name} 的公司背景最適合先從哪個角度理解？`,
+        choices: ["創立脈絡與代表定位", "今天的收盤價小數點", "滑雪角色的顏色"],
+        answerIndex: 0,
+        explanation: "公司起源能幫玩家建立長期敘事，不會只被一天漲跌牽著走。",
+        sourceKind: EDUCATION_KNOWLEDGE[normalizeEducationSymbol(symbol)] ? "curated" : "fallback",
+      },
+      {
+        title: "第二站：商業模式",
+        type: "business",
+        summary: knowledge.business,
+        question: `理解 ${name} 的商業模式時，哪一項最重要？`,
+        choices: ["它如何創造營收與市場地位", "股價線條是不是好看", "遊戲雪花多不多"],
+        answerIndex: 0,
+        explanation: "商業模式決定市場如何評價公司，也影響股價面對消息時的反應。",
+        sourceKind: EDUCATION_KNOWLEDGE[normalizeEducationSymbol(symbol)] ? "curated" : "fallback",
+      },
+      {
+        title: "第三站：近期震盪",
+        type: "volatility",
+        summary: `${name} 在目前區間呈現 ${stats.directionLabel}，區間變化 ${stats.periodChangeLabel}，最近一日變化 ${stats.changeLabel}，量能約為近 20 日均量的 ${stats.volumePulse.toFixed(1)}x。`,
+        question: "如果一段行情突然震盪變大，第一步應該先看什麼？",
+        choices: ["新聞、量能與價格是否同時變化", "只看顏色猜漲跌", "把所有波動都當成隨機"],
+        answerIndex: 0,
+        explanation: "震盪通常要同時看事件、成交量與價格位置，才不容易把雜訊當主因。",
+        sourceKind: "market_data",
+      },
+      {
+        title: "第四站：技術地形",
+        type: "technical",
+        summary: `目前技術面訊號為「${signal}」。地圖坡度會跟價格路徑連動，玩家滑過的起伏就是這段行情的形狀。`,
+        question: "滑雪地形主要對應股票資料中的哪一種資訊？",
+        choices: ["價格路徑與波動", "公司 Logo 的字體", "聊天室回覆速度"],
+        answerIndex: 0,
+        explanation: `這一關的技術重點是 ${reason}，滑雪時的上下起伏會幫你感覺這段行情的節奏。`,
+        sourceKind: "market_data",
+      },
+    ],
+    newsContext: null,
+    sourceTime: new Date().toISOString(),
+  };
+}
+
 // ═══════════════════════════════════════════════
 // 投資建議 Agent
 // ═══════════════════════════════════════════════
@@ -653,6 +844,57 @@ async function handleHomepageRecommendations(req, res) {
 
 app.get("/homepage-recommendations", handleHomepageRecommendations);
 app.get("/api/homepage-recommendations", handleHomepageRecommendations);
+
+async function handleEducation(req, res) {
+  const symbol = req.params.symbol.toUpperCase();
+  const periodParam = req.query.period || "3mo";
+  const periodMap = {
+    "1mo": monthsAgo(1), "3mo": monthsAgo(3),
+    "6mo": monthsAgo(6), "1y": monthsAgo(12), "2y": monthsAgo(24),
+  };
+  const period1 = periodMap[periodParam] || periodMap["3mo"];
+
+  try {
+    const [chart, quote] = await Promise.all([
+      yahooFinance.chart(symbol, { period1, interval: "1d" }),
+      yahooFinance.quote(symbol).catch(() => ({ shortName: symbol, longName: symbol })),
+    ]);
+
+    if (!chart?.quotes?.length) {
+      return res.status(404).json({ detail: `找不到教育資料：${symbol}` });
+    }
+
+    const quotes = chart.quotes.filter((q) => q.close !== null && q.close !== undefined);
+    const closes = quotes.map((q) => +q.close.toFixed(4));
+    const indicators = {
+      ma5: calcMA(closes, 5),
+      ma20: calcMA(closes, 20),
+      ma60: calcMA(closes, 60),
+      rsi: calcRSI(closes, 14),
+      ...calcMACD(closes),
+    };
+    const advice = generateAdvice(closes, indicators);
+    const payload = buildEducationPayload({ symbol, period: periodParam, quote, chart: { quotes }, advice });
+    const newsContext = await fetchEducationNews(symbol, payload.company.name);
+
+    if (newsContext?.summary) {
+      payload.newsContext = newsContext;
+      const volatilityNode = payload.nodes.find((node) => node.type === "volatility");
+      if (volatilityNode) {
+        volatilityNode.summary = `${newsContext.summary} 市場資料補充：區間變化 ${payload.marketSnapshot.periodChangePercent >= 0 ? "+" : ""}${payload.marketSnapshot.periodChangePercent}%、量能 ${payload.marketSnapshot.volumePulse}x。`;
+        volatilityNode.sourceKind = newsContext.sourceKind;
+      }
+    }
+
+    res.json(payload);
+  } catch (e) {
+    console.error("[Education ERR]", e.message);
+    res.status(500).json({ detail: `教育資料抓取失敗：${e.message}` });
+  }
+}
+
+app.get("/education/:symbol", handleEducation);
+app.get("/api/education/:symbol", handleEducation);
 
 app.get("/full/:symbol", async (req, res) => {
   const symbol = req.params.symbol.toUpperCase();

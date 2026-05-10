@@ -11,6 +11,7 @@ let priceChart = null;
 let volumeChart = null;
 let rsiChart = null;
 let macdChart = null;
+let currentEducationData = null;
 const HOMEPAGE_WATCHLIST_KEY = "homepageWatchlist";
 const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
   featured: {
@@ -554,7 +555,9 @@ async function loadStock() {
     }
 
     const data = await res.json();
-    renderDashboard(data);
+    renderEducationPreview(null, "loading");
+    const education = await loadEducation(symbol, period);
+    renderDashboard(data, education);
     $("dashboard").classList.remove("hidden");
 
   } catch (e) {
@@ -567,6 +570,21 @@ async function loadStock() {
   }
 }
 
+async function loadEducation(symbol, period) {
+  currentEducationData = null;
+  try {
+    const res = await fetch(`${API_BASE}/education/${encodeURIComponent(symbol)}?period=${encodeURIComponent(period)}`);
+    if (!res.ok) throw new Error("education unavailable");
+    currentEducationData = await res.json();
+    renderEducationPreview(currentEducationData, "ready");
+    return currentEducationData;
+  } catch (error) {
+    console.warn("[Education]", error.message);
+    renderEducationPreview(null, "fallback");
+    return null;
+  }
+}
+
 function setLoading(loading) {
   $("searchBtn").disabled = loading;
   $("searchBtnText").textContent = loading ? "載入中..." : "分析";
@@ -574,7 +592,7 @@ function setLoading(loading) {
 }
 
 // ── 渲染儀表板 ────────────────────────────────────
-function renderDashboard(data) {
+function renderDashboard(data, education = currentEducationData) {
   const { symbol, info, dates, ohlcv, indicators, advice } = data;
 
   // 基本資訊
@@ -631,8 +649,45 @@ function renderDashboard(data) {
     dates,
     closes: ohlcv.map(d => d.Close),
     period: $("periodSelect").value,
+    education,
   };
   renderSkiDifficultyPreview();
+}
+
+function renderEducationPreview(education, state = "ready") {
+  const card = $("educationPreviewCard");
+  if (!card) return;
+  const title = $("educationPreviewTitle");
+  const badge = $("educationPreviewBadge");
+  const summary = $("educationPreviewSummary");
+  const points = $("educationLearningPoints");
+  card.dataset.state = state;
+
+  if (state === "loading") {
+    title.textContent = "正在整理公司故事...";
+    badge.textContent = "準備中";
+    summary.textContent = "進入滑雪前，這裡會先幫你抓出公司背景、近期震盪與等一下會問的重點。";
+    points.innerHTML = "";
+    return;
+  }
+
+  if (!education) {
+    title.textContent = "教育纜車暫時離線";
+    badge.textContent = "備用模式";
+    summary.textContent = "等等仍然可以正常滑雪；教育題庫會使用遊戲內的通用備用節點。";
+    points.innerHTML = ["公司故事稍後補上", "先看價格與技術面", "滑雪分數不受教育題影響"]
+      .map((item) => `<span>${escapeHtml(item)}</span>`)
+      .join("");
+    return;
+  }
+
+  title.textContent = education.preview?.headline || `${education.symbol} 纜車預習`;
+  badge.textContent = education.newsContext?.sourceKind === "live_news" ? "含近期新聞" : "已載入";
+  summary.textContent = education.preview?.summary || education.company?.story || "已準備好教育節點。";
+  points.innerHTML = (education.preview?.learningPoints || [])
+    .slice(0, 5)
+    .map((item) => `<span>${escapeHtml(item)}</span>`)
+    .join("");
 }
 
 // ── 投資建議渲染 ──────────────────────────────────
@@ -1114,7 +1169,10 @@ function launchSkiGame() {
     return;
   }
   if (window.SkiGame) {
-    window.SkiGame.launch(window.currentGameData, { highDetail: lobbyHighDetailMode });
+    window.SkiGame.launch(window.currentGameData, {
+      highDetail: lobbyHighDetailMode,
+      education: window.currentGameData.education,
+    });
   }
 }
 
@@ -1132,12 +1190,13 @@ function launchSkiGamePractice() {
   endPct   = Math.max(startPct + 1, Math.min(100, endPct));
   if (window.SkiGame) {
     window.SkiGame.launch(window.currentGameData, { 
-      practice: true, 
+      practice: true,
       steepness, 
-      hitboxSize, 
-      startPct, 
+      hitboxSize,
+      startPct,
       endPct,
-      highDetail: lobbyHighDetailMode
+      highDetail: lobbyHighDetailMode,
+      education: window.currentGameData.education,
     });
   }
 }
