@@ -26,22 +26,28 @@ app.use("/static", express.static(frontendPath));
 
 const HOMEPAGE_THEME_DEFS = [
   {
-    id: "ai-chip",
-    icon: "🧠",
-    title: "AI 晶片",
-    desc: "聚焦算力、伺服器與 GPU 主線。",
+    id: "china-core",
+    icon: "🐉",
+    title: "中國核心",
+    desc: "先看中國平台、消費、AI 與港股科技主線。",
   },
   {
     id: "us-tech",
     icon: "💻",
     title: "美股科技",
-    desc: "先看最有話題性的美國科技龍頭。",
+    desc: "用美股科技龍頭當海外對照與補充火力。",
   },
   {
     id: "taiwan-core",
     icon: "🇹🇼",
     title: "台灣龍頭",
-    desc: "優先觀察台股核心權值與 AI 供應鏈。",
+    desc: "最後回看台股供應鏈與核心權值的呼應。",
+  },
+  {
+    id: "ai-chip",
+    icon: "🧠",
+    title: "AI 晶片",
+    desc: "把中美台算力、伺服器與 GPU 主線串成同一張地圖。",
   },
   {
     id: "high-income",
@@ -55,15 +61,16 @@ const HOMEPAGE_THEME_DEFS = [
     title: "電動車",
     desc: "高波動題材，最能反映市場情緒起伏。",
   },
-  {
-    id: "global-pulse",
-    icon: "🌐",
-    title: "全球熱點",
-    desc: "跨市場題材股，適合快速掃描風向。",
-  },
 ];
 
 const HOMEPAGE_RECOMMENDATION_UNIVERSE = [
+  { symbol: "BABA", themeIds: ["china-core"] },
+  { symbol: "9988.HK", themeIds: ["china-core"] },
+  { symbol: "PDD", themeIds: ["china-core"] },
+  { symbol: "JD", themeIds: ["china-core"] },
+  { symbol: "BIDU", themeIds: ["china-core"] },
+  { symbol: "700.HK", themeIds: ["china-core"] },
+  { symbol: "NIO", themeIds: ["future-motion", "china-core"] },
   { symbol: "NVDA", themeIds: ["ai-chip", "us-tech"] },
   { symbol: "AMD", themeIds: ["ai-chip", "us-tech"] },
   { symbol: "AVGO", themeIds: ["ai-chip", "us-tech"] },
@@ -73,7 +80,6 @@ const HOMEPAGE_RECOMMENDATION_UNIVERSE = [
   { symbol: "AMZN", themeIds: ["us-tech"] },
   { symbol: "TSLA", themeIds: ["future-motion", "us-tech"] },
   { symbol: "RIVN", themeIds: ["future-motion"] },
-  { symbol: "NIO", themeIds: ["future-motion", "global-pulse"] },
   { symbol: "2330.TW", themeIds: ["taiwan-core", "ai-chip"] },
   { symbol: "2454.TW", themeIds: ["taiwan-core", "ai-chip"] },
   { symbol: "2317.TW", themeIds: ["taiwan-core"] },
@@ -82,9 +88,6 @@ const HOMEPAGE_RECOMMENDATION_UNIVERSE = [
   { symbol: "0056.TW", themeIds: ["high-income"] },
   { symbol: "00878.TW", themeIds: ["high-income"] },
   { symbol: "00919.TW", themeIds: ["high-income"] },
-  { symbol: "BABA", themeIds: ["global-pulse"] },
-  { symbol: "PDD", themeIds: ["global-pulse"] },
-  { symbol: "700.HK", themeIds: ["global-pulse"] },
 ];
 
 const HOMEPAGE_RECOMMENDATION_CACHE_MS = 60 * 1000;
@@ -1000,7 +1003,7 @@ async function fetchEducationNews(symbol, name) {
     let summary = `${name} 最近新聞焦點包含：${news.map((item) => item.title).join("；")}。`;
 
     if (GEMINI_API_KEY) {
-      const prompt = `請用繁體中文把以下 ${symbol} / ${name} 的近期新聞標題整理成一段 80 字以內的遊戲教學摘要，聚焦「可能造成股價震盪的原因」。不要給投資建議，不要誇大因果。\n\n${headlineText}`;
+      const prompt = `請用簡體中文把以下 ${symbol} / ${name} 的近期新聞標題整理成一段 80 字以內的遊戲教學摘要，聚焦「可能造成股價震盪的原因」。不要給投資建議，不要誇大因果。\n\n${headlineText}`;
       try {
         summary = await generateGeminiText(prompt, { temperature: 0.35, maxOutputTokens: 180 });
       } catch (error) {
@@ -1240,7 +1243,7 @@ ${snapshot.name} 今天被放在首頁主推薦，不是因為單一消息面突
     return fallbackMarkdown;
   }
 
-  const prompt = `你是一位股票首頁編輯，請用繁體中文為今天首頁推薦的 ${snapshot.symbol}${snapshot.name ? `（${snapshot.name}）` : ""} 撰寫一段完整推薦敘述，並且一定要使用 Markdown 格式。
+  const prompt = `你是一位股票首頁編輯，請用簡體中文為今天首頁推薦的 ${snapshot.symbol}${snapshot.name ? `（${snapshot.name}）` : ""} 撰寫一段完整推薦敘述，並且一定要使用 Markdown 格式。
 
 請根據以下資料撰寫：
 - 單日漲跌幅：${formatPct(snapshot.changePercent)}
@@ -1465,7 +1468,7 @@ app.post("/chat", async (req, res) => {
 
   // 將股票指標數據組成 system prompt
   let systemContext = `你是一位專業的股市技術面分析師，精通 RSI、MACD、移動平均線等技術指標。
-請用繁體中文回答，語氣專業但親切，回答要具體且有根據。
+請用簡體中文回答，語氣專業但親切，回答要具體且有根據。
 回答時請注意：所有建議僅供參考，不構成實際投資建議。`;
 
   if (context && context.symbol) {

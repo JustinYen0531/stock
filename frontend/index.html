@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-CN">
 
 <head>
   <meta charset="UTF-8" />
@@ -766,6 +766,30 @@
       </div>
       <div class="picker-categories" id="pickerCategoriesLegacy">
 
+        <!-- 中概股 / 港股科技 -->
+        <div class="picker-category">
+          <div class="picker-cat-header">
+            <span class="picker-cat-icon">🐉</span>
+            <span class="picker-cat-name">中概股 / 港股科技</span>
+          </div>
+          <div class="picker-stocks">
+            <button class="picker-stock-btn" onclick="pickStock('BABA')" data-name="阿里巴巴 Alibaba"><span
+                class="ps-sym">BABA</span><span class="ps-name">阿里巴巴</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('9988.HK')" data-name="阿里巴巴 港股 Alibaba HK"><span
+                class="ps-sym">9988.HK</span><span class="ps-name">阿里 (港)</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('700.HK')" data-name="騰訊 Tencent 港股"><span
+                class="ps-sym">700.HK</span><span class="ps-name">騰訊</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('PDD')" data-name="拼多多 Pinduoduo Temu"><span
+                class="ps-sym">PDD</span><span class="ps-name">拼多多</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('JD')" data-name="京東 JD.com"><span
+                class="ps-sym">JD</span><span class="ps-name">京東</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('BIDU')" data-name="百度 Baidu"><span
+                class="ps-sym">BIDU</span><span class="ps-name">百度</span></button>
+            <button class="picker-stock-btn" onclick="pickStock('NIO')" data-name="蔚來 NIO 電動車"><span
+                class="ps-sym">NIO</span><span class="ps-name">蔚來 NIO</span></button>
+          </div>
+        </div>
+
         <!-- 美國科技 -->
         <div class="picker-category">
           <div class="picker-cat-header">
@@ -927,28 +951,6 @@
                 class="ps-sym">GLD</span><span class="ps-name">黃金 ETF</span></button>
             <button class="picker-stock-btn" onclick="pickStock('SLV')" data-name="Silver Trust ETF 白銀"><span
                 class="ps-sym">SLV</span><span class="ps-name">白銀 ETF</span></button>
-          </div>
-        </div>
-
-        <!-- 中概股 -->
-        <div class="picker-category">
-          <div class="picker-cat-header">
-            <span class="picker-cat-icon">🐉</span>
-            <span class="picker-cat-name">中概股</span>
-          </div>
-          <div class="picker-stocks">
-            <button class="picker-stock-btn" onclick="pickStock('BABA')" data-name="阿里巴巴 Alibaba"><span
-                class="ps-sym">BABA</span><span class="ps-name">阿里巴巴</span></button>
-            <button class="picker-stock-btn" onclick="pickStock('PDD')" data-name="拼多多 Pinduoduo Temu"><span
-                class="ps-sym">PDD</span><span class="ps-name">拼多多</span></button>
-            <button class="picker-stock-btn" onclick="pickStock('JD')" data-name="京東 JD.com"><span
-                class="ps-sym">JD</span><span class="ps-name">京東</span></button>
-            <button class="picker-stock-btn" onclick="pickStock('BIDU')" data-name="百度 Baidu"><span
-                class="ps-sym">BIDU</span><span class="ps-name">百度</span></button>
-            <button class="picker-stock-btn" onclick="pickStock('9988.HK')" data-name="阿里巴巴 港股 Alibaba HK"><span
-                class="ps-sym">9988.HK</span><span class="ps-name">阿里 (港)</span></button>
-            <button class="picker-stock-btn" onclick="pickStock('700.HK')" data-name="騰訊 Tencent 港股"><span
-                class="ps-sym">700.HK</span><span class="ps-name">騰訊</span></button>
           </div>
         </div>
 
@@ -1244,6 +1246,12 @@
 
   /* ── 售票亭選股資料 ─────────────────────────── */
   const _PARK_STOCKS = [
+    { cat:'🐉 中概股 / 港股科技', stocks:[
+      {sym:'BABA',name:'阿里巴巴'},{sym:'9988.HK',name:'阿里 (港)'},
+      {sym:'700.HK',name:'騰訊'},{sym:'PDD',name:'拼多多'},
+      {sym:'JD',name:'京東'},{sym:'BIDU',name:'百度'},
+      {sym:'NIO',name:'蔚來 NIO'},
+    ]},
     { cat:'💻 美國科技', stocks:[
       {sym:'AAPL',name:'Apple'},{sym:'MSFT',name:'Microsoft'},
       {sym:'GOOGL',name:'Google'},{sym:'META',name:'Meta'},
@@ -1280,10 +1288,6 @@
     { cat:'🛢️ 能源/原物料', stocks:[
       {sym:'XOM',name:'ExxonMobil'},{sym:'CVX',name:'Chevron'},
       {sym:'COP',name:'ConocoPhillips'},{sym:'GLD',name:'黃金 ETF'},{sym:'SLV',name:'白銀 ETF'},
-    ]},
-    { cat:'🐉 中概股', stocks:[
-      {sym:'BABA',name:'阿里巴巴'},{sym:'PDD',name:'拼多多'},
-      {sym:'JD',name:'京東'},{sym:'BIDU',name:'百度'},
     ]},
   ];
 
@@ -1516,8 +1520,8 @@
     let log = [];
     try { const s = localStorage.getItem('_parkQuestLog'); if (s) log = JSON.parse(s); } catch(e) {}
     const now = new Date();
-    const timeStr = now.toLocaleDateString('zh-TW') + ' ' +
-      now.toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'});
+    const timeStr = now.toLocaleDateString('zh-CN') + ' ' +
+      now.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
     const idx = log.findIndex(q => q.symbol === symbol);
     if (idx >= 0) {
       log[idx].count = (log[idx].count || 1) + 1;
