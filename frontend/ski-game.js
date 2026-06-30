@@ -1,32 +1,32 @@
 /* ═══════════════════════════════════════════════════════════════
    ski-game.js  —  Stock Ski Game
-   玩法：股票收盤線橫穿畫面，角色 hitbox 必須保持在線上（上下都不能完全超過）
-   控制：滑鼠滾輪上下移動角色
+   玩法：股票收盘线横穿画面，角色 hitbox 必须保持在线上（上下都不能完全超过）
+   控制：鼠标滚轮上下移动角色
    ═══════════════════════════════════════════════════════════════ */
 
 (function () {
-  /* ── 常數 ───────────────────────────────────────── */
+  /* ── 常数 ───────────────────────────────────────── */
   const HITBOX_H       = 40;   // 一般模式 hitbox 高度 (px)
-  const HITBOX_W       = 28;   // 角色 hitbox 寬度 (px)
-  const SCROLL_SPEED   = 6.0;  // 基準速度
-  const MIN_SPEED      = 3.0;  // 極限最低速
-  const MAX_SPEED      = 11.0; // 極限最高速
-  const SCROLL_SENS    = 18;   // 滾輪靈敏度
-  const BOOST_MULTIPLIER = 2.8; // 按住中鍵時的滾輪增幅
-  const SPEED_BOOST_MULT = 1.5; // 右鍵 / D 最快 1.5x
-  const SPEED_BRAKE_MULT = 0.8; // 左鍵 / A 最慢 0.8x
-  const CHAR_X_RATIO   = 0.3; // 基準鏡頭錨點：角色目標落在畫面左 30%
-  const CHAR_Y_RATIO   = 0.7; // 角色初始落點仍在較下方
-  const CAMERA_DEAD_ZONE_TOP_RATIO = 0.6; // 死區上緣
-  const CAMERA_DEAD_ZONE_BOTTOM_RATIO = 0.78; // 死區下緣
-  const CAMERA_FOLLOW_STRENGTH = 0.55; // 超出死區後，鏡頭只跟一部分
-  const CAMERA_VERTICAL_DAMPING = 0.16; // 垂直鏡頭平滑度
-  const CAMERA_FLOOR_MARGIN_RATIO = 0.28; // 鏡頭更早踩到底板，保留角色往下脫線的操作空間
-  const PLAYER_MIN_HEIGHT_FROM_BOTTOM_RATIO = 0.3; // 角色碰到底部 30% 停線後，後續下拉改由鏡頭接手
-  const BELOW_LINE_DANGER_MULTIPLIER = 0.45; // 在線下方時放慢 danger 累積，避免看起來像被卡住
-  const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
-  const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
-  const EDUCATION_FAST_ANSWER_MAX_BONUS_SECONDS = 6; // 單題答得越快，最多額外送 6 秒主時間
+  const HITBOX_W       = 28;   // 角色 hitbox 宽度 (px)
+  const SCROLL_SPEED   = 6.0;  // 基准速度
+  const MIN_SPEED      = 3.0;  // 极限最低速
+  const MAX_SPEED      = 11.0; // 极限最高速
+  const SCROLL_SENS    = 18;   // 滚轮灵敏度
+  const BOOST_MULTIPLIER = 2.8; // 按住中键时的滚轮增幅
+  const SPEED_BOOST_MULT = 1.5; // 右键 / D 最快 1.5x
+  const SPEED_BRAKE_MULT = 0.8; // 左键 / A 最慢 0.8x
+  const CHAR_X_RATIO   = 0.3; // 基准镜头锚点：角色目标落在画面左 30%
+  const CHAR_Y_RATIO   = 0.7; // 角色初始落点仍在较下方
+  const CAMERA_DEAD_ZONE_TOP_RATIO = 0.6; // 死区上缘
+  const CAMERA_DEAD_ZONE_BOTTOM_RATIO = 0.78; // 死区下缘
+  const CAMERA_FOLLOW_STRENGTH = 0.55; // 超出死区后，镜头只跟一部分
+  const CAMERA_VERTICAL_DAMPING = 0.16; // 垂直镜头平滑度
+  const CAMERA_FLOOR_MARGIN_RATIO = 0.28; // 镜头更早踩到底板，保留角色往下脱线的操作空间
+  const PLAYER_MIN_HEIGHT_FROM_BOTTOM_RATIO = 0.3; // 角色碰到底部 30% 停线后，后续下拉改由镜头接手
+  const BELOW_LINE_DANGER_MULTIPLIER = 0.45; // 在线下方时放慢 danger 累积，避免看起来像被卡住
+  const LINE_Y_MID     = 0.55; // 地平线在画面高度的比例
+  const TIME_LIMIT_RATIO = 0.8; // 通关时间限制：正常基准时间的 80%
+  const EDUCATION_FAST_ANSWER_MAX_BONUS_SECONDS = 6; // 单题答得越快，最多额外送 6 秒主时间
   const CAMERA_STATE_FREE = 'free';
   const CAMERA_STATE_LOCKED = 'locked';
   const CAMERA_STATE_DYNAMIC = 'dynamic';
@@ -50,23 +50,23 @@
     "1y":  { mapWidth: 7.0, heightScale: 0.92, localSensitivity: 1.12, slopeAccel: 0.07, dangerTolerance: 50 },
     "2y":  { mapWidth: 8.2, heightScale: 1.02, localSensitivity: 1.28, slopeAccel: 0.075, dangerTolerance: 54 },
   };
-  // 練習模式係數 (乘以一般值)
-  const PRACTICE_HEIGHT_SCALE_MULT  = 0.55; // 地形高度縮減到 55% (更平緩)
+  // 练习模式系数 (乘以一般值)
+  const PRACTICE_HEIGHT_SCALE_MULT  = 0.55; // 地形高度缩减到 55% (更平缓)
   const PRACTICE_SLOPE_ACCEL_MULT   = 0.50; // 斜率加速只有 50% (更慢)
-  const PRACTICE_DANGER_TOL_MULT    = 2.5;  // 容忍時間放大 2.5 倍
-  const PRACTICE_HITBOX_H           = 72;   // 練習模式 hitbox 高度 (比一般大很多)
-  const DANGER_LIMIT_MULTIPLIER     = 5.5;  // 累積容錯大幅提高，讓單次失誤不至於直接淘汰
+  const PRACTICE_DANGER_TOL_MULT    = 2.5;  // 容忍时间放大 2.5 倍
+  const PRACTICE_HITBOX_H           = 72;   // 练习模式 hitbox 高度 (比一般大很多)
+  const DANGER_LIMIT_MULTIPLIER     = 5.5;  // 累积容错大幅提高，让单次失误不至于直接淘汰
   const THEME_MANIFEST_URL = `${THEME_BACKGROUND_BASE}/manifest.json`;
   const TERRAIN_THEME_PRESETS = {
-    "數位冰原": { base: '#0d3455', mid: '#0b5876', glow: '#67e8f9', accent: '#22d3ee', shadow: '#06101a', snow: '#e0f2fe', pattern: 'circuit', edge: 'ice' },
-    "雲端之巔": { base: '#16345c', mid: '#225b87', glow: '#bae6fd', accent: '#7dd3fc', shadow: '#081323', snow: '#f0f9ff', pattern: 'cloud', edge: 'soft' },
+    "数字冰原": { base: '#0d3455', mid: '#0b5876', glow: '#67e8f9', accent: '#22d3ee', shadow: '#06101a', snow: '#e0f2fe', pattern: 'circuit', edge: 'ice' },
+    "云端之巅": { base: '#16345c', mid: '#225b87', glow: '#bae6fd', accent: '#7dd3fc', shadow: '#081323', snow: '#f0f9ff', pattern: 'cloud', edge: 'soft' },
     "零售超市": { base: '#6a2a12', mid: '#b45309', glow: '#fdba74', accent: '#fb923c', shadow: '#1b0e0a', snow: '#fff7ed', pattern: 'retail', edge: 'tape' },
-    "未來交通": { base: '#1f3348', mid: '#4b6b8f', glow: '#dbeafe', accent: '#93c5fd', shadow: '#091018', snow: '#f8fafc', pattern: 'transit', edge: 'sleek' },
+    "未来交通": { base: '#1f3348', mid: '#4b6b8f', glow: '#dbeafe', accent: '#93c5fd', shadow: '#091018', snow: '#f8fafc', pattern: 'transit', edge: 'sleek' },
     "摩天雪都": { base: '#28374d', mid: '#52647d', glow: '#fde68a', accent: '#facc15', shadow: '#0f1722', snow: '#f8fafc', pattern: 'finance', edge: 'temple' },
-    "穩收金庫": { base: '#2c4058', mid: '#556f8d', glow: '#fde68a', accent: '#facc15', shadow: '#0d1521', snow: '#f8fafc', pattern: 'marble', edge: 'temple' },
-    "綠能山脈": { base: '#164e3d', mid: '#1f7a59', glow: '#86efac', accent: '#4ade80', shadow: '#07110d', snow: '#ecfdf5', pattern: 'energy', edge: 'charged' },
-    "鋼鐵峽谷": { base: '#3a424d', mid: '#5b6470', glow: '#fdba74', accent: '#f97316', shadow: '#12161b', snow: '#f3f4f6', pattern: 'industrial', edge: 'hard' },
-    "霓虹傳媒": { base: '#34184e', mid: '#6b21a8', glow: '#f0abfc', accent: '#e879f9', shadow: '#130817', snow: '#faf5ff', pattern: 'neon', edge: 'glitch' },
+    "稳收金库": { base: '#2c4058', mid: '#556f8d', glow: '#fde68a', accent: '#facc15', shadow: '#0d1521', snow: '#f8fafc', pattern: 'marble', edge: 'temple' },
+    "绿能山脉": { base: '#164e3d', mid: '#1f7a59', glow: '#86efac', accent: '#4ade80', shadow: '#07110d', snow: '#ecfdf5', pattern: 'energy', edge: 'charged' },
+    "钢铁峡谷": { base: '#3a424d', mid: '#5b6470', glow: '#fdba74', accent: '#f97316', shadow: '#12161b', snow: '#f3f4f6', pattern: 'industrial', edge: 'hard' },
+    "霓虹传媒": { base: '#34184e', mid: '#6b21a8', glow: '#f0abfc', accent: '#e879f9', shadow: '#130817', snow: '#faf5ff', pattern: 'neon', edge: 'glitch' },
     "default": { base: '#20405f', mid: '#305d85', glow: '#93c5fd', accent: '#60a5fa', shadow: '#08111b', snow: '#eff6ff', pattern: 'ice', edge: 'ice' },
   };
   const TSMC_HERO_PACK = [
@@ -505,7 +505,7 @@
     'meta-neon-path': { src: `${META_PROP_BASE}/neon-path.png`, raw: true },
   };
 
-  /* ── 狀態 ───────────────────────────────────────── */
+  /* ── 状态 ───────────────────────────────────────── */
   let canvas, ctx;
   let animId;
   let gameState = 'idle'; // idle | education_intro | education_station | education_final | countdown | playing | dead | complete
@@ -516,10 +516,10 @@
   const EDUCATION_QUESTION_LIMIT_SECONDS = 15;
   let activeThemeBackground = null;
   let activeTerrainTheme = null;
-  let practiceMode = false; // 練習模式開關
-  let practiceOpts = { steepness: 40, hitboxSize: 60, startPct: 0, endPct: 100 }; // 從滑框傳入
+  let practiceMode = false; // 练习模式开关
+  let practiceOpts = { steepness: 40, hitboxSize: 60, startPct: 0, endPct: 100 }; // 从滑框传入
 
-  // ── 視覺細節狀態 ──
+  // ── 视觉细节状态 ──
   let highDetailMode = false;
   let themeAssets = { vista: null, texture: null };
   let cachedPatterns = { terrain: null, detail: null, hd: null, hdSrc: null, themeSrc: null };
@@ -540,7 +540,7 @@
   let themeManifestMap = null;
   let themeManifestPromise = null;
 
-  // 動態取得當前 hitbox 高度
+  // 动态获取当前 hitbox 高度
   // hitboxSize 1√100 → 映射到 40√100px
   function getHitboxH() {
     if (!practiceMode) return HITBOX_H;
@@ -590,8 +590,8 @@
   }
 
   // 地形
-  let terrainPoints = []; // [{x, y}] 已映射到畫面座標
-  let terrainScrollX = 0; // 目前已捲過多少 px
+  let terrainPoints = []; // [{x, y}] 已映射到画面座标
+  let terrainScrollX = 0; // 目前已卷过多少 px
   let activeCloses = [];
   let activeDates = [];
   let activeMapDifficulty = null;
@@ -607,8 +607,8 @@
 
   // 角色
   let charY = 200;        // 角色中心 Y
-  let charTargetY = 200;  // 滾輪目標 Y（加平滑）
-  let charVisualOffsetY = 0; // 保留角色視覺偏移欄位，預設收斂回 0
+  let charTargetY = 200;  // 滚轮目标 Y（加平滑）
+  let charVisualOffsetY = 0; // 保留角色视觉偏移栏位，预设收敛回 0
   let terrainCameraOffsetY = 0;
   let terrainCameraTargetOffsetY = 0;
   let verticalCameraOffsetY = 0;
@@ -623,17 +623,17 @@
   let cameraState = CAMERA_STATE_FREE;
   let cameraFocusStrength = 0;
   let cameraFocusWorldX = null;
-  let isBoosting = false; // 滑鼠中鍵按住時提升上下移動幅度
+  let isBoosting = false; // 鼠标中键按住时提升上下移动幅度
   let spaceBoostDown = false;
 
-  // 危險計時
+  // 危险计时
   let dangerFrames = 0;
   let isDangerAbove = false;
   let isDangerBelow = false;
 
   // HUD
   let score = 0;
-  let maxPossibleScore = 0; // 本關理論最高分
+  let maxPossibleScore = 0; // 本关理论最高分
   let mouseOnlyRun = true;
   let surviveFrames = 0;
   let timeLimitSeconds = 0;
@@ -1144,7 +1144,7 @@
       symbol: symbol || '',
       name: entry?.name || symbol || '',
       industryClass: entry?.industryClass || 'Theme',
-      environmentBiome: entry?.environmentBiome || '滑雪山體',
+      environmentBiome: entry?.environmentBiome || '滑雪山体',
       props: companyProps,
       heroProps,
       mixerLogic: entry?.mixerLogic || '',
@@ -1165,10 +1165,10 @@
     ensureThemeManifest();
     activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
 
-    // 永遠嘗試載入主題資產（GOOGL/INTC 有資產的才會真的去抓圖）
+    // 永远尝试加载主题资产（GOOGL/INTC 有资产的才会真的去抓图）
     loadThemeAssets(stockData?.symbol);
 
-    // 主題切換時清除 Pattern 快取
+    // 主题切换时清除 Pattern 快取
     cachedPatterns = { terrain: null, detail: null, hd: null, hdSrc: null, themeSrc: null };
 
     for (const prop of activeTerrainTheme?.props || []) ensurePropSprite(prop);
@@ -1186,10 +1186,10 @@
 
   function getExecutionRating() {
     const stars = getEarnedStars();
-    if (stars >= 3) return { badge: 'AAA', summary: '風控紀律近乎零偏差' };
-    if (stars === 2) return { badge: 'AA', summary: '策略執行穩健，收益與風險平衡' };
-    if (stars === 1) return { badge: 'A', summary: '已完成建倉，仍可再壓低追蹤誤差' };
-    return { badge: 'B', summary: '完成執行，但風險控制仍待優化' };
+    if (stars >= 3) return { badge: 'AAA', summary: '风控纪律近乎零偏差' };
+    if (stars === 2) return { badge: 'AA', summary: '策略执行稳健，收益与风险平衡' };
+    if (stars === 1) return { badge: 'A', summary: '已完成建仓，仍可再压低追踪误差' };
+    return { badge: 'B', summary: '完成执行，但风险控制仍待优化' };
   }
 
   function unlockMedal(key) {
@@ -1223,72 +1223,72 @@
   }
 
   function getFallbackEducationData() {
-    const symbol = stockData?.symbol || '這檔股票';
+    const symbol = stockData?.symbol || '这只股票';
     return {
       symbol,
       preview: {
-        headline: `${symbol} 纜車預習`,
-        summary: '教育資料暫時不可用，先用通用節點帶你看公司故事、波動與技術地形。',
+        headline: `${symbol} 缆车预习`,
+        summary: '教育数据暂时不可用，先用通用节点带你看公司故事、波动与技术地形。',
       },
       nodes: [
         {
           title: '第一站：公司故事',
           type: 'history',
-          summary: '先把公司放回產業脈絡中，會比只盯著一天漲跌更容易理解它的市場角色。',
+          summary: '先把公司放回产业脉络中，会比只盯着一天涨跌更容易理解它的市场角色。',
           bullets: [
-            '先看公司定位，不急著判斷一天的漲跌。',
-            '把產品、客戶與產業位置串起來，後面的波動才有故事。',
-            '公司故事是這趟滑雪的地圖底稿。',
+            '先看公司定位，不急着判断一天的涨跌。',
+            '把产品、客户与产业位置串起来，后面的波动才有故事。',
+            '公司故事是这趟滑雪的地图底稿。',
           ],
-          question: '理解一家公司時，哪一件事最適合放在第一步？',
+          question: '理解一家公司时，哪一件事最适合放在第一步？',
           choices: [
-            '公司定位與商業故事',
-            '先看單日漲跌，再回頭找理由',
-            '只看市場熱門題材，不管產品與客戶',
-            '只依技術指標，不檢查公司脈絡',
+            '公司定位与商业故事',
+            '先看单日涨跌，再回头找理由',
+            '只看市场热门题材，不管产品与客户',
+            '只依技术指标，不检查公司脉络',
           ],
           answerIndex: 0,
-          explanation: '公司定位能讓後面的價格波動變得有脈絡。',
+          explanation: '公司定位能让后面的价格波动变得有脉络。',
           sourceKind: 'fallback',
         },
         {
-          title: '第二站：近期波動',
+          title: '第二站：近期波动',
           type: 'volatility',
-          summary: '價格突然震盪時，應該同時看新聞、量能與價格位置，而不是只看單一漲跌。',
+          summary: '价格突然震荡时，应该同时看新闻、量能与价格位置，而不是只看单一涨跌。',
           bullets: [
-            '突然變陡時，先問市場正在重新定價什麼。',
-            '新聞、量能與價格位置要一起看。',
-            '單一漲跌不等於完整原因，交叉檢查比較穩。',
+            '突然变陡时，先问市场正在重新定价什么。',
+            '新闻、量能与价格位置要一起看。',
+            '单一涨跌不等于完整原因，交叉检查比较稳。',
           ],
-          question: '面對突然放大的震盪，第一步應該交叉檢查什麼？',
+          question: '面对突然放大的震荡，第一步应该交叉检查什么？',
           choices: [
-            '新聞、量能與價格',
-            '只看價格方向，先不管事件原因',
-            '只看成交量變大，就直接判斷趨勢成立',
-            '只看熱門討論度，忽略價格所在位置',
+            '新闻、量能与价格',
+            '只看价格方向，先不管事件原因',
+            '只看成交量变大，就直接判断趋势成立',
+            '只看热门讨论度，忽略价格所在位置',
           ],
           answerIndex: 0,
-          explanation: '事件、量能與價格一起看，才比較不會誤判。',
+          explanation: '事件、量能与价格一起看，才比较不会误判。',
           sourceKind: 'fallback',
         },
         {
-          title: '第三站：技術地形',
+          title: '第三站：技术地形',
           type: 'technical',
-          summary: '滑雪地形是價格路徑的遊戲化版本，坡度與轉折會讓你感覺這段行情的節奏。',
+          summary: '滑雪地形是价格路径的游戏化版本，坡度与转折会让你感觉这段行情的节奏。',
           bullets: [
-            '坡度代表價格變化的節奏。',
-            '急轉彎通常對應較大的行情轉折。',
-            '滑雪不是只拚速度，也是在練習跟住價格路徑。',
+            '坡度代表价格变化的节奏。',
+            '急转弯通常对应较大的行情转折。',
+            '滑雪不是只拼速度，也是在练习跟住价格路径。',
           ],
-          question: '滑雪地形主要對應什麼？',
+          question: '滑雪地形主要对应什么？',
           choices: [
-            '價格路徑與波動',
-            '公司新聞的重要程度排序',
-            '市場情緒熱度的單一分數',
-            '玩家按鍵速度造成的隨機坡度',
+            '价格路径与波动',
+            '公司新闻的重要程度排序',
+            '市场情绪热度的单一分数',
+            '玩家按键速度造成的随机坡度',
           ],
           answerIndex: 0,
-          explanation: '地形起伏來自股價資料，所以滑雪同時也是讀圖練習。',
+          explanation: '地形起伏来自股价数据，所以滑雪同时也是读图练习。',
           sourceKind: 'fallback',
         },
       ],
@@ -1338,14 +1338,14 @@
   }
 
   function getEducationGrade() {
-    if (!educationSession?.nodes?.length) return { grade: 'C', correct: 0, total: 0, summary: '尚未完成教育題' };
+    if (!educationSession?.nodes?.length) return { grade: 'C', correct: 0, total: 0, summary: '尚未完成教育题' };
     const total = educationSession.nodes.length;
     const correct = educationSession.correct.filter(Boolean).length;
     const ratio = correct / Math.max(1, total);
-    if (ratio >= 0.95) return { grade: 'S', correct, total, summary: '公司脈絡掌握得很完整' };
-    if (ratio >= 0.75) return { grade: 'A', correct, total, summary: '理解穩定，少數節點可複習' };
-    if (ratio >= 0.5) return { grade: 'B', correct, total, summary: '已抓到主軸，但震盪原因還能再看一次' };
-    return { grade: 'C', correct, total, summary: '建議回纜車站重新預習' };
+    if (ratio >= 0.95) return { grade: 'S', correct, total, summary: '公司脉络掌握得很完整' };
+    if (ratio >= 0.75) return { grade: 'A', correct, total, summary: '理解稳定，少数节点可复习' };
+    if (ratio >= 0.5) return { grade: 'B', correct, total, summary: '已抓到主轴，但震荡原因还能再看一次' };
+    return { grade: 'C', correct, total, summary: '建议回缆车站重新预习' };
   }
 
   function getCableScoreSummary() {
@@ -1510,10 +1510,10 @@
     educationTimeBonusSeconds += timeBonusSeconds;
     timeLimitSeconds += timeBonusSeconds;
     educationSession.feedback = timedOut
-      ? `時間到，這題算錯。${node.explanation}`
+      ? `时间到，这题算错。${node.explanation}`
       : isCorrect
-        ? `答對了，主時間額外增加 ${timeBonusSeconds.toFixed(1)} 秒。${node.explanation}`
-        : `再看一次會更穩。${node.explanation}`;
+        ? `答对了，主时间额外增加 ${timeBonusSeconds.toFixed(1)} 秒。${node.explanation}`
+        : `再看一次会更稳。${node.explanation}`;
     educationSession.awaitingContinue = true;
   }
 
@@ -1580,7 +1580,7 @@
   }
 
   /* ══════════════════════════════════════════════════
-     公開 API — 從 app.js 呼叫
+     公开 API — 从 app.js 呼叫
   ══════════════════════════════════════════════════ */
   window.SkiGame = {
     launch(data, options = {}) {
@@ -1618,7 +1618,7 @@
       const btn = document.querySelector('.ski-detail-toggle');
       if (btn) {
         btn.classList.toggle('active', highDetailMode);
-        btn.querySelector('.detail-label').textContent = highDetailMode ? '高細節模式：開啟' : '低細節模式';
+        btn.querySelector('.detail-label').textContent = highDetailMode ? '高细节模式：开启' : '低细节模式';
       }
       refreshThemeAssets();
     }
@@ -1700,7 +1700,7 @@
 
   ensureThemeManifest();
 
-  /* ── Modal 開關 ─────────────────────────────────── */
+  /* ── Modal 开关 ─────────────────────────────────── */
   function openModal() {
     let modal = document.getElementById('skiGameModal');
     if (!modal) {
@@ -1730,16 +1730,16 @@
     modal.className = 'ski-modal hidden';
     modal.innerHTML = `
       <canvas id="skiCanvas"></canvas>
-      <button class="ski-close-btn" onclick="SkiGame.close()">✕ 離開</button>
+      <button class="ski-close-btn" onclick="SkiGame.close()">? 离开</button>
       <button class="ski-detail-toggle ${highDetailMode ? 'active' : ''}" onclick="SkiGame.toggleDetail()">
-        <span class="detail-label">${highDetailMode ? '高細節模式：開啟' : '低細節模式'}</span>
+        <span class="detail-label">${highDetailMode ? '高细节模式：开启' : '低细节模式'}</span>
       </button>
-      <div class="ski-hint">🖱️ 滾輪上下移動 &nbsp;·&nbsp; 同時按住 ←→ 或 A+D 往右衝刺 &nbsp;·&nbsp; 別被拖到最左邊</div>
+      <div class="ski-hint">??? 滚轮上下移动 &nbsp;·&nbsp; 同时按住 ←→ 或 A+D 往右冲刺 &nbsp;·&nbsp; 别被拖到最左边</div>
     `;
     return modal;
   }
 
-  // ── 主題資產加載 ──
+  // ── 主题资产加载 ──
   function loadThemeAssets(symbol) {
     themeAssets = { vista: null, texture: null };
     highDetailVistaCache = { canvas: null, img: null, width: 0, height: 0 };
@@ -1750,12 +1750,12 @@
     const vistaImg = new Image();
     vistaImg.src = `/static/assets/themes/${themeDir}/vista.png`;
     vistaImg.onload = () => { themeAssets.vista = vistaImg; };
-    vistaImg.onerror = () => console.warn(`[theme] vista 載入失敗: ${vistaImg.src}`);
+    vistaImg.onerror = () => console.warn(`[theme] vista 加载失败: ${vistaImg.src}`);
 
     const textureImg = new Image();
     textureImg.src = `/static/assets/themes/${themeDir}/texture.png`;
     textureImg.onload = () => { themeAssets.texture = textureImg; };
-    textureImg.onerror = () => console.warn(`[theme] texture 載入失敗: ${textureImg.src}`);
+    textureImg.onerror = () => console.warn(`[theme] texture 加载失败: ${textureImg.src}`);
   }
 
 
@@ -1778,14 +1778,14 @@
     }
   }
 
-  /* ── 地形建構 ────────────────────────────────────── */
+  /* ── 地形建构 ────────────────────────────────────── */
   function buildTerrain() {
     if (!stockData || !canvas) return;
     const allCloses = stockData.closes;
     const allDates = stockData.dates || [];
     const allN = allCloses.length;
 
-    // 練習模式：依百分比切片地形
+    // 练习模式：依百分比切片地形
     let closes = allCloses;
     let dates = allDates;
     if (practiceMode && (practiceOpts.startPct > 0 || practiceOpts.endPct < 100)) {
@@ -1845,7 +1845,7 @@
       activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
     }
 
-  /* ── 初始化遊戲 ──────────────────────────────────── */
+  /* ── 初始化游戏 ──────────────────────────────────── */
   function initGame() {
     cancelAnimationFrame(animId);
     unbindInput();
@@ -1895,13 +1895,13 @@
     refreshThemeAssets();
     buildTerrain();
 
-    // 計算理論最高分 (假設每幀都是完美狀態 x10)
-    // 我們粗略估計：總距離 / 平均速度 = 總幀數 * 10
+    // 计算理论最高分 (假设每帧都是完美状态 x10)
+    // 我们粗略估计：总距离 / 平均速度 = 总帧数 * 10
     const lastX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     maxPossibleScore = Math.floor((lastX / SCROLL_SPEED) * 10);
     timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO);
 
-    // 角色與橘線固定在較低的畫面錨點，山體則對齊到這條線
+    // 角色与橘线固定在较低的画面锚点，山体则对齐到这条线
     const charX = getCharX();
     charY       = getCharAnchorY();
     charTargetY = charY;
@@ -1927,7 +1927,7 @@
     animId = requestAnimationFrame(loop);
   }
 
-  /* ── 輸入綁定 ────────────────────────────────────── */
+  /* ── 输入绑定 ────────────────────────────────────── */
   function bindInput() {
     canvas.addEventListener('wheel', onWheel, { passive: false });
     canvas.addEventListener('mousedown', onMouseDown);
@@ -2141,7 +2141,7 @@
     }
   }
 
-  /* ── 主迴圈 ──────────────────────────────────────── */
+  /* ── 主回圈 ──────────────────────────────────────── */
   function loop() {
     const now = performance.now();
     if (!lastFrameTs) lastFrameTs = now;
@@ -2207,25 +2207,25 @@
     const config = getPeriodConfig();
     const charX = getCharX();
 
-    // 平滑移動角色
+    // 平滑移动角色
     charY += (charTargetY - charY) * frameAdjustedLerp(0.18, frameScale);
 
-    // 計算目前捲動位置對應的地形 Y
+    // 计算目前卷动位置对应的地形 Y
     const lineYBeforeScroll = getLineYAt(terrainScrollX + charX);
 
-    // ── 持續式速度物理 ──
-    const lookAhead = 25; // 地圖變長後，讀取更遠一點的點來反應斜率變化
+    // ── 持续式速度物理 ──
+    const lookAhead = 25; // 地图变长后，读取更远一点的点来反应斜率变化
     const nextLineY = getLineYAt(terrainScrollX + charX + lookAhead);
-    const slope     = (nextLineY - lineYBeforeScroll) / lookAhead; // 正=下坡, 負=上坡
+    const slope     = (nextLineY - lineYBeforeScroll) / lookAhead; // 正=下坡, 负=上坡
 
-    // 根據斜率累加/減速度 (加速度模型)
+    // 根据斜率累加/减速度 (加速度模型)
     currentSpeed += slope * config.slopeAccel * frameScale;
 
-    // 空氣阻力：緩緩拉回基準速度 (讓速度不會永遠卡在最高或最低)
+    // 空气阻力：缓缓拉回基准速度 (让速度不会永远卡在最高或最低)
     const drag = frameAdjustedLerp(0.004, frameScale);
     currentSpeed += (SCROLL_SPEED - currentSpeed) * drag;
 
-    // 玩家自主速度倍率：只受左右鍵影響，與上下坡造成的實際速度分開
+    // 玩家自主速度倍率：只受左右键影响，与上下坡造成的实际速度分开
     const accelActive = (rightKeyDown || rightMouseDown) && !(leftKeyDown || leftMouseDown);
     const brakeActive = (leftKeyDown || leftMouseDown) && !(rightKeyDown || rightMouseDown);
 
@@ -2238,14 +2238,14 @@
       playerSpeedMultiplier = Math.max(SPEED_BRAKE_MULT, Math.min(SPEED_BOOST_MULT, playerSpeedMultiplier + driftBack));
     }
 
-    // 玩家控制速度：右側輸入加速，左側輸入減速
+    // 玩家控制速度：右侧输入加速，左侧输入减速
     if (accelActive) {
       currentSpeed += 0.16 * frameScale;
     } else if (brakeActive) {
       currentSpeed -= 0.14 * frameScale;
     }
 
-    // 限制極速與最低速
+    // 限制极速与最低速
     const dynamicMinSpeed = Math.max(MIN_SPEED, SCROLL_SPEED * SPEED_BRAKE_MULT);
     const dynamicMaxSpeed = Math.min(MAX_SPEED, SCROLL_SPEED * SPEED_BOOST_MULT);
     currentSpeed = Math.max(dynamicMinSpeed, Math.min(dynamicMaxSpeed, currentSpeed));
@@ -2275,16 +2275,16 @@
       return;
     }
 
-    // 判定：角色 hitbox 是否包住線
+    // 判定：角色 hitbox 是否包住线
     const hh        = getHitboxH();
     const hitTop    = charY - hh / 2;
     const hitBottom = charY + hh / 2;
-    const aboveLine = hitBottom < lineY; // hitbox 完全在線上方
-    const belowLine = hitTop    > lineY; // hitbox 完全在線下方
+    const aboveLine = hitBottom < lineY; // hitbox 完全在线上方
+    const belowLine = hitTop    > lineY; // hitbox 完全在线下方
 
     if (aboveLine || belowLine) {
-      // 累積值會永久保留；偏得更遠只會增加得稍快，不會一下暴衝。
-      // 這樣單次大失誤仍可挽回，但反覆的小失誤會慢慢把容錯吃光。
+      // 累积值会永久保留；偏得更远只会增加得稍快，不会一下暴冲。
+      // 这样单次大失误仍可挽回，但反复的小失误会慢慢把容错吃光。
       const dist = aboveLine ? (lineY - hitBottom) : (hitTop - lineY);
       const distRatio = dist / Math.max(1, hh);
       const baseIncreaseRate = 0.12 + Math.pow(Math.max(0, distRatio), 0.85) * 0.55;
@@ -2303,7 +2303,7 @@
       isDangerBelow  = false;
     }
 
-    // ── 動態計分系統 ──
+    // ── 动态计分系统 ──
     const postDangerRatio = getDangerRatio();
     const scoreBand = getDangerBand(postDangerRatio);
     scoreBandFrames[scoreBand] += frameScale;
@@ -2325,7 +2325,7 @@
       return;
     }
 
-    // 關卡完成：捲過地形最後一點
+    // 关卡完成：卷过地形最后一点
     const lastX = terrainPoints[terrainPoints.length - 1].x;
     if (terrainScrollX + charX >= lastX) {
       const secondsEarly = Math.max(0, getQualifyingSeconds() - getElapsedSeconds());
@@ -2344,16 +2344,16 @@
     // 粒子更新
     updateParticles();
 
-    // 持續雪花
+    // 持续雪花
     if (Math.random() < 0.3) {
       spawnSnowflake();
     }
   }
 
-  /* ── 取得地形 Y ──────────────────────────────────── */
+  /* ── 获取地形 Y ──────────────────────────────────── */
   function getLineYAt(worldX) {
     if (!terrainPoints.length) return canvas.height * LINE_Y_MID;
-    // 二分搜尋找區段
+    // 二分搜索找区段
     const pts = terrainPoints;
     if (worldX <= pts[0].x)             return pts[0].y;
     if (worldX >= pts[pts.length - 1].x) return pts[pts.length - 1].y;
@@ -2429,7 +2429,7 @@
     }
   }
 
-  /* ── 粒子工廠 ────────────────────────────────────── */
+  /* ── 粒子工厂 ────────────────────────────────────── */
   function spawnSnowflake() {
     particles.push({
       x: Math.random() * canvas.width,
@@ -2494,20 +2494,20 @@
     const W = canvas.width;
     const H = canvas.height;
 
-    // ── 畫面震動計算 ──
+    // ── 画面震动计算 ──
     const dangerConfig = getPeriodConfig();
     const heatRatio = getDangerRatio();
     let shakeX = 0, shakeY = 0;
     if (heatRatio > 0.75 && gameState === 'playing') {
-      const shakeAmp = (heatRatio - 0.75) * 15; // 震動幅度隨危險度增加
+      const shakeAmp = (heatRatio - 0.75) * 15; // 震动幅度随危险度增加
       shakeX = (Math.random() - 0.5) * shakeAmp;
       shakeY = (Math.random() - 0.5) * shakeAmp;
     }
 
     ctx.save();
-    ctx.translate(shakeX, shakeY); // 套用震動
+    ctx.translate(shakeX, shakeY); // 套用震动
 
-    // 背景漸層（夜間雪山）
+    // 背景渐层（夜间雪山）
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0,   '#0a0f1e');
     bg.addColorStop(0.5, '#0d1829');
@@ -2515,7 +2515,7 @@
     ctx.fillStyle = bg;
     ctx.fillRect(-20, -20, W + 40, H + 40); 
 
-    // ── 高細節：遠景 Vista (Parallax) ──
+    // ── 高细节：远景 Vista (Parallax) ──
     const vistaDrawn = highDetailMode && !!themeAssets.vista;
     if (vistaDrawn) {
       const vistaFrame = getHighDetailVistaFrame(W, H);
@@ -2526,7 +2526,7 @@
       ctx.restore();
     }
 
-    // Vista 已顯示時跳過 themeBackground、stars 與 mountains，避免遮擋
+    // Vista 已显示时跳过 themeBackground、stars 与 mountains，避免遮挡
     if (!vistaDrawn) {
       const usedThemeBackground = drawThemeBackground(W, H);
       if (!usedThemeBackground) {
@@ -2535,10 +2535,10 @@
       }
     }
 
-    // 地形線
+    // 地形线
     drawTerrain(W, H);
 
-    // 粒子（雪花在後）
+    // 粒子（雪花在后）
     drawParticles(true);
 
     // 角色
@@ -2546,7 +2546,7 @@
       drawCharacter(W);
     }
 
-    // 危險警示光暈
+    // 危险警示光晕
     if (dangerFrames > 0 && gameState === 'playing') {
       drawDangerVignette(W, H);
     }
@@ -2554,14 +2554,14 @@
     // 粒子（碎片在前）
     drawParticles(false);
     
-    ctx.restore(); // 結束震動影響範圍
+    ctx.restore(); // 结束震动影响范围
 
-    // HUD (不隨畫面震動，保持 UI 穩定)
+    // HUD (不随画面震动，保持 UI 稳定)
     if (gameState === 'playing' || gameState === 'countdown') {
       drawHUD(W, H);
     }
 
-    // 倒數
+    // 倒数
     if (gameState === 'countdown') {
       drawCountdown(W, H);
     }
@@ -2570,13 +2570,13 @@
       drawEducationOverlay(W, H);
     }
 
-    // 結果畫面
+    // 结果画面
     if (gameState === 'dead')     drawDeadScreen(W, H);
     if (gameState === 'complete') drawCompleteScreen(W, H);
   }
 
-  /* ── 繪製工具 ────────────────────────────────────── */
-  // 用 seed 讓星星位置固定
+  /* ── 绘制工具 ────────────────────────────────────── */
+  // 用 seed 让星星位置固定
   const starPositions = (() => {
     const arr = [];
     let s = 12345;
@@ -2597,7 +2597,7 @@
   }
 
   function drawMountains(W, H) {
-    // 遠山（深色）
+    // 远山（深色）
     ctx.save();
     ctx.fillStyle = '#0f1e33';
     ctx.beginPath();
@@ -3060,7 +3060,7 @@
     ctx.fillStyle = baseGrad;
     ctx.fillRect(-60, terrainYMin - 80, W + 120, H - terrainYMin + 140);
 
-    // ── Pattern 疊加（快取版，不再每幀重建 createPattern）──
+    // ── Pattern 叠加（快取版，不再每帧重建 createPattern）──
     const themeSrcKey = activeTerrainTheme ? activeTerrainTheme.pattern + ':' + activeTerrainTheme.variant : null;
     if (cachedPatterns.themeSrc !== themeSrcKey) {
       const tTile = getTerrainPatternTile(theme);
@@ -3132,10 +3132,10 @@
     ctx.globalCompositeOperation = 'screen';
     ctx.fillStyle = sheen;
     ctx.fillRect(-20, terrainYMin - 30, W + 40, H - terrainYMin + 60);
-    // ── 高細節：材質疊加模式 (Overlay Texture) ──
+    // ── 高细节：材质叠加模式 (Overlay Texture) ──
     if (highDetailMode && themeAssets.texture && !useHighDetailTerrain) {
       ctx.save();
-      // hd Pattern 同樣只在圖片換掉時重建
+      // hd Pattern 同样只在图片换掉时重建
       if (cachedPatterns.hdSrc !== themeAssets.texture) {
         cachedPatterns.hd = ctx.createPattern(themeAssets.texture, 'repeat');
         cachedPatterns.hdSrc = themeAssets.texture;
@@ -3143,7 +3143,7 @@
       const xOffset = -((terrainScrollX * 0.3) % 512);
       ctx.translate(xOffset, 0);
       ctx.globalCompositeOperation = 'overlay';
-      ctx.globalAlpha = 0.15; // 大幅調低透明度，避免畫面太亂
+      ctx.globalAlpha = 0.15; // 大幅调低透明度，避免画面太乱
       ctx.fillStyle = cachedPatterns.hd;
       ctx.fillRect(-512, terrainYMin - 80, W + 1024, H - terrainYMin + 160);
       ctx.restore();
@@ -3744,7 +3744,7 @@
     drawTerrainProps(theme, paths.fillPath, W, H);
     drawTerrainEdge(theme, paths.ridgePath);
 
-    // 進度標記點（日期 dots）
+    // 进度标记点（日期 dots）
     drawProgressDots(W, H);
     drawCurrentPriceGuide(W);
   }
@@ -3839,7 +3839,7 @@
   }
 
   /* ══════════════════════════════════════════════════
-     角色繪製 — 右向滑雪者，5 種姿態
+     角色绘制 — 右向滑雪者，5 种姿态
   ══════════════════════════════════════════════════ */
   function drawCharacter(W) {
     const cx      = getCharX();
@@ -3847,15 +3847,15 @@
     const visualCy = cy + charVisualOffsetY;
     const worldX  = terrainScrollX + cx;
     const lineY   = getScreenLineYAt(worldX);
-    const DR      = getDangerRatio(); // 0~1 危險程度
+    const DR      = getDangerRatio(); // 0~1 危险程度
     const isOffTrack = isDangerAbove || isDangerBelow;
     const t       = Date.now() / 1000;
 
-    /* ── hitbox 框（不隨姿態旋轉）─────────────────── */
+    /* ── hitbox 框（不随姿态旋转）─────────────────── */
     const hh = getHitboxH();
     ctx.save();
     const hitAlpha  = 0.12 + DR * 0.28;
-    // 練習模式：hitbox 邊框帶橘色提示
+    // 练习模式：hitbox 边框带橘色提示
     const hitBorder = isOffTrack
       ? `rgba(255,${Math.floor(Math.max(0, 100 - DR*100))},${Math.floor(Math.max(0, 100 - DR*100))},0.85)`
       : practiceMode ? 'rgba(251,191,36,0.55)' : 'rgba(96,165,250,0.45)';
@@ -3869,7 +3869,7 @@
     ctx.fill();
     ctx.stroke();
 
-    // 虛線：hitbox 邊緣到地形線
+    // 虚线：hitbox 边缘到地形线
     const edgeY = lineY > cy ? cy + hh / 2 : cy - hh / 2;
     ctx.setLineDash([3, 4]);
     ctx.strokeStyle = 'rgba(148,163,184,0.28)';
@@ -3881,38 +3881,38 @@
     ctx.setLineDash([]);
     ctx.restore();
 
-    /* ── 姿態計算 ────────────────────────────────── */
-    // relPos: 0=線在hitbox中央, -1=線在頂端, +1=線在底端; 超出±1=出界
+    /* ── 姿态计算 ────────────────────────────────── */
+    // relPos: 0=线在hitbox中央, -1=线在顶端, +1=线在底端; 超出±1=出界
     const relPos = (lineY - cy) / (HITBOX_H / 2);
     const terrainAngle = getTerrainScreenAngleAt(worldX);
 
-    // bodyAngle: 正=前傾(向右), 負=後仰(向左)
-    let bodyAngle    = terrainAngle; // 基準角度先貼齊山坡
-    let bounceY      = 0;     // 重心額外 Y 位移
+    // bodyAngle: 正=前倾(向右), 负=后仰(向左)
+    let bodyAngle    = terrainAngle; // 基准角度先贴齐山坡
+    let bounceY      = 0;     // 重心额外 Y 位移
     let crouchFactor = 0.45;  // 0=全站直, 1=全蹲伏
     let armAngle     = 0.05;  // 前臂向右延伸角度
 
     if (isDangerAbove) {
-      // ★ 太高危險：強烈後仰，不斷往上彈，快要飛走！
+      // ★ 太高危险：强烈后仰，不断往上弹，快要飞走！
       bodyAngle    = terrainAngle - 0.55 + Math.sin(t * 6) * 0.2;
       bounceY      = -Math.abs(Math.sin(t * 9)) * 11;
       crouchFactor = 0.08 + Math.abs(Math.sin(t * 7)) * 0.35;
-      armAngle     = -0.65 + Math.sin(t * 8) * 0.45; // 手臂亂揮
+      armAngle     = -0.65 + Math.sin(t * 8) * 0.45; // 手臂乱挥
     } else if (isDangerBelow) {
-      // ★ 太低危險：極端前傾，快撲地，身體顫抖！
+      // ★ 太低危险：极端前倾，快扑地，身体颤抖！
       bodyAngle    = terrainAngle + 0.88 + Math.sin(t * 12) * 0.13;
       bounceY      = Math.sin(t * 10) * 3.5;
       crouchFactor = 0.04;
       armAngle     = 0.95 + Math.sin(t * 11) * 0.2;
     } else if (relPos < -0.25) {
-      // 略高：身體上揚、稍微後仰
+      // 略高：身体上扬、稍微后仰
       const a   = Math.min(1, (-relPos - 0.25) / 0.75);
       bodyAngle    = terrainAngle + 0.12 - a * 0.42;
       bounceY      = Math.sin(t * 5) * a * 4.5;
       crouchFactor = 0.45 - a * 0.22;
       armAngle     = 0.05 - a * 0.38;
     } else if (relPos > 0.25) {
-      // 略低：重心下壓，急速蹲伏前傾
+      // 略低：重心下压，急速蹲伏前倾
       const a   = Math.min(1, (relPos - 0.25) / 0.75);
       bodyAngle    = terrainAngle + 0.12 + a * 0.52;
       crouchFactor = 0.45 + a * 0.48;
@@ -3921,7 +3921,7 @@
       bodyAngle += 0.04;
     }
 
-    /* ── 顏色 ──────────────────────────────────────── */
+    /* ── 颜色 ──────────────────────────────────────── */
     const suitTop = DR > 0.55 ? '#ef4444' : '#3b82f6';
     const suitBot = DR > 0.55 ? '#dc2626' : '#1d4ed8';
     const helmCol = DR > 0.55 ? '#b91c1c' : '#1e3a8a';
@@ -3930,30 +3930,30 @@
     const skiBack = '#94a3b8';
     const poleCol = '#64748b';
 
-    /* ── 繪製右向滑雪者 ────────────────────────────── */
+    /* ── 绘制右向滑雪者 ────────────────────────────── */
     ctx.save();
     ctx.translate(cx, visualCy + bounceY);
     ctx.rotate(bodyAngle);
 
-    // 相對座標（以原點為角色腰部中心）
+    // 相对座标（以原点为角色腰部中心）
     const headY  = -19;
     const torsoT = -10;
     const torsoB =  5 + crouchFactor * 7;
     const hipY   = torsoB;
     const skiY   = hipY + 10 + crouchFactor * 9;
 
-    // ── 後雪杖 ──
+    // ── 后雪杖 ──
     ctx.strokeStyle = poleCol; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(-4, torsoT + 3); ctx.lineTo(-15, skiY); ctx.stroke();
 
-    // ── 後腿 ──
+    // ── 后腿 ──
     ctx.strokeStyle = suitBot; ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(-1, hipY);
     ctx.quadraticCurveTo(-2 - crouchFactor * 6, hipY + 5 + crouchFactor * 7, -7, skiY - 1);
     ctx.stroke();
 
-    // ── 後 ski 板 ──
+    // ── 后 ski 板 ──
     ctx.strokeStyle = skiBack; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(-17, skiY); ctx.lineTo(7, skiY); ctx.stroke();
 
@@ -3963,7 +3963,7 @@
     ctx.ellipse(0, (torsoT + torsoB) / 2, 6, Math.abs(torsoB - torsoT) / 2, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── 頭 ──
+    // ── 头 ──
     ctx.fillStyle = skinCol;
     ctx.beginPath(); ctx.arc(2, headY, 7.5, 0, Math.PI * 2); ctx.fill();
 
@@ -3972,11 +3972,11 @@
     ctx.beginPath(); ctx.arc(2, headY - 2, 7, Math.PI, 0); ctx.fill();
     ctx.fillRect(-5, headY - 9, 16, 7);
 
-    // ── 護目鏡（面向右，在右臉） ──
+    // ── 护目镜（面向右，在右脸） ──
     ctx.fillStyle = '#7dd3fc';
     ctx.beginPath(); ctx.ellipse(8, headY + 0.5, 5, 3.2, -0.12, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = '#0ea5e9'; ctx.lineWidth = 0.8; ctx.stroke();
-    // 鏡框高光
+    // 镜框高光
     ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 0.5;
     ctx.beginPath(); ctx.arc(6.5, headY - 0.5, 2, -1.5, -0.5); ctx.stroke();
 
@@ -3990,7 +3990,7 @@
     // ── 前 ski 板 ──
     ctx.strokeStyle = skiCol; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(-13, skiY); ctx.lineTo(15, skiY); ctx.stroke();
-    // ski 翹頭
+    // ski 翘头
     ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.moveTo(14, skiY); ctx.quadraticCurveTo(20, skiY - 1, 22, skiY - 7); ctx.stroke();
 
@@ -4000,14 +4000,14 @@
     ctx.strokeStyle = suitTop; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(3, torsoT + 3); ctx.lineTo(aex, aey); ctx.stroke();
 
-    // 手（小圓）
+    // 手（小圆）
     ctx.fillStyle = skinCol;
     ctx.beginPath(); ctx.arc(aex, aey, 2.8, 0, Math.PI * 2); ctx.fill();
 
     // 前雪杖
     ctx.strokeStyle = poleCol; ctx.lineWidth = 1.6;
     ctx.beginPath(); ctx.moveTo(aex, aey); ctx.lineTo(aex + 7, skiY); ctx.stroke();
-    // 雪杖底端圓圈
+    // 雪杖底端圆圈
     ctx.strokeStyle = poleCol; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.arc(aex + 7, skiY, 2, 0, Math.PI * 2); ctx.stroke();
 
@@ -4036,7 +4036,7 @@
       ctx.fillStyle = `rgba(255,150,150,${ratio * pulse})`;
       ctx.textAlign = 'center';
       ctx.fillText(
-        isDangerAbove ? '⬆ 風險權重過高，立即下修！' : '⬇ 部位曝險不足，立即上修！',
+        isDangerAbove ? '? 风险权重过高，立即下修！' : '? 部位曝险不足，立即上修！',
         W / 2,
         dir === 'top' ? 60 : H - 50
       );
@@ -4067,18 +4067,18 @@
     ctx.save();
     const dangerRatio = getDangerRatio();
 
-    // 股票名稱 + 練習模式標示
+    // 股票名称 + 练习模式标示
     ctx.font = '600 13px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.9)';
     ctx.textAlign = 'left';
     let modeLabel;
     if (practiceMode) {
       const s = practiceOpts.startPct, e = practiceOpts.endPct;
-      modeLabel = (s === 0 && e === 100) ? '🟡 練習模式' : `🟡 練習 ${s}%～${e}%`;
+      modeLabel = (s === 0 && e === 100) ? '?? 练习模式' : `?? 练习 ${s}%～${e}%`;
     } else {
-      modeLabel = '關卡';
+      modeLabel = '关卡';
     }
-    ctx.fillText(`⛷️  ${stockData?.symbol || ''}  ${modeLabel}`, 16, 28);
+    ctx.fillText(`??  ${stockData?.symbol || ''}  ${modeLabel}`, 16, 28);
 
     ctx.font = '600 10px Inter, sans-serif';
     ctx.fillStyle = 'rgba(191,219,254,0.9)';
@@ -4088,8 +4088,8 @@
     ctx.fillStyle = '#e8f0fe';
     ctx.fillText(`${score.toString().padStart(6, '0')}`, 16, 62);
 
-    // 風控等級
-    const ratio = score / (maxPossibleScore * (surviveFrames / (surviveFrames || 1))); // 簡化評估
+    // 风控等级
+    const ratio = score / (maxPossibleScore * (surviveFrames / (surviveFrames || 1))); // 简化评估
     let grade = 'C';
     let gradeCol = '#94a3b8';
     if (dangerFrames === 0) { grade = 'S'; gradeCol = '#fde68a'; }
@@ -4108,7 +4108,7 @@
     ctx.fillText(getElapsedSeconds().toFixed(2), W / 2, 34);
     ctx.font = '600 11px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.85)';
-    ctx.fillText(`目標期限 ${getQualifyingSeconds().toFixed(2)}s`, W / 2, 52);
+    ctx.fillText(`目标期限 ${getQualifyingSeconds().toFixed(2)}s`, W / 2, 52);
 
     const accelActive = (rightKeyDown || rightMouseDown) && !(leftKeyDown || leftMouseDown);
     const brakeActive = (leftKeyDown || leftMouseDown) && !(rightKeyDown || rightMouseDown);
@@ -4123,7 +4123,7 @@
       ctx.fillText('BRAKE', 150, 54);
     }
 
-    // 頂部進度群組
+    // 顶部进度群组
     const charWorldX = getCharWorldX();
     const totalW = terrainPoints[terrainPoints.length - 1]?.x || 1;
     const prog = Math.min(1, charWorldX / totalW);
@@ -4143,26 +4143,26 @@
     const routeValueW = 90;
     const routeRowX = W / 2 - (routeLabelW + barLabelGap + topHudW + barLabelGap + routeValueW) / 2;
 
-    // ── 底部中央 HUD 群組 ──
+    // ── 底部中央 HUD 群组 ──
     const panelCx = W / 2;
     const gaugeR = 72;
     const gx = panelCx;
     const gy = H - 122;
 
-    // ── 準確率 / 時間條 ──
+    // ── 准确率 / 时间条 ──
     const elapsedRatio = timeLimitSeconds > 0 ? Math.max(0, Math.min(1, getElapsedSeconds() / timeLimitSeconds)) : 0;
     const timeRatio = Math.max(0, 1 - elapsedRatio);
     const accuracyPct = getAccuracyPct();
     const accuracyBarRatio = getAccuracyBarRatio();
     
-    // 進度條參數
+    // 进度条参数
     const hbx = smallRowX + smallLabelW + barLabelGap;
     const hbW = smallBarW;
     const hbH = smallBarH;
     const timeBarY = smallBarY;
     const hby = smallBarY + smallBarGap;
 
-    // 路程條
+    // 路程条
     ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
     ctx.lineWidth = 2;
@@ -4180,14 +4180,14 @@
     ctx.font = '700 18px Inter, sans-serif';
     ctx.fillStyle = '#f8fafc';
     ctx.textBaseline = 'middle';
-    ctx.fillText('路程進度', routeRowX, routeBarY + routeBarH / 2);
+    ctx.fillText('路程进度', routeRowX, routeBarY + routeBarH / 2);
 
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = '#38bdf8';
     ctx.fillText(`${Math.floor(prog * 100)}%`, routeBarX + topHudW + barLabelGap + routeValueW, routeBarY + routeBarH / 2);
 
-    // 時間條底框
+    // 时间条底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
     ctx.lineWidth = 2;
@@ -4211,49 +4211,49 @@
     ctx.textAlign = 'left';
     ctx.font = 'bold 20px Inter, sans-serif';
     ctx.fillStyle = timeRatio <= 0.3 ? '#f87171' : '#f8fafc';
-    ctx.fillText('時間值', smallRowX, timeBarY + hbH / 2);
+    ctx.fillText('时间值', smallRowX, timeBarY + hbH / 2);
 
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = timeColor;
-    ctx.fillText(`🕒 ${Math.floor(timeRatio * 100)}%`, hbx + hbW + barLabelGap + smallValueW, timeBarY + hbH / 2);
+    ctx.fillText(`?? ${Math.floor(timeRatio * 100)}%`, hbx + hbW + barLabelGap + smallValueW, timeBarY + hbH / 2);
 
-    // 準確率條底框
+    // 准确率条底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
     ctx.lineWidth = 2;
     ctx.fillRect(hbx, hby, hbW, hbH);
     ctx.strokeRect(hbx, hby, hbW, hbH);
 
-    // 準確率顏色判定 (綠 -> 黃 -> 紅)
-    let heatColor = '#4ade80'; // 安全綠
-    if (accuracyPct <= 78) heatColor = '#f87171';      // 紅
-    else if (accuracyPct <= 88) heatColor = '#fbbf24'; // 黃
+    // 准确率颜色判定 (绿 -> 黄 -> 红)
+    let heatColor = '#4ade80'; // 安全绿
+    if (accuracyPct <= 78) heatColor = '#f87171';      // 红
+    else if (accuracyPct <= 88) heatColor = '#fbbf24'; // 黄
 
-    // 準確率填充進度
+    // 准确率填充进度
     if (accuracyBarRatio > 0.01) {
       ctx.fillStyle = heatColor;
       
-      // 危險時增加外發光特效 (WOW effect)
+      // 危险时增加外发光特效 (WOW effect)
       if (accuracyPct <= 82) {
         ctx.shadowBlur = 18;
         ctx.shadowColor = heatColor;
       }
       
       ctx.fillRect(hbx + 2, hby + 2, (hbW - 4) * accuracyBarRatio, hbH - 4);
-      ctx.shadowBlur = 0; // 重置發光防止污染
+      ctx.shadowBlur = 0; // 重置发光防止污染
     }
 
-    // 準確率文字與百分比
+    // 准确率文字与百分比
     ctx.textAlign = 'left';
     ctx.font = 'bold 20px Inter, sans-serif';
     ctx.fillStyle = accuracyPct <= 78 ? '#f87171' : '#f8fafc';
-    ctx.fillText('準確值', smallRowX, hby + hbH / 2);
+    ctx.fillText('准确值', smallRowX, hby + hbH / 2);
     
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = heatColor;
-    ctx.fillText(`⚡ ${accuracyPct.toFixed(0)}%`, hbx + hbW + barLabelGap + smallValueW, hby + hbH / 2);
+    ctx.fillText(`? ${accuracyPct.toFixed(0)}%`, hbx + hbW + barLabelGap + smallValueW, hby + hbH / 2);
 
     if (isBoosting) {
       ctx.textAlign = 'center';
@@ -4261,18 +4261,18 @@
       ctx.fillStyle = '#fbbf24';
       ctx.shadowBlur = 14;
       ctx.shadowColor = 'rgba(251,191,36,0.85)';
-      ctx.fillText('滾輪靈敏模式', panelCx, gy - gaugeR - 18);
+      ctx.fillText('滚轮灵敏模式', panelCx, gy - gaugeR - 18);
       ctx.shadowBlur = 0;
     }
 
-    // 外圈半圓 (速度計)
+    // 外圈半圆 (速度计)
     ctx.beginPath();
     ctx.arc(gx, gy, gaugeR, Math.PI, 0);
     ctx.lineWidth = 12;
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)'; // 弱化未使用的底圈
     ctx.stroke();
 
-    // 速度分區顏色
+    // 速度分区颜色
     const drawArcZone = (start, end, color) => {
       ctx.beginPath();
       ctx.arc(gx, gy, gaugeR, Math.PI + start, Math.PI + end);
@@ -4280,11 +4280,11 @@
       ctx.lineWidth = 12;
       ctx.stroke();
     };
-    drawArcZone(0, Math.PI * 0.35, '#4ade80');     // 減速區
-    drawArcZone(Math.PI * 0.35, Math.PI * 0.65, '#3b82f6'); // 勻速區
-    drawArcZone(Math.PI * 0.65, Math.PI, '#f87171');     // 加速區
+    drawArcZone(0, Math.PI * 0.35, '#4ade80');     // 减速区
+    drawArcZone(Math.PI * 0.35, Math.PI * 0.65, '#3b82f6'); // 匀速区
+    drawArcZone(Math.PI * 0.65, Math.PI, '#f87171');     // 加速区
 
-    // 指針
+    // 指针
     const speedRatio = (currentSpeed / SCROLL_SPEED);
     const normRatio = (currentSpeed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED);
     const needleAngle = Math.PI * Math.max(0, Math.min(1, normRatio));
@@ -4303,7 +4303,7 @@
     ctx.fill();
     ctx.restore();
 
-    // 中央小點
+    // 中央小点
     ctx.beginPath();
     ctx.arc(gx, gy, 6, 0, Math.PI * 2);
     ctx.fillStyle = '#94a3b8';
@@ -4479,22 +4479,22 @@
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#67e8f9';
     ctx.font = '900 13px Inter, sans-serif';
-    ctx.fillText('開場纜車導覽 · 拖曳黃點或滾輪換站', x + pad, y + pad);
+    ctx.fillText('开场缆车导览 · 拖曳黄点或滚轮换站', x + pad, y + pad);
 
     ctx.fillStyle = '#f8fafc';
     ctx.font = '900 28px Inter, sans-serif';
-    ctx.fillText(node.title || '教育節點', x + pad, y + pad + 30);
+    ctx.fillText(node.title || '教育节点', x + pad, y + pad + 30);
 
     ctx.fillStyle = 'rgba(148, 163, 184, 0.92)';
     ctx.font = '700 15px Inter, sans-serif';
-    ctx.fillText('這裡只放預習小抄，題目會留到滑雪途中或終點驗證。', x + pad, y + pad + 70);
+    ctx.fillText('这里只放预习小抄，题目会留到滑雪途中或终点验证。', x + pad, y + pad + 70);
 
     let cursorY = y + pad + 112;
     const bullets = getIntroBullets(node);
     bullets.forEach((bullet) => {
       ctx.fillStyle = '#67e8f9';
       ctx.font = '900 22px Inter, sans-serif';
-      ctx.fillText('•', x + pad + 4, cursorY - 2);
+      ctx.fillText('?', x + pad + 4, cursorY - 2);
       ctx.fillStyle = 'rgba(226, 232, 240, 0.96)';
       ctx.font = '700 17px Inter, sans-serif';
       const usedH = drawWrappedText(bullet, x + pad + 30, cursorY, cardW - pad * 2 - 30, 26, 2);
@@ -4526,13 +4526,13 @@
       ctx.fillText(label, rect.x + rect.w / 2, rect.y + rect.h / 2);
     };
     drawButton(prevRect, '上一站', false, index === 0);
-    drawButton(skipRect, '跳過導覽', false);
-    drawButton(nextRect, index < total - 1 ? '下一站' : '開始滑雪', true);
+    drawButton(skipRect, '跳过导览', false);
+    drawButton(nextRect, index < total - 1 ? '下一站' : '开始滑雪', true);
 
     ctx.fillStyle = 'rgba(148, 163, 184, 0.78)';
     ctx.font = '700 13px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('拖曳上方黃點：預覽任意位置｜跨過節點會切換下一站', W / 2, y + cardH + 16);
+    ctx.fillText('拖曳上方黄点：预览任意位置｜跨过节点会切换下一站', W / 2, y + cardH + 16);
 
     ctx.restore();
   }
@@ -4594,12 +4594,12 @@
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#67e8f9';
     ctx.font = '800 13px Inter, sans-serif';
-    const kicker = isIntro ? '開場纜車導覽' : isFinal ? '終點知識驗證' : '纜車站知識驗證';
+    const kicker = isIntro ? '开场缆车导览' : isFinal ? '终点知识验证' : '缆车站知识验证';
     ctx.fillText(kicker, x + pad, y + pad);
 
     ctx.fillStyle = '#f8fafc';
     ctx.font = '900 28px Inter, sans-serif';
-    ctx.fillText(node.title || '教育節點', x + pad, y + pad + 28);
+    ctx.fillText(node.title || '教育节点', x + pad, y + pad + 28);
 
     ctx.fillStyle = 'rgba(203, 213, 225, 0.94)';
     ctx.font = '500 17px Inter, sans-serif';
@@ -4696,7 +4696,7 @@
     ctx.font = '800 16px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(isIntro ? (session.introIndex < session.nodes.length - 1 ? '下一站' : '開始滑雪') : '繼續', continueRect.x + continueRect.w / 2, continueRect.y + btnH / 2);
+    ctx.fillText(isIntro ? (session.introIndex < session.nodes.length - 1 ? '下一站' : '开始滑雪') : '继续', continueRect.x + continueRect.w / 2, continueRect.y + btnH / 2);
 
     if (isIntro) {
       const skipRect = { x: x + pad, y: continueRect.y, w: 128, h: btnH };
@@ -4708,7 +4708,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#cbd5e1';
-      ctx.fillText('跳過導覽', skipRect.x + skipRect.w / 2, skipRect.y + btnH / 2);
+      ctx.fillText('跳过导览', skipRect.x + skipRect.w / 2, skipRect.y + btnH / 2);
     }
 
     ctx.restore();
@@ -4732,7 +4732,7 @@
     ctx.font = '500 18px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
     ctx.shadowBlur = 0;
-    ctx.fillText(`${stockData?.symbol} — 讓股票線穿過你的 hitbox！`, W / 2, H / 2 + 80);
+    ctx.fillText(`${stockData?.symbol} — 让股票线穿过你的 hitbox！`, W / 2, H / 2 + 80);
     ctx.restore();
   }
 
@@ -4748,10 +4748,10 @@
     const valueX = x + cardW - 24 * tableScale;
     const rows = [
       ['完美滑行', `${getBandPct('perfect').toFixed(0)}% / ${getBandPct('light').toFixed(0)}% / ${getBandPct('mild').toFixed(0)}%`],
-      ['驚險擦邊', `${getBandPct('medium').toFixed(0)}% / ${getBandPct('heavy').toFixed(0)}%`],
-      ['通關時間 / 挑戰目標 / 速通加分', `${getElapsedSeconds().toFixed(2)}s / ${getQualifyingSeconds().toFixed(2)}s / +${earlyFinishBonus}`],
-      ['答題時間加成 / 剩餘主時間', `+${educationTimeBonusSeconds.toFixed(1)}s / ${getRemainingRunSeconds().toFixed(2)}s`],
-      ['連段加分 / 完美節奏', `+${streakBonusScore} / ${getBestPerfectPct().toFixed(0)}%`],
+      ['惊险擦边', `${getBandPct('medium').toFixed(0)}% / ${getBandPct('heavy').toFixed(0)}%`],
+      ['通关时间 / 挑战目标 / 速通加分', `${getElapsedSeconds().toFixed(2)}s / ${getQualifyingSeconds().toFixed(2)}s / +${earlyFinishBonus}`],
+      ['答题时间加成 / 剩余主时间', `+${educationTimeBonusSeconds.toFixed(1)}s / ${getRemainingRunSeconds().toFixed(2)}s`],
+      ['连段加分 / 完美节奏', `+${streakBonusScore} / ${getBestPerfectPct().toFixed(0)}%`],
     ];
 
     ctx.save();
@@ -4772,12 +4772,12 @@
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#f8fafc';
-    ctx.fillText('闖關戰績', labelX, y + headerH * 0.34);
+    ctx.fillText('闯关战绩', labelX, y + headerH * 0.34);
 
     ctx.font = '600 12px Inter, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(191, 219, 254, 0.9)';
-    ctx.fillText('路線評分：完美 10/12/14/16/18/20，輕擦 7，搖晃 5，重摔 3，極限 1', labelX, y + headerH * 0.72);
+    ctx.fillText('路线评分：完美 10/12/14/16/18/20，轻擦 7，摇晃 5，重摔 3，极限 1', labelX, y + headerH * 0.72);
 
     rows.forEach((row, index) => {
       const rowY = y + headerH + index * rowH;
@@ -4821,10 +4821,10 @@
     ctx.textBaseline = 'middle';
     ctx.font = '800 15px Inter, sans-serif';
     ctx.fillStyle = '#bae6fd';
-    ctx.fillText('知識試煉評級', x + 22, y + 24);
+    ctx.fillText('知识试炼评级', x + 22, y + 24);
     ctx.font = '600 13px Inter, sans-serif';
     ctx.fillStyle = 'rgba(226, 232, 240, 0.82)';
-    ctx.fillText(`${rating.correct}/${rating.total} 題正確 · ${rating.summary}`, x + 22, y + 50);
+    ctx.fillText(`${rating.correct}/${rating.total} 题正确 · ${rating.summary}`, x + 22, y + 50);
     ctx.textAlign = 'right';
     ctx.font = '900 42px Inter, sans-serif';
     ctx.fillStyle = rating.grade === 'S' ? '#fde68a' : rating.grade === 'A' ? '#86efac' : rating.grade === 'B' ? '#93c5fd' : '#fca5a5';
@@ -4841,7 +4841,7 @@
     const startX = W / 2 - totalW / 2;
     const labels = [
       { text: retryLabel, x: startX, colorA: '#1d4ed8', colorB: '#0891b2', border: 'rgba(147,197,253,0.7)' },
-      { text: '結束冒險', x: startX + btnW + gap, colorA: '#1e293b', colorB: '#334155', border: 'rgba(148,163,184,0.45)' },
+      { text: '结束冒险', x: startX + btnW + gap, colorA: '#1e293b', colorB: '#334155', border: 'rgba(148,163,184,0.45)' },
     ];
     resultButtonRects = {
       retry: { x: startX, y, w: btnW, h: btnH },
@@ -4883,35 +4883,35 @@
 
     const centerY = H / 2 - 76;
 
-    // 標題
+    // 标题
     ctx.font      = '900 56px Inter, sans-serif';
     ctx.fillStyle = '#f87171';
     ctx.shadowColor = '#f87171';
     ctx.shadowBlur  = 20;
-    ctx.fillText(getElapsedSeconds() > timeLimitSeconds ? '⏰ 時間耗盡！' : '💥 挑戰失敗！', W / 2, centerY - 52);
+    ctx.fillText(getElapsedSeconds() > timeLimitSeconds ? '? 时间耗尽！' : '?? 挑战失败！', W / 2, centerY - 52);
 
-    // 績效
+    // 绩效
     ctx.font = '700 32px JetBrains Mono, monospace';
     ctx.fillStyle = '#e8f0fe';
     ctx.shadowBlur = 0;
-    ctx.fillText(`闖關分數：${getFinalScore()}`, W / 2, centerY + 18);
+    ctx.fillText(`闯关分数：${getFinalScore()}`, W / 2, centerY + 18);
 
     if (mouseOnlyRun) {
       ctx.font = '700 16px Inter, sans-serif';
       ctx.fillStyle = '#4ade80';
-      ctx.fillText('滑鼠操控加成 1.3x', W / 2, centerY + 50);
+      ctx.fillText('鼠标操控加成 1.3x', W / 2, centerY + 50);
     }
     const eduBottom = drawEducationResult(W, centerY + 74);
     const tableBottom = drawResultTable(W, eduBottom + 18);
 
     // 方向提示
     const tip = getElapsedSeconds() > timeLimitSeconds
-      ? '時間拖太久了，試著更早衝過終點'
-      : isDangerAbove ? '貼線太近了，滑鼠往下讓角色降一點 🖱️↓' : '離路線太遠了，滑鼠往上把節奏拉回來 🖱️↑';
+      ? '时间拖太久了，试着更早冲过终点'
+      : isDangerAbove ? '贴线太近了，鼠标往下让角色降一点 ???↓' : '离路线太远了，鼠标往上把节奏拉回来 ???↑';
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
     ctx.fillText(tip, W / 2, tableBottom + 30);
-    drawResultButtons(W, tableBottom + 56, '再挑戰');
+    drawResultButtons(W, tableBottom + 56, '再挑战');
 
     ctx.restore();
   }
@@ -4931,17 +4931,17 @@
     ctx.fillStyle = '#4ade80';
     ctx.shadowColor = '#4ade80';
     ctx.shadowBlur  = 25;
-    ctx.fillText('闖關成功！', W / 2, centerY - 34);
+    ctx.fillText('闯关成功！', W / 2, centerY - 34);
 
     ctx.font = '700 32px JetBrains Mono, monospace';
     ctx.fillStyle = '#fde68a';
     ctx.shadowBlur = 0;
-    ctx.fillText(`總分：${getFinalScore()}`, W / 2, centerY + 34);
+    ctx.fillText(`总分：${getFinalScore()}`, W / 2, centerY + 34);
 
     if (mouseOnlyRun) {
       ctx.font = '700 16px Inter, sans-serif';
       ctx.fillStyle = '#4ade80';
-      ctx.fillText('滑鼠操控加成 1.3x', W / 2, centerY + 66);
+      ctx.fillText('鼠标操控加成 1.3x', W / 2, centerY + 66);
     }
 
     const rating = getExecutionRating();
@@ -4951,10 +4951,10 @@
 
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
-    ctx.fillText(`冒險評級：${rating.summary}`, W / 2, centerY + 146);
+    ctx.fillText(`冒险评级：${rating.summary}`, W / 2, centerY + 146);
     const eduBottom = drawEducationResult(W, centerY + 168);
     const tableBottom = drawResultTable(W, eduBottom + 18);
-    drawResultButtons(W, tableBottom + 26, '再挑戰');
+    drawResultButtons(W, tableBottom + 26, '再挑战');
 
     ctx.restore();
   }

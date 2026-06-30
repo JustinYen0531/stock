@@ -1,5 +1,5 @@
 """
-fetcher.py - 從 Yahoo Finance 抓取股票資料
+fetcher.py - 从 Yahoo Finance 抓取股票数据
 """
 import yfinance as yf
 import pandas as pd
@@ -7,14 +7,14 @@ import pandas as pd
 
 def fetch_stock_data(symbol: str, period: str = "3mo") -> pd.DataFrame:
     """
-    抓取股票 OHLCV 資料
+    抓取股票 OHLCV 数据
     period 可以是: 1mo, 3mo, 6mo, 1y, 2y, 5y
     """
     ticker = yf.Ticker(symbol)
     df = ticker.history(period=period)
 
     if df.empty:
-        raise ValueError(f"找不到股票代碼：{symbol}，請確認是否正確（台股需加 .TW，例如 2330.TW）")
+        raise ValueError(f"找不到股票代码：{symbol}，请确认是否正确（台股需加 .TW，例如 2330.TW）")
 
     df = df.reset_index()
     df["Date"] = df["Date"].dt.strftime("%Y-%m-%d")
@@ -23,7 +23,7 @@ def fetch_stock_data(symbol: str, period: str = "3mo") -> pd.DataFrame:
 
 def fetch_stock_info(symbol: str) -> dict:
     """
-    抓取股票基本資訊
+    抓取股票基本信息
     """
     ticker = yf.Ticker(symbol)
     info = ticker.info

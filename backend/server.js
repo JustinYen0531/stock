@@ -262,7 +262,7 @@ const EDUCATION_KNOWLEDGE = {
         title: "主要产品",
         summary: "GPU、数据中心加速器、AI 软硬件平台与网络设备。",
         details: [
-          "GeForce 面向消费与游戏市场，维持品牌能见度与高端硬件形象。",
+          "GeForce 面向消费与游戏市场，维持品牌关注度与高端硬件形象。",
           "数据中心 GPU 与 AI 加速器是近年估值叙事的核心，常与云端巨头资本支出连动。",
           "CUDA、AI Enterprise、Networking 等软硬整合能力，使客户转换成本变高。",
         ],
@@ -271,7 +271,7 @@ const EDUCATION_KNOWLEDGE = {
         title: "代表事件",
         summary: "GeForce、CUDA、数据中心 GPU、生成式 AI 浪潮。",
         details: [
-          "GeForce 让 NVIDIA 在游戏玩家与高性能图形市场获取长期辨识度。",
+          "GeForce 让 NVIDIA 在游戏玩家与高性能图形市场获取长期识别度。",
           "CUDA 生态扩大 GPU 用途，是后来 AI 训练需求爆发的重要基础。",
           "生成式 AI 带动数据中心 GPU 需求，让市场把 NVIDIA 视为 AI 基础设施代表股。",
         ],
@@ -280,7 +280,7 @@ const EDUCATION_KNOWLEDGE = {
         title: "观察重点",
         summary: "AI 需求、数据中心营收、供应链产能与高估值下的波动。",
         details: [
-          "如果云端公司持续增加 AI 资本支出，市场通常会提高对 NVIDIA 的成长预期。",
+          "如果云端公司持续增加 AI 资本支出，市场通常会提高对 NVIDIA 的增长预期。",
           "供应链产能、先进封装与交货能力，会影响营收是否跟得上市场期待。",
           "估值很高时，任何需求放缓或毛利率疑虑都可能放大股价震荡。",
         ],
@@ -290,9 +290,9 @@ const EDUCATION_KNOWLEDGE = {
   TSLA: {
     name: "Tesla",
     origin: "Tesla 成立于 2003 年，后来由 Elon Musk 带入更大规模的资金、产品与品牌叙事，让电动车从小众科技品变成大众市场焦点。",
-    business: "公司核心包含电动车、电池、能源保存、充电网络与自动驾驶软件。市场常同时用车厂与科技平台两种角度看它。",
+    business: "公司核心包含电动车、电池、储能、充电网络与自动驾驶软件。市场常同时用车厂与科技平台两种角度看它。",
     event: "代表事件包含 Model S、Model 3 放量、全球超级充电网络、价格战与自动驾驶功能迭代。",
-    focus: "玩家应注意交车量、毛利率、降价策略、自动驾驶进展与市场对成长叙事的信心。",
+    focus: "玩家应注意交车量、毛利率、降价策略、自动驾驶进展与市场对增长叙事的信心。",
     folders: [
       {
         title: "公司起源故事",
@@ -305,10 +305,10 @@ const EDUCATION_KNOWLEDGE = {
       },
       {
         title: "主要产品",
-        summary: "电动车、电池、能源保存、充电网络与自动驾驶软件。",
+        summary: "电动车、电池、储能、充电网络与自动驾驶软件。",
         details: [
           "Model 3 / Model Y 是放量核心，交车量与毛利率通常直接影响市场情绪。",
-          "Supercharger 充电网络强化用户黏着度，也让 Tesla 拥有基础设施层面的优势。",
+          "Supercharger 充电网络强化用户粘性，也让 Tesla 拥有基础设施层面的优势。",
           "FSD 与软件收入代表市场对未来平台化的期待，但也伴随监管与落地不确定性。",
         ],
       },
@@ -335,9 +335,9 @@ const EDUCATION_KNOWLEDGE = {
   AAPL: {
     name: "Apple",
     origin: "Apple 由 Steve Jobs、Steve Wozniak 与 Ronald Wayne 在 1976 年创立，从个人电脑开始，逐步塑造出硬件、软件与服务整合的消费科技品牌。",
-    business: "公司核心是 iPhone、Mac、iPad、Wearables 与 Services。市场看 Apple 时，通常同时看硬件销售周期、用户黏着度与服务收入。",
+    business: "公司核心是 iPhone、Mac、iPad、Wearables 与 Services。市场看 Apple 时，通常同时看硬件销售周期、用户粘性与服务收入。",
     event: "代表事件包含 Macintosh、iPod、iPhone、App Store、Apple Watch，以及近年的服务收入与空间运算产品。",
-    focus: "玩家应注意 iPhone 需求、服务毛利、供应链、地区销售与新产品能否打开下一段成长。",
+    focus: "玩家应注意 iPhone 需求、服务毛利、供应链、地区销售与新产品能否打开下一段增长。",
     folders: [
       {
         title: "公司起源故事",
@@ -352,23 +352,23 @@ const EDUCATION_KNOWLEDGE = {
         title: "主要产品",
         summary: "iPhone 是核心，Services 与可穿戴设备让生态系统更厚。",
         details: [
-          "iPhone 仍是营收与市场注意力中心，换机周期会影响投资人对成长的看法。",
+          "iPhone 仍是营收与市场注意力中心，换机周期会影响投资人对增长的看法。",
           "Services 包含 App Store、iCloud、Apple Music、Apple Pay 等，毛利结构通常优于硬件。",
           "Mac、iPad、Apple Watch、AirPods 扩大使用场景，让用户更难离开 Apple 生态系统。",
         ],
       },
       {
         title: "代表事件",
-        summary: "iPhone 发表、App Store、生态系统扩张、自研芯片。",
+        summary: "iPhone 发布、App Store、生态系统扩张、自研芯片。",
         details: [
-          "2007 年 iPhone 发表是 Apple 从电脑公司转型成移动平台公司的关键。",
+          "2007 年 iPhone 发布是 Apple 从电脑公司转型成移动平台公司的关键。",
           "App Store 把硬件销售延伸成软件分发与服务抽成模式。",
           "Apple Silicon 让 Mac 产品线在性能、续航与供应链控制上更有差异化。",
         ],
       },
       {
         title: "观察重点",
-        summary: "iPhone 需求、服务成长、毛利率、供应链与新产品周期。",
+        summary: "iPhone 需求、服务增长、毛利率、供应链与新产品周期。",
         details: [
           "如果 iPhone 销售疲弱，市场会担心硬件换机周期；如果 Services 强，则能部分抵销硬件波动。",
           "Apple 的股价常受中国市场、供应链政策与高端机型需求影响。",
@@ -380,13 +380,13 @@ const EDUCATION_KNOWLEDGE = {
   MSFT: {
     name: "Microsoft",
     origin: "Microsoft 由 Bill Gates 与 Paul Allen 在 1975 年创立，从个人电脑软件出发，逐步成为企业软件、云端与 AI 平台公司。",
-    business: "公司核心包含 Windows、Office/Microsoft 365、Azure、企业软件、LinkedIn、Xbox 与 AI 服务。市场常把它视为企业数位化与云端 AI 的代表。",
+    business: "公司核心包含 Windows、Office/Microsoft 365、Azure、企业软件、LinkedIn、Xbox 与 AI 服务。市场常把它视为企业数字化与云端 AI 的代表。",
     event: "代表事件包含 MS-DOS、Windows、Office、Azure 云端转型、收购 LinkedIn 与 Activision Blizzard，以及 Copilot AI 产品化。",
-    focus: "玩家应注意 Azure 成长率、企业软件续约、AI Copilot 商业化、资本支出与云端竞争。",
+    focus: "玩家应注意 Azure 增长率、企业软件续约、AI Copilot 商业化、资本支出与云端竞争。",
     folders: [
       {
         title: "公司起源故事",
-        summary: "Microsoft 从 PC 软件标准创建霸主地位，后来靠云端转型重新成长。",
+        summary: "Microsoft 从 PC 软件标准创建霸主地位，后来靠云端转型重新增长。",
         details: [
           "Microsoft 早期靠操作系统与开发工具进入个人电脑浪潮，Windows 成为长期平台核心。",
           "Office 把文书、简报、试算表变成企业日常工作标准，形成很强的续约与习惯黏着。",
@@ -398,7 +398,7 @@ const EDUCATION_KNOWLEDGE = {
         summary: "Windows、Microsoft 365、Azure、Teams、Copilot 与企业云服务。",
         details: [
           "Microsoft 365 以订阅模式服务企业与个人，收入稳定且可持续升级。",
-          "Azure 是云端成长核心，常被市场拿来和 AWS、Google Cloud 比较。",
+          "Azure 是云端增长核心，常被市场拿来和 AWS、Google Cloud 比较。",
           "Copilot 把 AI 嵌进 Office、Windows、GitHub 与企业流程，是 AI 商业化主轴。",
         ],
       },
@@ -407,16 +407,16 @@ const EDUCATION_KNOWLEDGE = {
         summary: "Windows 普及、Office 标准化、Azure 转型、AI Copilot 推进。",
         details: [
           "Windows 与 Office 的普及，让 Microsoft 长期掌握企业端入口。",
-          "Azure 成功转型后，市场重新给 Microsoft 成长型平台公司的评价。",
+          "Azure 成功转型后，市场重新给 Microsoft 增长型平台公司的评价。",
           "OpenAI 合作与 Copilot 产品线，让 Microsoft 成为 AI 应用落地的重要代表。",
         ],
       },
       {
         title: "观察重点",
-        summary: "Azure 成长、AI 变现、企业预算、资本支出与毛利率。",
+        summary: "Azure 增长、AI 变现、企业预算、资本支出与毛利率。",
         details: [
-          "Azure 成长率如果放缓，市场会重新检查云端需求与竞争压力。",
-          "AI Copilot 的重点是付费采用率，而不只是产品发表数量。",
+          "Azure 增长率如果放缓，市场会重新检查云端需求与竞争压力。",
+          "AI Copilot 的重点是付费采用率，而不只是产品发布数量。",
           "AI 基础设施需要大量资本支出，投资人会看收入增量是否能支撑支出。",
         ],
       },
@@ -443,7 +443,7 @@ const EDUCATION_KNOWLEDGE = {
         summary: "先进制程、成熟制程、晶圆代工与先进封装。",
         details: [
           "先进制程常用于高性能运算、AI、手机芯片与高端处理器。",
-          "成熟制程服务车用、工控、消费电子等长尾需求，让营收结构更分散。",
+          "成熟制程服务车载、工控、消费电子等长尾需求，让营收结构更分散。",
           "先进封装在 AI/HPC 时代变得更重要，因为高端芯片需要更复杂的整合能力。",
         ],
       },
@@ -472,38 +472,38 @@ const EDUCATION_KNOWLEDGE = {
 const FEATURED_STOCK_EDUCATION_PROFILES = {
   AMD: {
     name: "AMD",
-    origin: "AMD 从 CPU 与图形芯片竞争切入市场，近年靠 Ryzen、EPYC 与 AI 加速器重新获取高性能运算的能见度。",
+    origin: "AMD 从 CPU 与图形芯片竞争切入市场，近年靠 Ryzen、EPYC 与 AI 加速器重新获取高性能运算的关注度。",
     business: "公司核心包含 PC 处理器、数据中心 CPU、GPU、嵌入式芯片与 AI 加速器，市场会把它放在半导体景气与 AI 服务器供应链一起看。",
     event: "代表事件包含 Ryzen 翻身、EPYC 进入数据中心、收购 Xilinx 扩大嵌入式布局，以及 AI 加速器产品线推进。",
-    focus: "玩家应注意数据中心成长、AI 芯片出货、PC 需求循环、毛利率与和 NVIDIA、Intel 的竞争节奏。",
+    focus: "玩家应注意数据中心增长、AI 芯片出货、PC 需求循环、毛利率与和 NVIDIA、Intel 的竞争节奏。",
   },
   GOOGL: {
     name: "Alphabet",
     origin: "Alphabet 的核心来自 Google 搜索与广告平台，后来把云端、YouTube、Android 与 AI 研发纳入同一个大型科技生态。",
     business: "公司主要收入来自搜索广告、YouTube、Google Cloud、Android 生态与订阅服务，AI 能力会影响广告效率与云端竞争。",
-    event: "代表事件包含 Google 搜索普及、Android 生态扩张、YouTube 成长、Google Cloud 追赶，以及 Gemini 等 AI 产品推进。",
-    focus: "玩家应注意广告景气、搜索流量、云端成长率、AI 投入成本、监管风险与市场对 AI 搜索变化的反应。",
+    event: "代表事件包含 Google 搜索普及、Android 生态扩张、YouTube 增长、Google Cloud 追赶，以及 Gemini 等 AI 产品推进。",
+    focus: "玩家应注意广告景气、搜索流量、云端增长率、AI 投入成本、监管风险与市场对 AI 搜索变化的反应。",
   },
   META: {
     name: "Meta",
-    origin: "Meta 从 Facebook 社群平台起家，逐步扩张到 Instagram、WhatsApp、广告系统、短音视频与沉浸式运算布局。",
-    business: "公司核心是社群流量与广告变现，Reels、AI 推荐系统、Messaging 与 Reality Labs 会影响成长叙事。",
+    origin: "Meta 从 Facebook 社交平台起家，逐步扩张到 Instagram、WhatsApp、广告系统、短音视频与沉浸式运算布局。",
+    business: "公司核心是社交流量与广告变现，Reels、AI 推荐系统、Messaging 与 Reality Labs 会影响增长叙事。",
     event: "代表事件包含 Facebook 全球化、Instagram 收购、广告机器学习系统升级、元宇宙投入与 AI 推荐效率改善。",
     focus: "玩家应注意广告需求、用户停留时间、AI 推荐带来的变现效率、Reality Labs 支出与隐私监管。",
   },
   AMZN: {
     name: "Amazon",
     origin: "Amazon 从线上书店起家，后来成为电商、云端基础设施、物流与会员生态的综合平台。",
-    business: "公司核心包含电商 marketplace、Prime 会员、广告、物流服务与 AWS，市场常同时看零售效率与云端成长。",
+    business: "公司核心包含电商 marketplace、Prime 会员、广告、物流服务与 AWS，市场常同时看零售效率与云端增长。",
     event: "代表事件包含 Marketplace 扩张、Prime 会员制、AWS 成为云端龙头、物流网络扩建与广告业务放大。",
-    focus: "玩家应注意 AWS 成长率、零售毛利、广告收入、物流成本、消费景气与 AI 基础设施投资。",
+    focus: "玩家应注意 AWS 增长率、零售毛利、广告收入、物流成本、消费景气与 AI 基础设施投资。",
   },
   NFLX: {
     name: "Netflix",
     origin: "Netflix 从 DVD 租借转型流媒体平台，再用原创内容与全球订阅制创建音视频娱乐品牌。",
-    business: "公司核心是流媒体订阅、内容投资、广告方案与全球会员成长，市场会用会员数、ARPU 与内容效率评价它。",
+    business: "公司核心是流媒体订阅、内容投资、广告方案与全球会员增长，市场会用会员数、ARPU 与内容效率评价它。",
     event: "代表事件包含流媒体转型、原创剧集成功、全球化扩张、打击共享账号与广告订阅方案推出。",
-    focus: "玩家应注意会员成长、内容成本、广告方案渗透率、竞争平台压力与自由现金流。",
+    focus: "玩家应注意会员增长、内容成本、广告方案渗透率、竞争平台压力与自由现金流。",
   },
   CRM: {
     name: "Salesforce",
@@ -517,33 +517,33 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
     origin: "Oracle 从数据库软件创建企业级地位，后来延伸到云端基础设施、ERP 与产业应用。",
     business: "公司核心包含数据库、云端基础设施 OCI、企业应用、Java 与产业解决方案，市场关注云端转型速度。",
     event: "代表事件包含关联式数据库普及、企业应用扩张、云端基础设施加速与大型 AI 训练客户需求。",
-    focus: "玩家应注意 OCI 成长率、数据库续约、云端资本支出、AI 运算需求与企业软件竞争。",
+    focus: "玩家应注意 OCI 增长率、数据库续约、云端资本支出、AI 运算需求与企业软件竞争。",
   },
   QCOM: {
     name: "Qualcomm",
     origin: "Qualcomm 以无线通信技术与移动芯片创建地位，长期受手机周期与通信标准升级影响。",
-    business: "公司核心包含 Snapdragon 移动平台、通信专利授权、车用芯片、IoT 与边缘 AI 芯片。",
-    event: "代表事件包含 CDMA 技术商业化、4G/5G 标准推进、Snapdragon 品牌创建与车用芯片布局。",
-    focus: "玩家应注意智慧手机需求、授权收入、车用设计案、AI PC / 边缘 AI 进展与中国手机品牌拉货。",
+    business: "公司核心包含 Snapdragon 移动平台、通信专利授权、车载芯片、IoT 与边缘 AI 芯片。",
+    event: "代表事件包含 CDMA 技术商业化、4G/5G 标准推进、Snapdragon 品牌创建与车载芯片布局。",
+    focus: "玩家应注意智能手机需求、授权收入、车载设计案、AI PC / 边缘 AI 进展与中国手机品牌备货。",
   },
   INTC: {
     name: "Intel",
     origin: "Intel 是 x86 处理器与 PC 时代的重要代表，近年同时面对制程追赶、数据中心竞争与晶圆代工转型。",
     business: "公司核心包含 PC CPU、服务器处理器、晶圆制造、代工服务、加速器与网络芯片。",
     event: "代表事件包含 x86 架构普及、数据中心 CPU 扩张、制程延迟压力与 IDM 2.0 代工策略。",
-    focus: "玩家应注意制程节点进度、代工客户、PC 循环、数据中心市占、资本支出与补助政策。",
+    focus: "玩家应注意制程节点进度、代工客户、PC 循环、数据中心市场份额、资本支出与补助政策。",
   },
   AVGO: {
     name: "Broadcom",
     origin: "Broadcom 由通信芯片与基础设施半导体创建市场地位，后来透过并购扩大到企业软件。",
-    business: "公司核心包含网络芯片、交换器 ASIC、无线射频、保存连接、基础设施软件与大型企业客户。",
+    business: "公司核心包含网络芯片、交换器 ASIC、无线射频、存储连接、基础设施软件与大型企业客户。",
     event: "代表事件包含多次半导体并购、网络交换芯片需求、AI 丛集网络升级与 VMware 并购。",
     focus: "玩家应注意 AI 网络需求、企业软件整合、毛利率、客户集中度与数据中心资本支出。",
   },
   MU: {
     name: "Micron",
-    origin: "Micron 是存储器与保存芯片公司，股价常跟 DRAM / NAND 景气循环一起起伏。",
-    business: "公司核心包含 DRAM、NAND、数据中心存储器、行动与车用保存，AI 服务器会带动高频宽存储器需求。",
+    origin: "Micron 是存储器与存储芯片公司，股价常跟 DRAM / NAND 景气循环一起起伏。",
+    business: "公司核心包含 DRAM、NAND、数据中心存储器、移动与车载存储，AI 服务器会带动高频宽存储器需求。",
     event: "代表事件包含存储器景气循环、NAND 供需调整、HBM 需求升温与数据中心产品比重提高。",
     focus: "玩家应注意存储器报价、库存水位、HBM 出货、资本支出纪律与终端需求复苏。",
   },
@@ -577,7 +577,7 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
   },
   NIO: {
     name: "NIO",
-    origin: "蔚来是中国电动车品牌，以高端车型、用户社群与换电服务创建差异化。",
+    origin: "蔚来是中国电动车品牌，以高端车型、用户社区与换电服务创建差异化。",
     business: "公司核心包含电动车销售、换电站、车主服务、软件功能与中国高端新能源车市场。",
     event: "代表事件包含量产车推出、换电网络扩张、子品牌布局与中国新能源车价格竞争。",
     focus: "玩家应注意交付量、毛利率、换电站成本、现金流、中国车市竞争与政策环境。",
@@ -586,8 +586,8 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
     name: "Enphase Energy",
     origin: "Enphase 以太阳能微型逆变器创建品牌，受住宅太阳能需求与利率环境影响明显。",
     business: "公司核心包含微型逆变器、储能电池、能源管理软件与住宅太阳能系统。",
-    event: "代表事件包含微型逆变器普及、住宅太阳能成长、库存调整与利率变化拖累需求。",
-    focus: "玩家应注意住宅太阳能安装量、渠道库存、利率、欧洲与美国需求、储能产品成长。",
+    event: "代表事件包含微型逆变器普及、住宅太阳能增长、库存调整与利率变化拖累需求。",
+    focus: "玩家应注意住宅太阳能安装量、渠道库存、利率、欧洲与美国需求、储能产品增长。",
   },
   PLUG: {
     name: "Plug Power",
@@ -622,14 +622,14 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
     origin: "Visa 是全球支付网络公司，核心价值在于交易清算网络、品牌信任与跨境支付规模。",
     business: "公司核心收入来自支付交易量、数据处理、跨境交易与增值服务，不直接承担大部分信用风险。",
     event: "代表事件包含电子支付普及、跨境旅游恢复、无现金化趋势与金融科技竞争。",
-    focus: "玩家应注意消费支出、跨境交易、汇率、监管费率、金融科技竞争与交易量成长。",
+    focus: "玩家应注意消费支出、跨境交易、汇率、监管费率、金融科技竞争与交易量增长。",
   },
   MA: {
     name: "Mastercard",
-    origin: "Mastercard 是全球支付网络公司，与 Visa 类似受电子支付、跨境消费与交易量成长带动。",
+    origin: "Mastercard 是全球支付网络公司，与 Visa 类似受电子支付、跨境消费与交易量增长带动。",
     business: "公司核心包含支付处理、跨境交易、数据服务、资安与金融机构合作方案。",
-    event: "代表事件包含无现金支付扩张、旅游复苏、数位钱包合作与实时支付竞争。",
-    focus: "玩家应注意全球消费、跨境交易、监管费率、商户接受度、增值服务成长与竞争压力。",
+    event: "代表事件包含无现金支付扩张、旅游复苏、数字钱包合作与实时支付竞争。",
+    focus: "玩家应注意全球消费、跨境交易、监管费率、商户接受度、增值服务增长与竞争压力。",
   },
   BRK_B: {
     name: "Berkshire Hathaway",
@@ -640,10 +640,10 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
   },
   "2454_TW": {
     name: "联发科",
-    origin: "联发科从多媒体与手机芯片切入市场，后来成为全球行动 SoC 与通信芯片的重要供应商。",
-    business: "公司核心包含手机芯片、智慧设备、Wi-Fi、车用与 ASIC，受手机需求与高端芯片竞争影响。",
-    event: "代表事件包含手机芯片市占提升、Dimensity 品牌推进、5G 升级与非手机产品线扩张。",
-    focus: "玩家应注意手机拉货、高端芯片渗透、毛利率、库存循环、AI 终端与中国手机品牌需求。",
+    origin: "联发科从多媒体与手机芯片切入市场，后来成为全球移动 SoC 与通信芯片的重要供应商。",
+    business: "公司核心包含手机芯片、智能设备、Wi-Fi、车载与 ASIC，受手机需求与高端芯片竞争影响。",
+    event: "代表事件包含手机芯片市场份额提升、Dimensity 品牌推进、5G 升级与非手机产品线扩张。",
+    focus: "玩家应注意手机备货、高端芯片渗透、毛利率、库存循环、AI 终端与中国手机品牌需求。",
   },
   "2317_TW": {
     name: "鸿海",
@@ -655,9 +655,9 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
   "2303_TW": {
     name: "联电",
     origin: "联电是台湾晶圆代工公司，重点多落在成熟制程、特殊制程与稳定产能利用率。",
-    business: "公司核心是晶圆代工，服务通信、消费电子、车用、工控与电源管理等成熟制程需求。",
+    business: "公司核心是晶圆代工，服务通信、消费电子、车载、工控与电源管理等成熟制程需求。",
     event: "代表事件包含晶圆代工分工、成熟制程景气循环、产能扩张与特殊制程布局。",
-    focus: "玩家应注意产能利用率、晶圆报价、成熟制程需求、车用工控订单与资本支出纪律。",
+    focus: "玩家应注意产能利用率、晶圆报价、成熟制程需求、车载工控订单与资本支出纪律。",
   },
   "2308_TW": {
     name: "台达电",
@@ -683,7 +683,7 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
   "2395_TW": {
     name: "研华",
     origin: "研华以工业电脑与嵌入式平台起家，是工业自动化、边缘运算与 IoT 应用的重要供应商。",
-    business: "公司核心包含工业电脑、嵌入式板卡、边缘运算、智慧制造、交通与医疗场域解决方案。",
+    business: "公司核心包含工业电脑、嵌入式板卡、边缘运算、智能制造、交通与医疗场域解决方案。",
     event: "代表事件包含工业电脑普及、IoT 应用扩张、边缘 AI 需求与工业景气循环。",
     focus: "玩家应注意工业订单、区域需求、边缘 AI 商机、库存调整与毛利率。",
   },
@@ -748,7 +748,7 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
     origin: "ConocoPhillips 以油气上游开采为主，股价对原油与天然气价格变化敏感。",
     business: "公司核心是原油、天然气与液化天然气资产，重点在产量、成本与资本配置。",
     event: "代表事件包含页岩油开发、油价循环、资产并购、产量调整与股东回馈。",
-    focus: "玩家应注意油气价格、产量成长、开采成本、资本支出、自由现金流与回购股利。",
+    focus: "玩家应注意油气价格、产量增长、开采成本、资本支出、自由现金流与回购股利。",
   },
   GLD: {
     name: "SPDR Gold Shares",
@@ -766,17 +766,17 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
   },
   BABA: {
     name: "Alibaba",
-    origin: "Alibaba 从中国电商平台起家，扩张到云端、物流、本地生活、国际电商与数位服务。",
+    origin: "Alibaba 从中国电商平台起家，扩张到云端、物流、本地生活、国际电商与数字服务。",
     business: "公司核心包含淘天电商、阿里云、国际电商、菜鸟物流与本地生活服务。",
-    event: "代表事件包含电商平台成长、阿里云扩张、监管压力、组织拆分与国际电商竞争。",
-    focus: "玩家应注意中国消费、平台竞争、云端成长、监管环境、回购与国际业务表现。",
+    event: "代表事件包含电商平台增长、阿里云扩张、监管压力、组织拆分与国际电商竞争。",
+    focus: "玩家应注意中国消费、平台竞争、云端增长、监管环境、回购与国际业务表现。",
   },
   PDD: {
     name: "PDD Holdings",
     origin: "PDD 以拼多多的社交电商与低价心智起家，后来透过 Temu 扩张海外电商市场。",
     business: "公司核心包含中国电商平台、广告与交易服务、Temu 跨境电商与供应链效率。",
-    event: "代表事件包含拼团低价模式、农产品与下沉市场扩张、Temu 海外成长与补贴竞争。",
-    focus: "玩家应注意中国消费、Temu 成长、行销费用、平台竞争、监管与利润率变化。",
+    event: "代表事件包含拼团低价模式、农产品与下沉市场扩张、Temu 海外增长与补贴竞争。",
+    focus: "玩家应注意中国消费、Temu 增长、行销费用、平台竞争、监管与利润率变化。",
   },
   JD: {
     name: "JD.com",
@@ -789,7 +789,7 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
     name: "Baidu",
     origin: "百度从中文搜索引擎起家，后来延伸到 AI、云端、自动驾驶与内容服务。",
     business: "公司核心包含搜索广告、AI Cloud、文心大模型、自动驾驶 Apollo 与内容生态。",
-    event: "代表事件包含搜索广告成长、AI 技术投入、Apollo 自动驾驶、生成式 AI 产品推出。",
+    event: "代表事件包含搜索广告增长、AI 技术投入、Apollo 自动驾驶、生成式 AI 产品推出。",
     focus: "玩家应注意广告景气、AI 云端收入、大模型商业化、自动驾驶落地与中国科技监管。",
   },
   "9988_HK": {
@@ -798,10 +798,10 @@ const FEATURED_STOCK_EDUCATION_PROFILES = {
   },
   "700_HK": {
     name: "Tencent",
-    origin: "腾讯从实时通信与社群平台起家，成为中国游戏、社交、支付、广告与云服务的重要平台。",
+    origin: "腾讯从实时通信与社交平台起家，成为中国游戏、社交、支付、广告与云服务的重要平台。",
     business: "公司核心包含微信生态、游戏、广告、金融科技、云服务与内容娱乐。",
-    event: "代表事件包含微信普及、游戏业务成长、支付生态扩张、监管调整与视频号商业化。",
-    focus: "玩家应注意游戏版号与流水、广告成长、微信生态变现、金融科技监管与云端竞争。",
+    event: "代表事件包含微信普及、游戏业务增长、支付生态扩张、监管调整与视频号商业化。",
+    focus: "玩家应注意游戏版号与流水、广告增长、微信生态变现、金融科技监管与云端竞争。",
   },
 };
 
@@ -867,8 +867,8 @@ function getEducationKnowledge(symbol, quote = {}) {
     name,
     origin: `${name} 的完整背景数据尚未放入本地知识库，第一版会先用可获取的市场数据与通用公司分析框架带玩家理解。`,
     business: `${name} 的商业模式可先从产品服务、营收来源、客户族群与产业位置四个角度阅读。`,
-    event: "这档股票的代表事件会在后续题库扩充时补齐，现在先以价格、量能与技术面变化创建学习节点。",
-    focus: "玩家应先观察近期涨跌幅、成交量是否放大、技术指标是否同向，以及市场是否正在重新定价它的成长故事。",
+    event: "这只股票的代表事件会在后续题库扩充时补齐，现在先以价格、量能与技术面变化创建学习节点。",
+    focus: "玩家应先观察近期涨跌幅、成交量是否放大、技术指标是否同向，以及市场是否正在重新定价它的增长故事。",
   };
 }
 
@@ -913,7 +913,7 @@ function normalizeEducationFolders(knowledge, companyName) {
     {
       title: "公司起源故事",
       summary: knowledge.origin,
-      details: ["这档股票尚未放入完整知识库，第一版先用通用公司分析框架补足。"],
+      details: ["这只股票尚未放入完整知识库，第一版先用通用公司分析框架补足。"],
     },
     {
       title: "主要产品",
@@ -923,12 +923,12 @@ function normalizeEducationFolders(knowledge, companyName) {
     {
       title: "代表事件",
       summary: knowledge.event,
-      details: ["后续可以把财报转折、产品发表、产业事件与重大并购逐步补进题库。"],
+      details: ["后续可以把财报转折、产品发布、产业事件与重大并购逐步补进题库。"],
     },
     {
       title: "观察重点",
       summary: knowledge.focus,
-      details: ["先观察近期涨跌幅、成交量是否放大、技术指标是否同向，以及市场是否正在重新定价成长故事。"],
+      details: ["先观察近期涨跌幅、成交量是否放大、技术指标是否同向，以及市场是否正在重新定价增长故事。"],
     },
   ];
   return (knowledge.folders || fallbackFolders).map((folder) => ({
@@ -1077,8 +1077,8 @@ function generateAdvice(closes, ind) {
 
   const rsiVal = lastVal(rsi);
   if (rsiVal !== null) {
-    if      (rsiVal >= 70) { reasons.push({ label: `RSI ${rsiVal.toFixed(1)}（高档区）`, type: "high" }); }
-    else if (rsiVal <= 30) { reasons.push({ label: `RSI ${rsiVal.toFixed(1)}（低档区）`, type: "low" }); }
+    if      (rsiVal >= 70) { reasons.push({ label: `RSI ${rsiVal.toFixed(1)}（高位区）`, type: "high" }); }
+    else if (rsiVal <= 30) { reasons.push({ label: `RSI ${rsiVal.toFixed(1)}（低位区）`, type: "low" }); }
     else                   { reasons.push({ label: `RSI ${rsiVal.toFixed(1)}（中性区间）`, type: "neutral" }); }
   }
 
@@ -1203,7 +1203,7 @@ ${snapshot.name} 今天进入首页热度榜首，是因为它在 **单日波动
 目前的技术指标数值为 **${snapshot.adviceReasons.join("、")}**。这些只是 RSI、MACD 与均线的当前读数，用来描述目前状态，并非进出场信号。
 
 ## 点进去可以看到什么
-打开分析页后，可以看到完整的 K 线、成交量、RSI 与 MACD 图表，以及 **RSI、MACD 与均线之间目前的相对位置**，方便自行检视这档股票的技术面数据。
+打开分析页后，可以看到完整的 K 线、成交量、RSI 与 MACD 图表，以及 **RSI、MACD 与均线之间目前的相对位置**，方便自行查看这只股票的技术面数据。
 
 ---
 
@@ -1241,7 +1241,7 @@ ${snapshot.name} 今天进入首页热度榜首，是因为它在 **单日波动
 
 严格限制（非常重要）：
 1. 全文只能客观描述数据，严禁出现任何投资建议、买进、卖出、加码、减码、推荐、值得买、看好、看坯、目标价、进场、出场等字眼或暗示。
-2. 不要评价这档股票好或不好，只陈述数据变化大小与指标当前状态。
+2. 不要评价这只股票好或不好，只陈述数据变化大小与指标当前状态。
 3. 一定要有一个 H1 标题，命名为「今日数据摘要」相关。
 4. 不要出现「过程一 / 过程二 / 过程三」这种字眼。
 5. 内容用三个面向描述：市场热度（量能与波动）、技术指标状态、点进去能看到哪些图表数据。
@@ -1270,7 +1270,7 @@ async function buildFeaturedRecommendation(snapshot) {
     symbol: snapshot.symbol,
     name: snapshot.name,
     exchange: snapshot.exchange,
-    summary: `${snapshot.name} 今天 ${changeLabel}，${pulseLabel}，本区间走势为「${snapshot.adviceSignal}」，是今日数据变化最大的一档。`,
+    summary: `${snapshot.name} 今天 ${changeLabel}，${pulseLabel}，本区间走势为「${snapshot.adviceSignal}」，是今日数据变化最大的一只。`,
     detail: `这张主卡会优先挑出单日波动、量能与近期动能数据最大的标的。${snapshot.name} 目前 5 日动能 ${formatPct(snapshot.momentum5d)}，热度分数 ${snapshot.heatScore.toFixed(1)}，可先看它今天的盘面数据变化。`,
     chips: [
       { label: "实时热度", tone: "primary" },
@@ -1441,9 +1441,9 @@ function buildLocalChatFallback(message, context = {}) {
     : "MACD 数据暂时不足。";
   const rsiText = Number.isFinite(rsi)
     ? rsi >= 70
-      ? "RSI 高于 70，位于高档区。"
+      ? "RSI 高于 70，位于高位区。"
       : rsi <= 30
-        ? "RSI 低于 30，位于低档区。"
+        ? "RSI 低于 30，位于低位区。"
         : "RSI 位于 30–70 的中性区间。"
     : "RSI 数据暂时不足。";
 
@@ -1462,7 +1462,7 @@ app.post("/chat", async (req, res) => {
 2. 严禁出现买进、卖出、加码、减码、进场、出场、停利、停损、推荐、值得买、适合买、看好、看坯、目标价等字眼或任何暗示。
 3. 如果用户问「现在适不适合买 / 该不该卖 / 会涨还是会跌 / 帮我推荐」这类问题，请礼貌说明本工具只呈现与解读数据、不提供投资建议，并改为客观说明相关指标目前的数值与定义。
 4. 【绝对严禁谈论政治与敏感话题】：如果用户询问任何地缘政治、国家主权、历史事件、政治人物、宗教、色情或任何与股市/本游戏无关的敏感话题，你必须礼貌地拒绝回答，一律回答：“我是滑雪游戏的数据助手，仅能提供客观的技术指标科普与游戏关卡说明，无法回答其他话题。”。
-5. 语气亲切但中立，只陈述事实，不替使用者做决定，且一律使用简体中文回答。`;
+5. 语气亲切但中立，只陈述事实，不替用户做决定，且一律使用简体中文回答。`;
 
   if (context && context.symbol) {
     systemContext += `

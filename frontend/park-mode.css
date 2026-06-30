@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════════════════════════
-   park-mode.css  —  Stock Ski Adventure 金融教育樂園模式
-   所有 park-mode 相關樣式獨立於此，不污染原有 style.css
+   park-mode.css  —  Stock Ski Adventure 金融教育乐园模式
+   所有 park-mode 相关样式独立于此，不污染原有 style.css
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Park 設計變數 ─────────────────────────────────── */
+/* ── Park 设计变数 ─────────────────────────────────── */
 :root {
   --park-orange:     #ff8c1a;
   --park-orange-d:   #e56800;
@@ -26,7 +26,7 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   MODE TOGGLE BUTTON（加在 header 右側）
+   MODE TOGGLE BUTTON（加在 header 右侧）
    ══════════════════════════════════════════════════════ */
 .mode-toggle-btn {
   display: inline-flex;
@@ -104,10 +104,10 @@ body.park-mode .footer {
 }
 
 /* ── Background layers ── */
-/* park-bg 現在是全局元素（不在 parkWelcomePage 裡面）
-   只在 park mode 下可見，否則完全隱藏 */
+/* park-bg 现在是全局元素（不在 parkWelcomePage 里面）
+   只在 park mode 下可见，否则完全隐藏 */
 .park-bg {
-  display: none;            /* 專業模式：完全隱藏 */
+  display: none;            /* 专业模式：完全隐藏 */
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -115,7 +115,7 @@ body.park-mode .footer {
   overflow: hidden;
 }
 body.park-mode .park-bg {
-  display: block;           /* park mode：顯示 */
+  display: block;           /* park mode：显示 */
 }
 
 .park-sky {
@@ -556,7 +556,7 @@ body.park-mode .park-bg {
 
 /* ══════════════════════════════════════════════════════
    PARK RECOMMENDATION SECTIONS
-   每日關卡 / 熱門關卡 / 主題關卡
+   每日关卡 / 热门关卡 / 主题关卡
    ══════════════════════════════════════════════════════ */
 
 /* ── Section 通用 wrapper ── */
@@ -610,7 +610,7 @@ body.park-mode .park-bg {
 }
 
 /* ─────────────────────────────────────────────
-   每日關卡 — 全寬英雄卡
+   每日关卡 — 全宽英雄卡
    ───────────────────────────────────────────── */
 .park-daily-quest-wrap { width: 100%; }
 
@@ -633,7 +633,7 @@ body.park-mode .park-bg {
   position: relative;
   overflow: hidden;
 }
-/* 金色輝光裝飾 */
+/* 金色辉光装饰 */
 .park-daily-card::before {
   content: '';
   position: absolute;
@@ -771,7 +771,7 @@ body.park-mode .park-bg {
 .park-daily-btn:active { transform: translateY(0); }
 
 /* ─────────────────────────────────────────────
-   熱門關卡 — 單列縱排
+   热门关卡 — 单列纵排
    ───────────────────────────────────────────── */
 .park-hot-grid {
   display: flex;
@@ -886,7 +886,7 @@ body.park-mode .park-bg {
 }
 
 /* ─────────────────────────────────────────────
-   主題關卡 — 1×4 橫排
+   主题关卡 — 1×4 横排
    ───────────────────────────────────────────── */
 .park-theme-band {
   display: grid;
@@ -965,7 +965,7 @@ body.park-mode .park-bg {
   color: #062a20;
 }
 
-/* ── Responsive 補充 ── */
+/* ── Responsive 补充 ── */
 @media (max-width: 768px) {
   .park-daily-card { flex-direction: column; }
   .park-daily-thumb { width: 100%; height: 100px; }
@@ -980,10 +980,10 @@ body.park-mode .park-bg {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PATCH C: 每日關卡縮圖 + 熱門關卡橫排 + 個人資料面板
+   PATCH C: 每日关卡缩图 + 热门关卡横排 + 个人数据面板
    ═══════════════════════════════════════════════════════════ */
 
-/* ── 每日關卡縮圖 ── */
+/* ── 每日关卡缩图 ── */
 .park-daily-thumb {
   width: 148px;
   min-height: 148px;
@@ -1032,14 +1032,14 @@ body.park-mode .park-bg {
   opacity: 0.85;
 }
 
-/* ── 熱門關卡 — 每行一個橫排 ── */
+/* ── 热门关卡 — 每行一个横排 ── */
 .park-hot-card {
   flex-direction: row !important;
   align-items: center !important;
   padding: 0.9rem 1.2rem !important;
   gap: 0.9rem !important;
 }
-/* 拆掉 card-top 包裝，直接讓子元素橫排 */
+/* 拆掉 card-top 包装，直接让子元素横排 */
 .park-hot-card-top {
   display: contents !important;
 }
@@ -1063,7 +1063,7 @@ body.park-mode .park-bg {
 }
 
 /* ══════════════════════════════════════════════
-   PATCH D: 售票亭選股下拉面板
+   PATCH D: 售票亭选股下拉面板
    ══════════════════════════════════════════════ */
 
 .park-picker-panel {
@@ -1166,7 +1166,7 @@ body.park-mode .park-bg {
   text-overflow: ellipsis;
 }
 
-/* ── 個人資料按鈕（header 內） ── */
+/* ── 个人数据按钮（header 内） ── */
 .park-profile-btn {
   display: none;
   align-items: center;
@@ -1190,7 +1190,7 @@ body.park-mode .park-bg {
 }
 body.park-mode .park-profile-btn { display: flex; }
 
-/* ── 個人資料面板 ── */
+/* ── 个人数据面板 ── */
 .park-profile-panel {
   position: fixed;
   top: 62px;
@@ -1639,34 +1639,34 @@ body.park-mode .ski-action-title { color: var(--park-orange); }
 
 /* ═══════════════════════════════════════════════════════════
    PATCH A: 背景全屏修正
-   park-bg 改為 position:fixed，突破 main-container 的寬度限制
-   當 #parkWelcomePage 被 display:none 時，fixed 子元素也一起消失
+   park-bg 改为 position:fixed，突破 main-container 的宽度限制
+   当 #parkWelcomePage 被 display:none 时，fixed 子元素也一起消失
    ═══════════════════════════════════════════════════════════ */
 .park-bg {
   position: fixed !important;
   inset: 0;
   z-index: 0;
 }
-/* park content 確保在 fixed 背景之上 */
+/* park content 确保在 fixed 背景之上 */
 .park-content {
   position: relative;
   z-index: 10;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PATCH B: Header 搜尋欄樂園化
-   把深色專業風格的 input / select / 分析按鈕 改為冰晶玻璃 + 橙色
+   PATCH B: Header 搜索栏乐园化
+   把深色专业风格的 input / select / 分析按钮 改为冰晶玻璃 + 橙色
    ═══════════════════════════════════════════════════════════ */
 
-/* Logo 圖示換成滑雪人 */
+/* Logo 图示换成滑雪人 */
 body.park-mode .logo-icon {
   font-size: 0;
 }
 body.park-mode .logo-icon::before {
-  content: '⛷️';
+  content: '??';
   font-size: 1.4rem;
 }
-/* Logo 文字 → 冰藍/青色漸層 */
+/* Logo 文字 → 冰蓝/青色渐层 */
 body.park-mode .logo-text {
   background: linear-gradient(135deg, #60c8ff 0%, #00cfaa 100%);
   -webkit-background-clip: text;
@@ -1678,7 +1678,7 @@ body.park-mode .logo-sub {
   -webkit-text-fill-color: rgba(180,220,255,0.55);
 }
 
-/* 搜尋輸入框 → 玻璃風 */
+/* 搜索输入框 → 玻璃风 */
 body.park-mode #symbolInput {
   background: rgba(255,255,255,0.10);
   border-color: rgba(255,255,255,0.22);
@@ -1694,7 +1694,7 @@ body.park-mode #symbolInput:focus {
   background: rgba(255,255,255,0.15);
 }
 
-/* 時間段選擇器 → 玻璃風 */
+/* 时间段选择器 → 玻璃风 */
 body.park-mode #periodSelect {
   background: rgba(255,255,255,0.10);
   border-color: rgba(255,255,255,0.22);
@@ -1705,7 +1705,7 @@ body.park-mode #periodSelect option {
   color: #e4f2ff;
 }
 
-/* 分析按鈕 → 橙色冒險感 */
+/* 分析按钮 → 橙色冒险感 */
 body.park-mode .btn-search {
   background: linear-gradient(135deg, #ff8c1a 0%, #e55200 100%) !important;
   box-shadow: 0 4px 16px rgba(255,100,0,0.40);
@@ -1717,16 +1717,16 @@ body.park-mode .btn-search:hover {
 }
 
 /* ══════════════════════════════════════════════════════
-   PATCH F: 股票分析頁 (#dashboard) 遊戲化
-   全部在 body.park-mode 下生效，不影響專業模式
+   PATCH F: 股票分析页 (#dashboard) 游戏化
+   全部在 body.park-mode 下生效，不影响专业模式
    ══════════════════════════════════════════════════════ */
 
-/* ── 儀表板底色 → 由全局 .park-bg 提供（山景+下雪） ── */
+/* ── 仪表板底色 → 由全局 .park-bg 提供（山景+下雪） ── */
 body.park-mode #dashboard::before {
   display: none;  /* park-bg handles everything */
 }
 
-/* ── 1. QUEST 關卡標題卡 ── */
+/* ── 1. QUEST 关卡标题卡 ── */
 body.park-mode .stock-header-card {
   background: linear-gradient(145deg, rgba(6,14,38,0.97) 0%, rgba(12,26,66,0.95) 100%);
   border: 1.5px solid rgba(255,210,50,0.28);
@@ -1737,7 +1737,7 @@ body.park-mode .stock-header-card {
 }
 /* "QUEST IN PROGRESS" kicker */
 body.park-mode .stock-header-card::before {
-  content: '⚔️  QUEST IN PROGRESS';
+  content: '??  QUEST IN PROGRESS';
   position: absolute;
   top: 0; left: 0; right: 0;
   padding: 0.55rem 1.4rem;
@@ -1795,7 +1795,7 @@ body.park-mode .price-value {
   color: #fff;
 }
 
-/* ── 2. 滑雪啟動 → 關卡挑戰中心 ── */
+/* ── 2. 滑雪启动 → 关卡挑战中心 ── */
 body.park-mode .stock-action-card {
   background: linear-gradient(145deg,
     rgba(255,90,0,0.10) 0%, rgba(10,8,4,0.92) 100%);
@@ -1810,7 +1810,7 @@ body.park-mode .ski-action-title {
 }
 body.park-mode .ski-action-desc { font-size: 0 !important; }
 body.park-mode .ski-action-desc::before {
-  content: '征服這條雪道，挑戰極限！';
+  content: '征服这条雪道，挑战极限！';
   font-size: 0.82rem;
   color: rgba(255,200,100,0.65);
 }
@@ -1827,13 +1827,13 @@ body.park-mode .ski-launch-big {
 /* Difficulty label → game language */
 body.park-mode .ski-difficulty-label { font-size: 0 !important; }
 body.park-mode .ski-difficulty-label::before {
-  content: '🏔️ 雪道難度';
+  content: '??? 雪道难度';
   font-size: 0.70rem;
   color: rgba(180,210,255,0.60);
   font-weight: 700;
 }
 
-/* ── 3. 教育纜車預習 → 任務地形簡報 ── */
+/* ── 3. 教育缆车预习 → 任务地形简报 ── */
 body.park-mode .education-preview-card {
   background: rgba(6,14,40,0.94);
   border: 1.5px solid rgba(0,207,170,0.22);
@@ -1841,7 +1841,7 @@ body.park-mode .education-preview-card {
 }
 body.park-mode .education-preview-kicker { font-size: 0 !important; }
 body.park-mode .education-preview-kicker::before {
-  content: '🗺️  任務地形簡報';
+  content: '???  任务地形简报';
   font-size: 0.70rem;
   font-weight: 900;
   color: rgba(0,207,170,0.80);
@@ -1855,11 +1855,11 @@ body.park-mode .education-preview-badge {
   font-size: 0 !important;
 }
 body.park-mode .education-preview-badge::before {
-  content: '情報';
+  content: '情报';
   font-size: 0.70rem;
 }
 
-/* ── 4. AI 建議 → NPC 嚮導對話框 ── */
+/* ── 4. AI 建议 → NPC 向导对话框 ── */
 body.park-mode .advice-card {
   background: rgba(4,12,34,0.96);
   border: 1.5px solid rgba(80,160,255,0.22) !important;
@@ -1889,7 +1889,7 @@ body.park-mode .advice-icon {
 /* NPC name replace */
 body.park-mode .advice-title { font-size: 0 !important; }
 body.park-mode .advice-title::before {
-  content: '⛷️ AI 嚮導';
+  content: '?? AI 向导';
   font-size: 1rem;
   font-weight: 900;
   color: #fff;
@@ -1908,7 +1908,7 @@ body.park-mode #signalBadge {
   border-radius: 999px;
 }
 
-/* ── 5. 圖表 Tabs → 地形掃描 ── */
+/* ── 5. 图表 Tabs → 地形扫描 ── */
 body.park-mode .tab-btn {
   border-radius: 10px !important;
 }
@@ -1926,7 +1926,7 @@ body.park-mode .tab-btn.active {
   color: var(--park-teal) !important;
 }
 
-/* ── 6. 圖表標題 + info tags → 遊戲語言 ── */
+/* ── 6. 图表标题 + info tags → 游戏语言 ── */
 body.park-mode .chart-label { font-size: 0 !important; }
 body.park-mode .chart-label[data-park]::before {
   content: attr(data-park);
@@ -1940,7 +1940,7 @@ body.park-mode .info-tag[data-park]::before {
   font-size: 0.70rem;
 }
 
-/* ── 7. 指標卡 → 遊戲 HUD 面板 ── */
+/* ── 7. 指标卡 → 游戏 HUD 面板 ── */
 body.park-mode .stat-card {
   background: rgba(6,16,44,0.92);
   border: 1.5px solid rgba(255,255,255,0.08);
@@ -1973,10 +1973,10 @@ body.park-mode .stat-card-value {
 .park-tab-alias { display: none; }
 
 /* ══════════════════════════════════════════════════════
-   PATCH E: 主題關卡地圖 — 進度條 + 任務流程燈
+   PATCH E: 主题关卡地图 — 进度条 + 任务流程灯
    ══════════════════════════════════════════════════════ */
 
-/* 主題卡進度條 */
+/* 主题卡进度条 */
 .park-theme-prog-bar {
   width: 100%;
   height: 4px;
@@ -2004,7 +2004,7 @@ body.park-mode .stat-card-value {
   box-shadow: 0 0 24px rgba(255,220,50,0.14), 0 8px 28px rgba(0,0,0,0.30);
 }
 
-/* ── 關卡流程 Modal ── */
+/* ── 关卡流程 Modal ── */
 .park-quest-overlay {
   position: fixed;
   inset: 0;
@@ -2279,7 +2279,7 @@ body.park-mode .stat-card-value {
   flex-shrink: 0;
 }
 
-/* 繼續任務 banner hint */
+/* 继续任务 banner hint */
 .park-dash-banner-task {
   display: flex;
   align-items: center;
@@ -2390,7 +2390,7 @@ body.park-mode .stock-action-card::after {
   100% { left: 140%; opacity: 0; }
 }
 
-/* "滑雪挑戰模式" title row → hidden in park mode (replaced by quest kicker in header) */
+/* "滑雪挑战模式" title row → hidden in park mode (replaced by quest kicker in header) */
 body.park-mode .ski-action-info {
   display: none !important;
 }
@@ -2440,7 +2440,7 @@ body.park-mode .ski-difficulty-panel {
   border-radius: 14px !important;
 }
 
-/* ── 發起冒險按鈕 ── */
+/* ── 发起冒险按钮 ── */
 body.park-mode #skiLaunchButton {
   width: 100% !important;
   max-width: 320px !important;
@@ -2487,7 +2487,7 @@ body.park-mode #skiLaunchButton .ski-btn-text {
   font-size: 0 !important;
 }
 body.park-mode #skiLaunchButton .ski-btn-text::before {
-  content: '開始冒險！';
+  content: '开始冒险！';
   font-size: 1.35rem;
   font-weight: 900;
 }
@@ -2694,8 +2694,8 @@ body.park-mode #dashboard.park-intel-open .stats-row {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── 5. 真實縮圖背景 (park-dash-thumb) ── */
-/* 預設隱藏（專業模式） */
+/* ── 5. 真实缩图背景 (park-dash-thumb) ── */
+/* 预设隐藏（专业模式） */
 .park-dash-thumb {
   display: none;
 }

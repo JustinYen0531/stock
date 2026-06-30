@@ -35,7 +35,7 @@ const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
       blurb: "中国电商与 Temu 出海叙事还很有张力，放在热门区很适合快速看资金是否续抱。",
       change: "+2.1%",
       trend: "up",
-      reasons: ["中国消费热度", "跨境电商叙事", "成长股弹性高"],
+      reasons: ["中国消费热度", "跨境电商叙事", "增长股弹性高"],
       series: [15, 17, 19, 18, 21, 25, 24, 28, 30],
     },
     {
@@ -925,7 +925,7 @@ function renderRSIChart(dates, rsiData) {
           tension: 0.3,
         },
         {
-          label: "高档线 70",
+          label: "高位线 70",
           data: new Array(dates.length).fill(70),
           borderColor: "rgba(239,68,68,0.6)",
           borderWidth: 1,
@@ -934,7 +934,7 @@ function renderRSIChart(dates, rsiData) {
           fill: false,
         },
         {
-          label: "低档线 30",
+          label: "低位线 30",
           data: new Array(dates.length).fill(30),
           borderColor: "rgba(34,197,94,0.6)",
           borderWidth: 1,

@@ -7,14 +7,14 @@
       "name": "NVIDIA",
       "file": "./NVDA.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "gpu",
         "ai-core",
         "server",
         "fiber-tree"
       ],
-      "mixerLogic": "近期強勢時讓坡度變陡、跳台更密，營造高速算力狂飆感。",
+      "mixerLogic": "近期强势时让坡度变陡、跳台更密，营造高速算力狂飙感。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -22,14 +22,14 @@
       "name": "AMD",
       "file": "./AMD.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "chip",
         "server",
         "wave-ring",
         "ai-core"
       ],
-      "mixerLogic": "把補漲節奏做成階梯式下切，讓地形在推進時有連續爆發感。",
+      "mixerLogic": "把补涨节奏做成阶梯式下切，让地形在推进时有连续爆发感。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -37,14 +37,14 @@
       "name": "Broadcom",
       "file": "./AVGO.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "network-chip",
         "signal-beam",
         "fiber-node",
         "chip"
       ],
-      "mixerLogic": "用網路訊號節點與階梯坡面表達大型半導體權值的穩健推進。",
+      "mixerLogic": "用网络信号节点与阶梯坡面表达大型半导体权值的稳健推进。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -52,14 +52,14 @@
       "name": "Microsoft",
       "file": "./MSFT.svg",
       "industryClass": "Tech",
-      "environmentBiome": "雲端之巔",
+      "environmentBiome": "云端之巅",
       "companyProps": [
         "cloud-block",
         "window-panel",
         "copilot-orb",
         "data-bridge"
       ],
-      "mixerLogic": "把雲層間的光橋與長弧地形成熟結合，讓上升趨勢更像雲端平台的持續擴張。",
+      "mixerLogic": "把云层间的光桥与长弧地形成熟结合，让上升趋势更像云端平台的持续扩张。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -67,14 +67,14 @@
       "name": "Alphabet",
       "file": "./GOOGL.svg",
       "industryClass": "Tech",
-      "environmentBiome": "雲端之巔",
+      "environmentBiome": "云端之巅",
       "companyProps": [
         "orbit-ring",
         "search-beam",
         "data-prism",
         "cloud-block"
       ],
-      "mixerLogic": "讓地形在平順主升段之間插入搜尋脈衝般的小波動，保留資料流的動態節奏。",
+      "mixerLogic": "让地形在平顺主升段之间插入搜索脉冲般的小波动，保留数据流的动态节奏。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -82,14 +82,14 @@
       "name": "Meta",
       "file": "./META.svg",
       "industryClass": "Media",
-      "environmentBiome": "霓虹傳媒",
+      "environmentBiome": "霓虹传媒",
       "companyProps": [
         "chat-bubble",
         "portal-ring",
         "pixel-stack",
         "visor"
       ],
-      "mixerLogic": "把情緒波動映射成連續折返與光噪斷層，做出社群熱度忽冷忽熱的感覺。",
+      "mixerLogic": "把情绪波动映射成连续折返与光噪断层，做出社交热度忽冷忽热的感觉。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -104,7 +104,7 @@
         "arrow-arc",
         "cloud-block"
       ],
-      "mixerLogic": "用倉儲與零售節奏做長坡推進，在中段混入包裹跳台與配送節點。",
+      "mixerLogic": "用仓储与零售节奏做长坡推进，在中段混入包裹跳台与配送节点。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -112,14 +112,14 @@
       "name": "Tesla",
       "file": "./TSLA.svg",
       "industryClass": "Auto",
-      "environmentBiome": "未來交通",
+      "environmentBiome": "未来交通",
       "companyProps": [
         "tire",
         "charge-pillar",
         "hover-engine",
         "speed-fin"
       ],
-      "mixerLogic": "把高速下坡與銳利轉折疊在一起，保留電動車題材常見的大波動與加速度。",
+      "mixerLogic": "把高速下坡与锐利转折叠在一起，保留电动车题材常见的大波动与加速度。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -127,14 +127,14 @@
       "name": "Rivian",
       "file": "./RIVN.svg",
       "industryClass": "Auto",
-      "environmentBiome": "未來交通",
+      "environmentBiome": "未来交通",
       "companyProps": [
         "headlamp",
         "battery-pack",
         "tire",
         "trail-rack"
       ],
-      "mixerLogic": "地形更像越野賽段，坡面起伏大、跳躍多，帶出新創電車的野性與不穩定。",
+      "mixerLogic": "地形更像越野赛段，坡面起伏大、跳跃多，带出新创电车的野性与不稳定。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -142,14 +142,14 @@
       "name": "NIO",
       "file": "./NIO.svg",
       "industryClass": "Auto",
-      "environmentBiome": "未來交通",
+      "environmentBiome": "未来交通",
       "companyProps": [
         "swap-station",
         "wing-light",
         "battery-pack",
         "speed-fin"
       ],
-      "mixerLogic": "用中速長彎與換電站節點做節奏切換，表現題材股的脈衝推進感。",
+      "mixerLogic": "用中速长弯与换电站节点做节奏切换，表现题材股的脉冲推进感。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -157,14 +157,14 @@
       "name": "TSMC",
       "file": "./2330_TW.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "wafer",
         "chip",
         "cleanroom-tower",
         "signal-beam"
       ],
-      "mixerLogic": "地形以穩定主升結構為主，局部加入晶圓光脈衝與權值龍頭的厚重慣性。",
+      "mixerLogic": "地形以稳定主升结构为主，局部加入晶圆光脉冲与权值龙头的厚重惯性。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -172,14 +172,14 @@
       "name": "TSMC",
       "file": "./2330.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "wafer",
         "chip",
         "cleanroom-tower",
         "signal-beam"
       ],
-      "mixerLogic": "地形以穩定主升結構為主，局部加入晶圓光脈衝與權值龍頭的厚重慣性。（沿用 2330.TW 主題模板）",
+      "mixerLogic": "地形以稳定主升结构为主，局部加入晶圆光脉冲与权值龙头的厚重惯性。（沿用 2330.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "2330.TW"
     },
@@ -188,14 +188,14 @@
       "name": "MediaTek",
       "file": "./2454_TW.svg",
       "industryClass": "Tech",
-      "environmentBiome": "雲端之巔",
+      "environmentBiome": "云端之巅",
       "companyProps": [
         "mobile-chip",
         "signal-beam",
         "orbit-ring",
         "data-prism"
       ],
-      "mixerLogic": "讓坡道在平穩推進中穿插通訊訊號脈衝，形成晶片平台節奏。",
+      "mixerLogic": "让坡道在平稳推进中穿插通信信号脉冲，形成芯片平台节奏。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -203,14 +203,14 @@
       "name": "MediaTek",
       "file": "./2454.svg",
       "industryClass": "Tech",
-      "environmentBiome": "雲端之巔",
+      "environmentBiome": "云端之巅",
       "companyProps": [
         "mobile-chip",
         "signal-beam",
         "orbit-ring",
         "data-prism"
       ],
-      "mixerLogic": "讓坡道在平穩推進中穿插通訊訊號脈衝，形成晶片平台節奏。（沿用 2454.TW 主題模板）",
+      "mixerLogic": "让坡道在平稳推进中穿插通信信号脉冲，形成芯片平台节奏。（沿用 2454.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "2454.TW"
     },
@@ -219,14 +219,14 @@
       "name": "Hon Hai",
       "file": "./2317_TW.svg",
       "industryClass": "Industrial",
-      "environmentBiome": "鋼鐵峽谷",
+      "environmentBiome": "钢铁峡谷",
       "companyProps": [
         "factory",
         "connector",
         "container",
         "beam-frame"
       ],
-      "mixerLogic": "把大型製造鏈的重量感做成低頻大坡與金屬平台，節奏偏穩但慣性很強。",
+      "mixerLogic": "把大型制造链的重量感做成低频大坡与金属平台，节奏偏稳但惯性很强。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -234,14 +234,14 @@
       "name": "Hon Hai",
       "file": "./2317.svg",
       "industryClass": "Industrial",
-      "environmentBiome": "鋼鐵峽谷",
+      "environmentBiome": "钢铁峡谷",
       "companyProps": [
         "factory",
         "connector",
         "container",
         "beam-frame"
       ],
-      "mixerLogic": "把大型製造鏈的重量感做成低頻大坡與金屬平台，節奏偏穩但慣性很強。（沿用 2317.TW 主題模板）",
+      "mixerLogic": "把大型制造链的重量感做成低频大坡与金属平台，节奏偏稳但惯性很强。（沿用 2317.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "2317.TW"
     },
@@ -250,14 +250,14 @@
       "name": "Quanta",
       "file": "./2382_TW.svg",
       "industryClass": "Tech",
-      "environmentBiome": "雲端之巔",
+      "environmentBiome": "云端之巅",
       "companyProps": [
         "server-rack",
         "data-cube",
         "cloud-block",
         "window-panel"
       ],
-      "mixerLogic": "用伺服器矩陣排列與順滑長坡，表現 AI 伺服器供應鏈的延展感。",
+      "mixerLogic": "用服务器矩阵排列与顺滑长坡，表现 AI 服务器供应链的延展感。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -265,45 +265,45 @@
       "name": "Quanta",
       "file": "./2382.svg",
       "industryClass": "Tech",
-      "environmentBiome": "雲端之巔",
+      "environmentBiome": "云端之巅",
       "companyProps": [
         "server-rack",
         "data-cube",
         "cloud-block",
         "window-panel"
       ],
-      "mixerLogic": "用伺服器矩陣排列與順滑長坡，表現 AI 伺服器供應鏈的延展感。（沿用 2382.TW 主題模板）",
+      "mixerLogic": "用服务器矩阵排列与顺滑长坡，表现 AI 服务器供应链的延展感。（沿用 2382.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "2382.TW"
     },
     {
       "symbol": "0050.TW",
-      "name": "元大台灣50",
+      "name": "元大台湾50",
       "file": "./0050_TW.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "column",
         "shield",
         "ribbon"
       ],
-      "mixerLogic": "地形以穩定長弧為主，波動收斂，突出大型 ETF 的防守與基準感。",
+      "mixerLogic": "地形以稳定长弧为主，波动收敛，突出大型 ETF 的防守与基准感。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
       "symbol": "0050",
-      "name": "元大台灣50",
+      "name": "元大台湾50",
       "file": "./0050.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "column",
         "shield",
         "ribbon"
       ],
-      "mixerLogic": "地形以穩定長弧為主，波動收斂，突出大型 ETF 的防守與基準感。（沿用 0050.TW 主題模板）",
+      "mixerLogic": "地形以稳定长弧为主，波动收敛，突出大型 ETF 的防守与基准感。（沿用 0050.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "0050.TW"
     },
@@ -312,14 +312,14 @@
       "name": "元大高股息",
       "file": "./0056_TW.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "coupon",
         "vault",
         "cash-badge"
       ],
-      "mixerLogic": "把現金流階梯感轉成連續緩坡與規律平台，節奏偏穩、落點偏準。",
+      "mixerLogic": "把现金流阶梯感转成连续缓坡与规律平台，节奏偏稳、落点偏准。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -327,76 +327,76 @@
       "name": "元大高股息",
       "file": "./0056.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "coupon",
         "vault",
         "cash-badge"
       ],
-      "mixerLogic": "把現金流階梯感轉成連續緩坡與規律平台，節奏偏穩、落點偏準。（沿用 0056.TW 主題模板）",
+      "mixerLogic": "把现金流阶梯感转成连续缓坡与规律平台，节奏偏稳、落点偏准。（沿用 0056.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "0056.TW"
     },
     {
       "symbol": "00878.TW",
-      "name": "國泰永續高股息",
+      "name": "国泰永续高股息",
       "file": "./00878_TW.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "leaf-grid",
         "coupon",
         "shield"
       ],
-      "mixerLogic": "維持高股息的平穩主調，再加入永續感的網格與綠色點光。",
+      "mixerLogic": "维持高股息的平稳主调，再加入永续感的网格与绿色点光。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
       "symbol": "00878",
-      "name": "國泰永續高股息",
+      "name": "国泰永续高股息",
       "file": "./00878.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "leaf-grid",
         "coupon",
         "shield"
       ],
-      "mixerLogic": "維持高股息的平穩主調，再加入永續感的網格與綠色點光。（沿用 00878.TW 主題模板）",
+      "mixerLogic": "维持高股息的平稳主调，再加入永续感的网格与绿色点光。（沿用 00878.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "00878.TW"
     },
     {
       "symbol": "00919.TW",
-      "name": "群益台灣精選高息",
+      "name": "群益台湾精选高息",
       "file": "./00919_TW.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "medal",
         "cash-badge",
         "column"
       ],
-      "mixerLogic": "讓地形呈現規律級距與中低震盪，像穩定配息被切成一階一階的平台。",
+      "mixerLogic": "让地形呈现规律级距与中低震荡，像稳定配息被切成一阶一阶的平台。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
       "symbol": "00919",
-      "name": "群益台灣精選高息",
+      "name": "群益台湾精选高息",
       "file": "./00919.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "medal",
         "cash-badge",
         "column"
       ],
-      "mixerLogic": "讓地形呈現規律級距與中低震盪，像穩定配息被切成一階一階的平台。（沿用 00919.TW 主題模板）",
+      "mixerLogic": "让地形呈现规律级距与中低震荡，像稳定配息被切成一阶一阶的平台。（沿用 00919.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "00919.TW"
     },
@@ -412,7 +412,7 @@
         "lantern",
         "data-prism"
       ],
-      "mixerLogic": "把大型電商的市集感與全球流通節奏揉進長坡與促銷跳點。",
+      "mixerLogic": "把大型电商的市集感与全球流通节奏揉进长坡与促销跳点。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -427,7 +427,7 @@
         "lantern",
         "data-prism"
       ],
-      "mixerLogic": "把大型電商的市集感與全球流通節奏揉進長坡與促銷跳點。（沿用 BABA 主題模板）",
+      "mixerLogic": "把大型电商的市集感与全球流通节奏揉进长坡与促销跳点。（沿用 BABA 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "BABA"
     },
@@ -443,7 +443,7 @@
         "megaphone",
         "cart"
       ],
-      "mixerLogic": "讓坡面更活潑、更碎，模擬折扣型平台的高頻刺激與成交衝刺。",
+      "mixerLogic": "让坡面更活泼、更碎，模拟折扣型平台的高频刺激与成交冲刺。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -451,14 +451,14 @@
       "name": "Tencent",
       "file": "./700_HK.svg",
       "industryClass": "Media",
-      "environmentBiome": "霓虹傳媒",
+      "environmentBiome": "霓虹传媒",
       "companyProps": [
         "chat-bubble",
         "game-pad",
         "portal-ring",
         "neon-tower"
       ],
-      "mixerLogic": "用社交訊號和遊戲傳送門做層層疊加，地形保持波浪推進與情緒噪點。",
+      "mixerLogic": "用社交信号和游戏传送门做层层叠加，地形保持波浪推进与情绪噪点。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -466,14 +466,14 @@
       "name": "Apple",
       "file": "./AAPL.svg",
       "industryClass": "Tech",
-      "environmentBiome": "雲端之巔",
+      "environmentBiome": "云端之巅",
       "companyProps": [
         "visor",
         "orbit-ring",
         "window-panel",
         "cloud-block"
       ],
-      "mixerLogic": "維持乾淨、精準的長弧地形，用少量高亮介面感符號去表現高辨識度硬體品牌。",
+      "mixerLogic": "维持干净、精准的长弧地形，用少量高亮界面感符号去表现高识别度硬件品牌。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -481,14 +481,14 @@
       "name": "Netflix",
       "file": "./NFLX.svg",
       "industryClass": "Media",
-      "environmentBiome": "霓虹傳媒",
+      "environmentBiome": "霓虹传媒",
       "companyProps": [
         "portal-ring",
         "pixel-stack",
         "visor",
         "chat-bubble"
       ],
-      "mixerLogic": "用劇場式霓虹與連續波面表現內容平台的追劇節奏與情緒起伏。",
+      "mixerLogic": "用剧场式霓虹与连续波面表现内容平台的追剧节奏与情绪起伏。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -496,14 +496,14 @@
       "name": "Salesforce",
       "file": "./CRM.svg",
       "industryClass": "Tech",
-      "environmentBiome": "雲端之巔",
+      "environmentBiome": "云端之巅",
       "companyProps": [
         "cloud-block",
         "data-cube",
         "orbit-ring",
         "copilot-orb"
       ],
-      "mixerLogic": "地形以穩定雲層曲線為主，只在節點處加入 CRM 類平台的資料躍遷。",
+      "mixerLogic": "地形以稳定云层曲线为主，只在节点处加入 CRM 类平台的数据跃迁。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -511,14 +511,14 @@
       "name": "Oracle",
       "file": "./ORCL.svg",
       "industryClass": "Tech",
-      "environmentBiome": "雲端之巔",
+      "environmentBiome": "云端之巅",
       "companyProps": [
         "server-rack",
         "data-prism",
         "data-bridge",
         "orbit-ring"
       ],
-      "mixerLogic": "把資料庫和雲端基礎設施做成厚重但平順的地形，節奏穩定、轉折清楚。",
+      "mixerLogic": "把数据库和云端基础设施做成厚重但平顺的地形，节奏稳定、转折清楚。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -526,14 +526,14 @@
       "name": "Qualcomm",
       "file": "./QCOM.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "mobile-chip",
         "signal-beam",
         "chip",
         "orbit-ring"
       ],
-      "mixerLogic": "讓地形成為訊號波段般的推進節奏，保留通訊晶片的高速與脈衝感。",
+      "mixerLogic": "让地形成为信号波段般的推进节奏，保留通信芯片的高速与脉冲感。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -541,14 +541,14 @@
       "name": "Intel",
       "file": "./INTC.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "chip",
         "cleanroom-tower",
         "server",
         "signal-beam"
       ],
-      "mixerLogic": "用厚重冰原與設備塔身體現大型晶片廠的基礎設施感與主升段慣性。",
+      "mixerLogic": "用厚重冰原与设备塔身体现大型芯片厂的基础设施感与主升段惯性。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -556,14 +556,14 @@
       "name": "Micron",
       "file": "./MU.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "chip",
         "data-cube",
         "signal-beam",
         "server"
       ],
-      "mixerLogic": "以記憶體堆疊感為主，地形用層層加速的短坡與平台交替表現週期波動。",
+      "mixerLogic": "以存储器堆叠感为主，地形用层层加速的短坡与平台交替表现周期波动。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -571,14 +571,14 @@
       "name": "Applied Materials",
       "file": "./AMAT.svg",
       "industryClass": "Industrial",
-      "environmentBiome": "鋼鐵峽谷",
+      "environmentBiome": "钢铁峡谷",
       "companyProps": [
         "beam-frame",
         "chip",
         "factory",
         "cleanroom-tower"
       ],
-      "mixerLogic": "把半導體設備感做成鋼架平台與緩重慣性，讓節奏偏硬派工業。",
+      "mixerLogic": "把半导体设备感做成钢架平台与缓重惯性，让节奏偏硬派工业。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -586,14 +586,14 @@
       "name": "Lam Research",
       "file": "./LRCX.svg",
       "industryClass": "Industrial",
-      "environmentBiome": "鋼鐵峽谷",
+      "environmentBiome": "钢铁峡谷",
       "companyProps": [
         "beam-frame",
         "chip",
         "factory",
         "signal-beam"
       ],
-      "mixerLogic": "沿用設備股的工業模板，保留精密束流與產線坡面的反覆推進。",
+      "mixerLogic": "沿用设备股的工业模板，保留精密束流与产线坡面的反复推进。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -601,14 +601,14 @@
       "name": "Lucid Motors",
       "file": "./LCID.svg",
       "industryClass": "Auto",
-      "environmentBiome": "未來交通",
+      "environmentBiome": "未来交通",
       "companyProps": [
         "headlamp",
         "hover-engine",
         "tire",
         "speed-fin"
       ],
-      "mixerLogic": "以更流線的長坡和更乾淨的光束表現高端電車品牌的夢幻速度感。",
+      "mixerLogic": "以更流线的长坡和更干净的光束表现高端电车品牌的梦幻速度感。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -616,14 +616,14 @@
       "name": "Enphase",
       "file": "./ENPH.svg",
       "industryClass": "Energy",
-      "environmentBiome": "綠能山脈",
+      "environmentBiome": "绿能山脉",
       "companyProps": [
         "solar-panel",
         "battery-pack",
         "turbine",
         "signal-beam"
       ],
-      "mixerLogic": "把能源模組與山脈風場接在一起，地形偏上坡阻力與節點增益並存。",
+      "mixerLogic": "把能源模组与山脉风场接在一起，地形偏上坡阻力与节点增益并存。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -631,14 +631,14 @@
       "name": "Plug Power",
       "file": "./PLUG.svg",
       "industryClass": "Energy",
-      "environmentBiome": "綠能山脈",
+      "environmentBiome": "绿能山脉",
       "companyProps": [
         "battery-pack",
         "charge-pillar",
         "turbine",
         "signal-beam"
       ],
-      "mixerLogic": "沿用新能源模板，讓坡面偏碎、推進感偏脈衝，對應氫能題材波動。",
+      "mixerLogic": "沿用新能源模板，让坡面偏碎、推进感偏脉冲，对应氢能题材波动。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -653,7 +653,7 @@
         "vault",
         "shield"
       ],
-      "mixerLogic": "採用大行金融模板，地形穩、結構大、重心感強。",
+      "mixerLogic": "采用大行金融模板，地形稳、结构大、重心感强。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -668,7 +668,7 @@
         "shield",
         "ribbon"
       ],
-      "mixerLogic": "用大行模板做更平順的雪都坡面，維持金融權值股的穩定視覺語氣。",
+      "mixerLogic": "用大行模板做更平顺的雪都坡面，维持金融权值股的稳定视觉语气。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -683,7 +683,7 @@
         "medal",
         "vault"
       ],
-      "mixerLogic": "地形略帶攻擊性但仍以秩序為主，讓投行感落在金庫與雪都之間。",
+      "mixerLogic": "地形略带攻击性但仍以秩序为主，让投行感落在金库与雪都之间。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -698,7 +698,7 @@
         "shield",
         "orbit-ring"
       ],
-      "mixerLogic": "用支付網路感帶出更流暢的連續曲線，讓金融模板更像高速金流。",
+      "mixerLogic": "用支付网络感带出更流畅的连续曲线，让金融模板更像高速金流。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -713,7 +713,7 @@
         "shield",
         "ribbon"
       ],
-      "mixerLogic": "維持支付網路模板，用穩定長弧與少量節點脈衝表現卡網雙核心。",
+      "mixerLogic": "维持支付网络模板，用稳定长弧与少量节点脉冲表现卡网双核心。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -721,75 +721,75 @@
       "name": "Berkshire Hathaway B",
       "file": "./BRK_B.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "column",
         "shield",
         "medal"
       ],
-      "mixerLogic": "用厚重穩收模板做長坡與低波動區段，表現控股型資本配置的穩健感。",
+      "mixerLogic": "用厚重稳收模板做长坡与低波动区段，表现控股型资本配置的稳健感。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
       "symbol": "2303.TW",
-      "name": "聯電",
+      "name": "联电",
       "file": "./2303_TW.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "wafer",
         "chip",
         "cleanroom-tower",
         "signal-beam"
       ],
-      "mixerLogic": "沿用晶圓代工模板，地形偏平穩推進，強調製程光脈衝與穩定節奏。",
+      "mixerLogic": "沿用晶圆代工模板，地形偏平稳推进，强调制程光脉冲与稳定节奏。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
       "symbol": "2303",
-      "name": "聯電",
+      "name": "联电",
       "file": "./2303.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "wafer",
         "chip",
         "cleanroom-tower",
         "signal-beam"
       ],
-      "mixerLogic": "沿用晶圓代工模板，地形偏平穩推進，強調製程光脈衝與穩定節奏。（沿用 2303.TW 主題模板）",
+      "mixerLogic": "沿用晶圆代工模板，地形偏平稳推进，强调制程光脉冲与稳定节奏。（沿用 2303.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "2303.TW"
     },
     {
       "symbol": "2308.TW",
-      "name": "台達電",
+      "name": "台达电",
       "file": "./2308_TW.svg",
       "industryClass": "Energy",
-      "environmentBiome": "綠能山脈",
+      "environmentBiome": "绿能山脉",
       "companyProps": [
         "turbine",
         "battery-pack",
         "solar-panel",
         "signal-beam"
       ],
-      "mixerLogic": "把電源管理與能源基建做成高效率山脊地形，坡面穩中帶推進。",
+      "mixerLogic": "把电源管理与能源基建做成高效率山脊地形，坡面稳中带推进。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
       "symbol": "2308",
-      "name": "台達電",
+      "name": "台达电",
       "file": "./2308.svg",
       "industryClass": "Energy",
-      "environmentBiome": "綠能山脈",
+      "environmentBiome": "绿能山脉",
       "companyProps": [
         "turbine",
         "battery-pack",
         "solar-panel",
         "signal-beam"
       ],
-      "mixerLogic": "把電源管理與能源基建做成高效率山脊地形，坡面穩中帶推進。（沿用 2308.TW 主題模板）",
+      "mixerLogic": "把电源管理与能源基建做成高效率山脊地形，坡面稳中带推进。（沿用 2308.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "2308.TW"
     },
@@ -798,14 +798,14 @@
       "name": "日月光",
       "file": "./3711_TW.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "wafer",
         "chip",
         "cleanroom-tower",
         "server"
       ],
-      "mixerLogic": "沿用封裝測試模板，地形節點更細，像晶片堆疊後的連續坡段。",
+      "mixerLogic": "沿用封装测试模板，地形节点更细，像芯片堆叠后的连续坡段。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -813,45 +813,45 @@
       "name": "日月光",
       "file": "./3711.svg",
       "industryClass": "Tech",
-      "environmentBiome": "數位冰原",
+      "environmentBiome": "数字冰原",
       "companyProps": [
         "wafer",
         "chip",
         "cleanroom-tower",
         "server"
       ],
-      "mixerLogic": "沿用封裝測試模板，地形節點更細，像晶片堆疊後的連續坡段。（沿用 3711.TW 主題模板）",
+      "mixerLogic": "沿用封装测试模板，地形节点更细，像芯片堆叠后的连续坡段。（沿用 3711.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "3711.TW"
     },
     {
       "symbol": "2395.TW",
-      "name": "研華",
+      "name": "研华",
       "file": "./2395_TW.svg",
       "industryClass": "Industrial",
-      "environmentBiome": "鋼鐵峽谷",
+      "environmentBiome": "钢铁峡谷",
       "companyProps": [
         "factory",
         "connector",
         "signal-beam",
         "data-cube"
       ],
-      "mixerLogic": "把工業電腦與智慧製造做成工業模板的輕量版，鋼架中保留資料節點。",
+      "mixerLogic": "把工业电脑与智能制造做成工业模板的轻量版，钢架中保留数据节点。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
       "symbol": "2395",
-      "name": "研華",
+      "name": "研华",
       "file": "./2395.svg",
       "industryClass": "Industrial",
-      "environmentBiome": "鋼鐵峽谷",
+      "environmentBiome": "钢铁峡谷",
       "companyProps": [
         "factory",
         "connector",
         "signal-beam",
         "data-cube"
       ],
-      "mixerLogic": "把工業電腦與智慧製造做成工業模板的輕量版，鋼架中保留資料節點。（沿用 2395.TW 主題模板）",
+      "mixerLogic": "把工业电脑与智能制造做成工业模板的轻量版，钢架中保留数据节点。（沿用 2395.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "2395.TW"
     },
@@ -860,14 +860,14 @@
       "name": "富邦台50",
       "file": "./006208_TW.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "column",
         "shield",
         "ribbon"
       ],
-      "mixerLogic": "沿用大型 ETF 模板，保持長弧、低噪、基準盤感。",
+      "mixerLogic": "沿用大型 ETF 模板，保持长弧、低噪、基准盘感。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -875,45 +875,45 @@
       "name": "富邦台50",
       "file": "./006208.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "column",
         "shield",
         "ribbon"
       ],
-      "mixerLogic": "沿用大型 ETF 模板，保持長弧、低噪、基準盤感。（沿用 006208.TW 主題模板）",
+      "mixerLogic": "沿用大型 ETF 模板，保持长弧、低噪、基准盘感。（沿用 006208.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "006208.TW"
     },
     {
       "symbol": "00929.TW",
-      "name": "復華科技優息",
+      "name": "复华科技优息",
       "file": "./00929_TW.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "coupon",
         "shield",
         "ribbon"
       ],
-      "mixerLogic": "沿用高股息模板，地形規律分層，讓科技收益主題看起來更穩定。",
+      "mixerLogic": "沿用高股息模板，地形规律分层，让科技收益主题看起来更稳定。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
       "symbol": "00929",
-      "name": "復華科技優息",
+      "name": "复华科技优息",
       "file": "./00929.svg",
       "industryClass": "Finance",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "coupon",
         "shield",
         "ribbon"
       ],
-      "mixerLogic": "沿用高股息模板，地形規律分層，讓科技收益主題看起來更穩定。（沿用 00929.TW 主題模板）",
+      "mixerLogic": "沿用高股息模板，地形规律分层，让科技收益主题看起来更稳定。（沿用 00929.TW 主题模板）",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope.",
       "sourceSymbol": "00929.TW"
     },
@@ -922,14 +922,14 @@
       "name": "ExxonMobil",
       "file": "./XOM.svg",
       "industryClass": "Energy",
-      "environmentBiome": "綠能山脈",
+      "environmentBiome": "绿能山脉",
       "companyProps": [
         "oil-rig",
         "turbine",
         "signal-beam",
         "metal-bar"
       ],
-      "mixerLogic": "用能源模板的逆風與工業節點去表達大型油氣權值股的厚重動能。",
+      "mixerLogic": "用能源模板的逆风与工业节点去表达大型油气权值股的厚重动能。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -937,14 +937,14 @@
       "name": "Chevron",
       "file": "./CVX.svg",
       "industryClass": "Energy",
-      "environmentBiome": "綠能山脈",
+      "environmentBiome": "绿能山脉",
       "companyProps": [
         "oil-rig",
         "turbine",
         "signal-beam",
         "metal-bar"
       ],
-      "mixerLogic": "沿用能源巨頭模板，用穩定長坡和阻力感做出原物料權值的重量。",
+      "mixerLogic": "沿用能源巨头模板，用稳定长坡和阻力感做出原物料权值的重量。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -952,14 +952,14 @@
       "name": "ConocoPhillips",
       "file": "./COP.svg",
       "industryClass": "Energy",
-      "environmentBiome": "綠能山脈",
+      "environmentBiome": "绿能山脉",
       "companyProps": [
         "oil-rig",
         "signal-beam",
         "turbine",
         "metal-bar"
       ],
-      "mixerLogic": "用較碎的能源坡段與鑽井符號，表現上游能源題材的波動感。",
+      "mixerLogic": "用较碎的能源坡段与钻井符号，表现上游能源题材的波动感。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -967,14 +967,14 @@
       "name": "Gold ETF",
       "file": "./GLD.svg",
       "industryClass": "Materials",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "metal-bar",
         "shield",
         "ribbon"
       ],
-      "mixerLogic": "以金屬避險模板表現穩定避風港，地形平順、節奏偏防守。",
+      "mixerLogic": "以金属避险模板表现稳定避风港，地形平顺、节奏偏防守。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -982,14 +982,14 @@
       "name": "Silver ETF",
       "file": "./SLV.svg",
       "industryClass": "Materials",
-      "environmentBiome": "穩收金庫",
+      "environmentBiome": "稳收金库",
       "companyProps": [
         "coin",
         "metal-bar",
         "shield",
         "signal-beam"
       ],
-      "mixerLogic": "延用金屬 ETF 模板，但讓地形比黃金多一點脈衝與波動。",
+      "mixerLogic": "延用金属 ETF 模板，但让地形比黄金多一点脉冲与波动。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -1004,7 +1004,7 @@
         "market-arch",
         "data-prism"
       ],
-      "mixerLogic": "沿用電商模板，以倉配效率感和長坡運輸節奏來區分平台特性。",
+      "mixerLogic": "沿用电商模板，以仓配效率感和长坡运输节奏来区分平台特性。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     },
     {
@@ -1012,14 +1012,14 @@
       "name": "Baidu",
       "file": "./BIDU.svg",
       "industryClass": "Tech",
-      "environmentBiome": "雲端之巔",
+      "environmentBiome": "云端之巅",
       "companyProps": [
         "search-beam",
         "orbit-ring",
         "data-prism",
         "cloud-block"
       ],
-      "mixerLogic": "把搜尋與 AI 節點壓進雲端模板，讓地形在穩定中帶少量脈衝搜尋波。",
+      "mixerLogic": "把搜索与 AI 节点压进云端模板，让地形在稳定中带少量脉冲搜索波。",
       "implementationPlan": "Canvas Layering: Bottom Layer background, Object Layer props, Terrain Layer stock slope."
     }
   ]

@@ -2,7 +2,7 @@
    ski-game.css  —  Stock Ski Game Overlay Styles
    ═══════════════════════════════════════════════ */
 
-/* ── 全螢幕 Modal ─────────────────────────────── */
+/* ── 全萤幕 Modal ─────────────────────────────── */
 .ski-modal {
   position: fixed;
   inset: 0;
@@ -35,7 +35,7 @@
   cursor: default;
 }
 
-/* ── 關閉按鈕 ─────────────────────────────────── */
+/* ── 关闭按钮 ─────────────────────────────────── */
 .ski-close-btn {
   position: absolute;
   top: 14px;
@@ -75,7 +75,7 @@
   z-index: 10000;
 }
 
-/* ── 觸發按鈕（顯示在儀表板上）─────────────────── */
+/* ── 触发按钮（显示在仪表板上）─────────────────── */
 .ski-launch-btn {
   display: inline-flex;
   align-items: center;
@@ -118,7 +118,7 @@
   line-height: 1;
 }
 
-/* ── 右側大型開始按鈕 ─────────────────────────── */
+/* ── 右侧大型开始按钮 ─────────────────────────── */
 .ski-launch-big {
   padding: 14px 22px;
   font-size: 0.95rem;
@@ -144,7 +144,7 @@
   transform: translateY(-2px);
 }
 
-/* ── 按鈕群組（練習 + 開始） ─────────────────── */
+/* ── 按钮群组（练习 + 开始） ─────────────────── */
 .ski-btn-group {
   display: flex;
   align-items: center;
@@ -153,7 +153,7 @@
   margin-left: 0.18rem;
 }
 
-/* ── 練習模式滑桿面板 ─────────────────────────── */
+/* ── 练习模式滑杆面板 ─────────────────────────── */
 .ski-sliders-panel {
   display: flex;
   flex-direction: column;
@@ -250,7 +250,7 @@
   transition: background 0.1s;
 }
 
-/* 讓進度色跟隨 value，用 JS 更新 CSS 變數 */
+/* 让进度色跟随 value，用 JS 更新 CSS 变数 */
 #steepnessSlider { --val: 100; }
 #hitboxSlider    { --val: 1; }
 
@@ -314,7 +314,7 @@
   color: #93c5fd;
   background: rgba(59, 130, 246, 0.12);
 }
-/* 正常難度按鈕特殊樣式：帶點藍色強調 */
+/* 正常难度按钮特殊样式：带点蓝色强调 */
 .ski-preset-normal {
   border-color: rgba(96, 165, 250, 0.4);
   color: #93c5fd;
@@ -325,7 +325,7 @@
   color: #bfdbfe;
 }
 
-/* 區間數字輸入框 */
+/* 区间数字输入框 */
 .ski-range-row { gap: 0.35rem; }
 
 .ski-range-num {
@@ -341,7 +341,7 @@
   padding: 2px 4px;
   outline: none;
   transition: border-color 0.15s;
-  /* 隱藏數字輸入框的上下箭頭 */
+  /* 隐藏数字输入框的上下箭头 */
   -moz-appearance: textfield;
   appearance: textfield;
 }
@@ -358,7 +358,7 @@
   white-space: nowrap;
 }
 
-/* ── 練習模式按鈕（黃橘色系） ─────────────────── */
+/* ── 练习模式按钮（黄橘色系） ─────────────────── */
 .ski-practice-btn {
   background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
   border-color: rgba(251, 191, 36, 0.45);
@@ -393,7 +393,7 @@
   box-shadow: 0 0 0 1px rgba(251,191,36,0.3), 0 6px 20px rgba(180,83,9,0.4);
 }
 
-/* ── 儀表板視覺細節切換 (Lobby Detail Toggle) ─────────────────── */
+/* ── 仪表板视觉细节切换 (Lobby Detail Toggle) ─────────────────── */
 .ski-detail-toggle-lobby {
   background: rgba(30, 45, 69, 0.7);
   border: 1px solid rgba(148, 163, 184, 0.25);
@@ -425,20 +425,20 @@
 }
 
 .ski-detail-toggle-lobby.active::before {
-  content: '✨';
+  content: '?';
   font-size: 10px;
 }
 
-/* ── 視覺細節切換按鈕 (Detail Toggle) ─────────────────── */
+/* ── 视觉细节切换按钮 (Detail Toggle) ─────────────────── */
 .ski-detail-toggle {
-  display: none; /* 隱藏遊戲內按鈕，因為我們改用大廳控制 */
+  display: none; /* 隐藏游戏内按钮，因为我们改用大厅控制 */
   position: absolute;
   bottom: 0px;
-  right: 180px; /* 避開右側的提示文字 */
+  right: 180px; /* 避开右侧的提示文字 */
   background: rgba(30, 45, 69, 0.85);
   color: #94a3b8;
   border: 1px solid rgba(148, 163, 184, 0.3);
-  border-bottom: none; /* 書籤感：底部貼齊不留邊 */
+  border-bottom: none; /* 书签感：底部贴齐不留边 */
   border-radius: 8px 8px 0 0;
   padding: 8px 16px;
   font-size: 13px;
@@ -468,7 +468,7 @@
 }
 
 .ski-detail-toggle.active::before {
-  content: '✨';
+  content: '?';
   font-size: 14px;
 }
 

@@ -1,12 +1,12 @@
 """
-indicators.py - 計算技術指標：MA、RSI、MACD
+indicators.py - 计算技术指标：MA、RSI、MACD
 """
 import pandas as pd
 import numpy as np
 
 
 def calculate_ma(df: pd.DataFrame, windows: list = [5, 20, 60]) -> dict:
-    """移動平均線"""
+    """移动平均线"""
     result = {}
     for w in windows:
         if len(df) >= w:
@@ -18,9 +18,9 @@ def calculate_ma(df: pd.DataFrame, windows: list = [5, 20, 60]) -> dict:
 
 def calculate_rsi(df: pd.DataFrame, period: int = 14) -> list:
     """
-    RSI - 相對強弱指數（Wilder 平滑法）
+    RSI - 相对强弱指数（Wilder 平滑法）
     RSI = 100 - (100 / (1 + RS))
-    RS = 平均漲幅 / 平均跌幅
+    RS = 平均涨幅 / 平均跌幅
     """
     close = df["Close"]
     delta = close.diff()
@@ -40,7 +40,7 @@ def calculate_rsi(df: pd.DataFrame, period: int = 14) -> list:
 
 def calculate_macd(df: pd.DataFrame, fast: int = 12, slow: int = 26, signal: int = 9) -> dict:
     """
-    MACD - 指數移動平均收斂發散指標
+    MACD - 指数移动平均收敛发散指标
     MACD Line = EMA12 - EMA26
     Signal Line = EMA9(MACD)
     Histogram = MACD - Signal
@@ -60,7 +60,7 @@ def calculate_macd(df: pd.DataFrame, fast: int = 12, slow: int = 26, signal: int
 
 
 def calculate_all(df: pd.DataFrame) -> dict:
-    """計算所有指標並整合"""
+    """计算所有指标并整合"""
     ma = calculate_ma(df)
     rsi = calculate_rsi(df)
     macd = calculate_macd(df)
