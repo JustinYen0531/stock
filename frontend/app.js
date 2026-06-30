@@ -1,12 +1,12 @@
 /* ═══════════════════════════════════════════════
-   app.js - StockAI 互動邏輯 + Chart.js 圖表
+   app.js - StockAI 互动逻辑 + Chart.js 图表
    ═══════════════════════════════════════════════ */
 
 const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
   ? "http://localhost:8000"
-  : ""; // 在 Vercel 上時使用相對路徑
+  : ""; // 在 Vercel 上时使用相对路径
 
-// 當前圖表實例
+// 当前图表实例
 let priceChart = null;
 let volumeChart = null;
 let rsiChart = null;
@@ -18,51 +18,51 @@ const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
     symbol: "BABA",
     name: "Alibaba",
     exchange: "NYSE",
-    summary: "中國消費、平台效率與雲端敘事重新回到畫面中央，現在最適合先打開來看的是 Alibaba。",
-    detail: "這張主卡先把中國市場放在最前面。Alibaba 同時連著中國消費復甦、平台競爭、國際電商與雲端業務，能讓首頁一進來就先抓住中國主線，再往美股與台股延伸。",
+    summary: "中国消费、平台效率与云端叙事重新回到画面中央，现在最适合先打开来看的是 Alibaba。",
+    detail: "这张主卡先把中国市场放在最前面。Alibaba 同时连着中国消费复苏、平台竞争、国际电商与云端业务，能让首页一进来就先抓住中国主线，再往美股与台股延伸。",
     chips: [
-      { label: "中國主線", tone: "primary" },
-      { label: "平台經濟", tone: "warning" },
-      { label: "雲端敘事", tone: "success" },
+      { label: "中国主线", tone: "primary" },
+      { label: "平台经济", tone: "warning" },
+      { label: "云端叙事", tone: "success" },
     ],
-    reasons: ["中國消費觀察窗", "平台現金流穩", "港中美連動高"],
+    reasons: ["中国消费观察窗", "平台现金流稳", "港中美连动高"],
     series: [18, 20, 22, 24, 23, 27, 29, 31, 30, 34, 36, 39],
   },
   hot: [
     {
       symbol: "PDD",
       name: "PDD Holdings",
-      blurb: "中國電商與 Temu 出海敘事還很有張力，放在熱門區很適合快速看資金是否續抱。",
+      blurb: "中国电商与 Temu 出海叙事还很有张力，放在热门区很适合快速看资金是否续抱。",
       change: "+2.1%",
       trend: "up",
-      reasons: ["中國消費熱度", "跨境電商敘事", "成長股彈性高"],
+      reasons: ["中国消费热度", "跨境电商叙事", "成长股弹性高"],
       series: [15, 17, 19, 18, 21, 25, 24, 28, 30],
     },
     {
       symbol: "NVDA",
       name: "NVIDIA",
-      blurb: "美股這邊就用算力總指揮做輔助觀察，看看海外風險偏好有沒有繼續幫中國題材抬轎。",
+      blurb: "美股这边就用算力总指挥做辅助观察，看看海外风险偏好有没有继续帮中国题材抬轿。",
       change: "+1.4%",
       trend: "up",
-      reasons: ["AI 指標股", "海外風險偏好", "量價延續"],
+      reasons: ["AI 指标股", "海外风险偏好", "量价延续"],
       series: [22, 24, 23, 27, 31, 30, 34, 38, 41],
     },
     {
       symbol: "2330.TW",
-      name: "台積電",
-      blurb: "台股這邊保留最核心的供應鏈觀測點，拿來確認中國與美股 AI 主線有沒有同步回傳到製造端。",
+      name: "台积电",
+      blurb: "台股这边保留最核心的供应链观测点，拿来确认中国与美股 AI 主线有没有同步返回到制造端。",
       change: "+0.7%",
       trend: "up",
-      reasons: ["供應鏈驗證點", "權值代表股", "製造端溫度計"],
+      reasons: ["供应链验证点", "权值代表股", "制造端温度计"],
       series: [24, 24, 25, 27, 28, 29, 29, 31, 32],
     },
   ],
   themes: [
     {
       id: "china-core",
-      icon: "🐉",
-      title: "中國核心",
-      desc: "先看中國平台、消費、AI 與港股科技主線。",
+      icon: "??",
+      title: "中国核心",
+      desc: "先看中国平台、消费、AI 与港股科技主线。",
       picks: [
         { symbol: "BABA", name: "Alibaba" },
         { symbol: "700.HK", name: "Tencent" },
@@ -70,9 +70,9 @@ const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
     },
     {
       id: "us-tech",
-      icon: "💻",
+      icon: "??",
       title: "美股科技",
-      desc: "用美股科技做海外對照與補充。",
+      desc: "用美股科技做海外对照与补充。",
       picks: [
         { symbol: "NVDA", name: "NVIDIA" },
         { symbol: "MSFT", name: "Microsoft" },
@@ -80,19 +80,19 @@ const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
     },
     {
       id: "taiwan-core",
-      icon: "🇹🇼",
-      title: "台灣龍頭",
-      desc: "最後回看台股供應鏈與核心權值。",
+      icon: "????",
+      title: "台湾地区",
+      desc: "最后回看台湾地区供应链与核心权值。",
       picks: [
-        { symbol: "2330.TW", name: "台積電" },
-        { symbol: "2317.TW", name: "鴻海" },
+        { symbol: "2330.TW", name: "台积电" },
+        { symbol: "2317.TW", name: "鸿海" },
       ],
     },
     {
       id: "ai-chip",
-      icon: "🧠",
-      title: "AI 晶片",
-      desc: "把中美台算力鏈放在同一張圖上看。",
+      icon: "??",
+      title: "AI 芯片",
+      desc: "把全球算力链放在同一张图上看。",
       picks: [
         { symbol: "NVDA", name: "NVIDIA" },
         { symbol: "AMD", name: "AMD" },
@@ -100,9 +100,9 @@ const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
     },
     {
       id: "future-motion",
-      icon: "⚡",
-      title: "電動車",
-      desc: "適合觀察題材情緒與高波動反應。",
+      icon: "?",
+      title: "电动车",
+      desc: "适合观察题材情绪与高波动反应。",
       picks: [
         { symbol: "TSLA", name: "Tesla" },
         { symbol: "RIVN", name: "Rivian" },
@@ -116,14 +116,14 @@ const homepageRecommendationState = {
   openThemes: new Set(),
   loading: false,
   error: "",
-  statusText: "正在整理今日熱度與推薦...",
+  statusText: "正在整理今日市场热度...",
   source: "fallback",
   updatedAt: null,
 };
 let homepageRecommendationsInitialized = false;
 let homepageRecommendationData = FALLBACK_HOMEPAGE_RECOMMENDATIONS;
 
-// ── 工具函數 ─────────────────────────────────────
+// ── 工具函数 ─────────────────────────────────────
 function $(id) { return document.getElementById(id); }
 
 function formatNumber(n) {
@@ -222,7 +222,7 @@ function buildSparklineSvg(series, color) {
 
 function getHomepageBackgroundFile(symbol) {
   const s = String(symbol || "").toUpperCase();
-  // 已優化的主流股優先使用高細節 VISTA
+  // 已优化的主流股优先使用高细节 VISTA
   if (['NVDA', 'AMZN', 'META', 'MSFT', 'GOOGL', 'GOOG', 'INTC'].includes(s)) {
     let themeDir = s;
     if (s === 'GOOG' || s === 'GOOGL') themeDir = 'GOOGL';
@@ -288,7 +288,7 @@ function buildHomepageQuickEntries() {
 function buildHomepageFeaturedCard() {
   const featured = homepageRecommendationData?.featured;
   if (!featured) {
-    return `<div class="welcome-rec-feedback is-error">目前暫時沒有可用的主推薦，請稍後再試。</div>`;
+    return `<div class="welcome-rec-feedback is-error">目前暂时没有可用的热度数据，请稍后再试。</div>`;
   }
   const watched = isHomepageWatched(featured.symbol);
 
@@ -298,7 +298,7 @@ function buildHomepageFeaturedCard() {
       <div class="welcome-rec-featured-top">
         <div class="welcome-rec-symbol-group">
           <div class="welcome-rec-chip-row">
-            ${(featured.chips || [{ label: "主推薦" }]).map((chip) => `<span class="welcome-rec-chip">${escapeHtml(chip.label)}</span>`).join("")}
+            ${(featured.chips || [{ label: "热度焦点" }]).map((chip) => `<span class="welcome-rec-chip">${escapeHtml(chip.label)}</span>`).join("")}
           </div>
           <div class="welcome-rec-symbol-row">
             <span class="welcome-rec-symbol">${escapeHtml(featured.symbol)}</span>
@@ -314,10 +314,10 @@ function buildHomepageFeaturedCard() {
       <div class="welcome-rec-sparkline">${buildSparklineSvg(featured.series || [], "#38BDF8")}</div>
       <div class="welcome-rec-featured-actions">
         <button class="welcome-rec-button is-primary" data-action="analyze" data-symbol="${escapeHtml(featured.symbol)}">立即分析</button>
-        <button class="welcome-rec-button ${watched ? "is-watched" : "is-ghost"}" data-action="watch" data-symbol="${escapeHtml(featured.symbol)}">${watched ? "已加入觀察" : "加入觀察"}</button>
+        <button class="welcome-rec-button ${watched ? "is-watched" : "is-ghost"}" data-action="watch" data-symbol="${escapeHtml(featured.symbol)}">${watched ? "已加入观察" : "加入观察"}</button>
       </div>
       <div class="welcome-rec-ai-rationale">
-        <div class="welcome-rec-ai-kicker">Gemini 為什麼推薦這一支</div>
+        <div class="welcome-rec-ai-kicker">Gemini 今日数据摘要</div>
         <div class="welcome-rec-ai-copy">${renderHomepageRecommendationMarkdown(featured.aiReason || featured.detail || "")}</div>
       </div>
     </div>
@@ -327,7 +327,7 @@ function buildHomepageFeaturedCard() {
 function buildHomepageHotRows() {
   const hotList = homepageRecommendationData?.hot || [];
   if (!hotList.length) {
-    return `<div class="welcome-rec-feedback is-error">熱門排行暫時抓不到資料，先休息一下。</div>`;
+    return `<div class="welcome-rec-feedback is-error">热门排行暂时抓不到数据，先休息一下。</div>`;
   }
   return hotList
     .map((item, index) => {
@@ -351,7 +351,7 @@ function buildHomepageHotRows() {
           </div>
           <div class="welcome-rec-row-actions">
             <button class="welcome-rec-inline-button" data-action="toggle-hot-detail" data-hot-index="${index}">${expanded ? "收起理由" : "看理由"}</button>
-            <button class="welcome-rec-inline-button ${watched ? "is-watch-active" : ""}" data-action="watch" data-symbol="${escapeHtml(item.symbol)}">${watched ? "已觀察" : "加入觀察"}</button>
+            <button class="welcome-rec-inline-button ${watched ? "is-watch-active" : ""}" data-action="watch" data-symbol="${escapeHtml(item.symbol)}">${watched ? "已观察" : "加入观察"}</button>
           </div>
           <div class="welcome-rec-hot-reasons" ${expanded ? "" : "hidden"}>
             <div class="welcome-rec-reason-row">
@@ -367,7 +367,7 @@ function buildHomepageHotRows() {
 function buildHomepageThemeCards() {
   const themes = homepageRecommendationData?.themes || [];
   if (!themes.length) {
-    return `<div class="welcome-rec-feedback is-error">主題精選還沒準備好，等一下就會回來。</div>`;
+    return `<div class="welcome-rec-feedback is-error">主题精选还没准备好，等一下就会回来。</div>`;
   }
   return themes
     .map((theme) => {
@@ -396,7 +396,7 @@ function buildHomepageThemeCards() {
                     </div>
                     <div class="welcome-rec-pick-actions">
                       <button class="welcome-rec-inline-button" data-action="analyze" data-symbol="${escapeHtml(pick.symbol)}">分析</button>
-                      <button class="welcome-rec-inline-button ${watched ? "is-watch-active" : ""}" data-action="watch" data-symbol="${escapeHtml(pick.symbol)}">${watched ? "已觀察" : "加入觀察"}</button>
+                      <button class="welcome-rec-inline-button ${watched ? "is-watch-active" : ""}" data-action="watch" data-symbol="${escapeHtml(pick.symbol)}">${watched ? "已观察" : "加入观察"}</button>
                     </div>
                   </div>
                 `;
@@ -424,9 +424,9 @@ function updateHomepageRecommendationStatus() {
 
 function renderHomepageRecommendations() {
   if (homepageRecommendationState.loading && homepageRecommendationState.source !== "live") {
-    $("homepageFeaturedRecommendation").innerHTML = buildHomepageLoadingState("正在抓取今日最值得先看的股票...");
-    $("homepageHotRecommendations").innerHTML = buildHomepageLoadingState("正在同步市場熱度排行...");
-    $("homepageThemeRecommendations").innerHTML = buildHomepageLoadingState("正在整理主題精選...");
+    $("homepageFeaturedRecommendation").innerHTML = buildHomepageLoadingState("正在抓取今日市场热度...");
+    $("homepageHotRecommendations").innerHTML = buildHomepageLoadingState("正在同步市场热度排行...");
+    $("homepageThemeRecommendations").innerHTML = buildHomepageLoadingState("正在整理主题精选...");
   } else {
     $("homepageFeaturedRecommendation").innerHTML = buildHomepageFeaturedCard();
     $("homepageHotRecommendations").innerHTML = buildHomepageHotRows();
@@ -440,31 +440,31 @@ function renderHomepageRecommendations() {
 async function loadHomepageRecommendations() {
   homepageRecommendationState.loading = true;
   homepageRecommendationState.error = "";
-  homepageRecommendationState.statusText = "正在同步今日熱度與技術面...";
+  homepageRecommendationState.statusText = "正在同步今日热度与技术面...";
   renderHomepageRecommendations();
 
   try {
     const res = await fetch(`${API_BASE}/api/homepage-recommendations`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || "首頁推薦暫時抓取失敗");
+      throw new Error(err.detail || "首页热度暂时抓取失败");
     }
 
     const data = await res.json();
     if (!data?.featured || !Array.isArray(data.hot) || !Array.isArray(data.themes)) {
-      throw new Error("首頁推薦資料格式不正確");
+      throw new Error("首页热度数据格式不正确");
     }
 
     homepageRecommendationData = data;
     homepageRecommendationState.source = data.source || "live";
     homepageRecommendationState.updatedAt = data.generatedAt || null;
     homepageRecommendationState.statusText = data.generatedAt
-      ? `已依 ${formatRecommendationUpdatedAt(data.generatedAt)} 的市場資料更新`
-      : "已更新今日熱度與推薦";
+      ? `已依 ${formatRecommendationUpdatedAt(data.generatedAt)} 的市场数据更新`
+      : "已更新今日市场热度";
   } catch (error) {
     homepageRecommendationState.error = error.message;
     homepageRecommendationState.source = "fallback";
-    homepageRecommendationState.statusText = "即時推薦暫時不可用，先顯示預設名單";
+    homepageRecommendationState.statusText = "实时热度暂时不可用，先显示预设名单";
     console.error("[Homepage Recommendations]", error);
   } finally {
     homepageRecommendationState.loading = false;
@@ -521,14 +521,14 @@ function initHomepageRecommendations() {
   loadHomepageRecommendations();
 }
 
-// ── 快捷搜尋 ─────────────────────────────────────
+// ── 快捷搜索 ─────────────────────────────────────
 function quickSearch(symbol) {
   $("symbolInput").value = symbol;
   closeStockPicker();
   loadStock();
 }
 
-// ── Enter 鍵觸發 ──────────────────────────────────
+// ── Enter 键触发 ──────────────────────────────────
 $("symbolInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     closeStockPicker();
@@ -536,7 +536,7 @@ $("symbolInput").addEventListener("keydown", (e) => {
   }
 });
 
-// ── Tab 切換 ──────────────────────────────────────
+// ── Tab 切换 ──────────────────────────────────────
 function switchTab(tab) {
   ["price", "rsi", "macd"].forEach(t => {
     $(`panel-${t}`).classList.toggle("hidden", t !== tab);
@@ -544,14 +544,14 @@ function switchTab(tab) {
   });
 }
 
-// ── 主載入函數 ────────────────────────────────────
+// ── 主加载函数 ────────────────────────────────────
 async function loadStock() {
   const symbol = $("symbolInput").value.trim().toUpperCase();
   if (!symbol) return;
 
   const period = $("periodSelect").value;
 
-  // UI 狀態
+  // UI 状态
   setLoading(true);
   $("welcomePage").classList.add("hidden");
   $("dashboard").classList.add("hidden");
@@ -561,7 +561,7 @@ async function loadStock() {
     const res = await fetch(`${API_BASE}/full/${symbol}?period=${period}`);
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.detail || "未知錯誤");
+      throw new Error(err.detail || "未知错误");
     }
 
     const data = await res.json();
@@ -571,7 +571,7 @@ async function loadStock() {
     $("dashboard").classList.remove("hidden");
 
   } catch (e) {
-    $("errorMsg").textContent = `❌ ${e.message}`;
+    $("errorMsg").textContent = `? ${e.message}`;
     $("errorBox").classList.remove("hidden");
     $("welcomePage").classList.remove("hidden");
     console.error(e);
@@ -597,21 +597,21 @@ async function loadEducation(symbol, period) {
 
 function setLoading(loading) {
   $("searchBtn").disabled = loading;
-  $("searchBtnText").textContent = loading ? "載入中..." : "分析";
+  $("searchBtnText").textContent = loading ? "加载中..." : "分析";
   $("searchSpinner").classList.toggle("hidden", !loading);
 }
 
-// ── 渲染儀表板 ────────────────────────────────────
+// ── 渲染仪表板 ────────────────────────────────────
 function renderDashboard(data, education = currentEducationData) {
   const { symbol, info, dates, ohlcv, indicators, advice } = data;
   setParkDashboardThumbFromSeries(symbol, dates, ohlcv.map(d => d.Close));
 
-  // 基本資訊
+  // 基本信息
   $("stockName").textContent = info?.name || symbol;
   $("stockSymbol").textContent = symbol;
   $("stockExchange").textContent = info?.exchange || "";
 
-  // 最新收盤
+  // 最新收盘
   const last = ohlcv[ohlcv.length - 1];
   const prev = ohlcv.length > 1 ? ohlcv[ohlcv.length - 2] : null;
   const close = last.Close;
@@ -622,7 +622,7 @@ function renderDashboard(data, education = currentEducationData) {
   $("priceChange").className = "stat-value " + (change >= 0 ? "up" : "down");
   $("latestVolume").textContent = formatNumber(last.Volume);
 
-  // 指標數值
+  // 指标数值
   const rsiVal = lastVal(indicators.rsi);
   const macdVal = lastVal(indicators.macd);
   const signalVal = lastVal(indicators.signal);
@@ -637,7 +637,7 @@ function renderDashboard(data, education = currentEducationData) {
   $("stat-macd").textContent = macdVal ? macdVal.toFixed(4) : "—";
   $("stat-signal").textContent = signalVal ? signalVal.toFixed(4) : "—";
 
-  // RSI 顏色
+  // RSI 颜色
   if (rsiVal) {
     const el = $("stat-rsi");
     if (rsiVal < 30) el.style.color = "var(--bull)";
@@ -645,16 +645,16 @@ function renderDashboard(data, education = currentEducationData) {
     else el.style.color = "";
   }
 
-  // 投資建議
+  // 技术指标摘要
   renderAdvice(advice);
 
-  // 圖表
+  // 图表
   renderPriceChart(dates, ohlcv, indicators);
   renderVolumeChart(dates, ohlcv);
   renderRSIChart(dates, indicators.rsi);
   renderMACDChart(dates, indicators);
 
-  // 儲存給滑雪遊戲使用
+  // 保存给滑雪游戏使用
   window.currentGameData = {
     symbol,
     dates,
@@ -699,25 +699,25 @@ function renderEducationPreview(education, state = "ready") {
 
   if (state === "loading") {
     title.textContent = "正在整理公司故事...";
-    badge.textContent = "準備中";
-    summary.textContent = "進入滑雪前，這裡會先幫你抓出公司背景、近期震盪與等一下會問的重點。";
+    badge.textContent = "准备中";
+    summary.textContent = "进入滑雪前，这里会先帮你抓出公司背景、近期震荡与等一下会问的重点。";
     points.innerHTML = "";
     return;
   }
 
   if (!education) {
-    title.textContent = "教育纜車暫時離線";
-    badge.textContent = "備用模式";
-    summary.textContent = "等等仍然可以正常滑雪；教育題庫會使用遊戲內的通用備用節點。";
-    points.innerHTML = ["公司故事稍後補上", "先看價格與技術面", "滑雪分數不受教育題影響"]
+    title.textContent = "教育缆车暂时离线";
+    badge.textContent = "备用模式";
+    summary.textContent = "等等仍然可以正常滑雪；教育题库会使用游戏内的通用备用节点。";
+    points.innerHTML = ["公司故事稍后补上", "先看价格与技术面", "滑雪分数不受教育题影响"]
       .map((item) => `<span class="education-point-chip">${escapeHtml(item)}</span>`)
       .join("");
     return;
   }
 
-  title.textContent = education.preview?.headline || `${education.symbol} 纜車預習`;
-  badge.textContent = education.newsContext?.sourceKind === "live_news" ? "含近期新聞" : "知識庫";
-  summary.textContent = education.preview?.summary || education.company?.story || "已準備好教育節點。";
+  title.textContent = education.preview?.headline || `${education.symbol} 缆车预习`;
+  badge.textContent = education.newsContext?.sourceKind === "live_news" ? "含近期新闻" : "知识库";
+  summary.textContent = education.preview?.summary || education.company?.story || "已准备好教育节点。";
   points.innerHTML = buildEducationFolderMarkup(education);
 }
 
@@ -740,7 +740,7 @@ function buildEducationFolderMarkup(education) {
         </summary>
         <div class="education-folder-body">
           <div class="education-folder-fulltext">
-            <div class="education-folder-section-label">閱讀全文</div>
+            <div class="education-folder-section-label">阅读全文</div>
             ${formatEducationParagraphs(folder.fullText || [folder.summary, ...(folder.details || [])].join("\n\n"))}
           </div>
         </div>
@@ -758,10 +758,14 @@ function formatEducationParagraphs(text) {
     .join("");
 }
 
-// ── 投資建議渲染 ──────────────────────────────────
+// ── 技术指标摘要渲染（纯数据，无买卖判断）──────────────
+// 将指标状态 type 对应到既有颜色类别：higher→绿、lower→红、其余→中性琥珀色，
+// 仅作为「数值较高/较低」的视觉区分，不代表任何买卖信号。
+const INDICATOR_TONE = { up: "bull", down: "bear", high: "neutral", low: "neutral", neutral: "neutral" };
 function renderAdvice(advice) {
+  const tone = INDICATOR_TONE[advice.signal_type] || "neutral";
   $("signalBadge").textContent = advice.signal;
-  $("signalBadge").className = "signal-badge " + advice.signal_type;
+  $("signalBadge").className = "signal-badge " + tone;
   $("adviceSummary").textContent = advice.summary;
   $("adviceDisclaimer").textContent = advice.disclaimer;
 
@@ -769,13 +773,13 @@ function renderAdvice(advice) {
   reasonsEl.innerHTML = "";
   (advice.reasons || []).forEach(r => {
     const tag = document.createElement("span");
-    tag.className = `reason-tag ${r.type}`;
+    tag.className = `reason-tag ${INDICATOR_TONE[r.type] || "neutral"}`;
     tag.textContent = r.label;
     reasonsEl.appendChild(tag);
   });
 }
 
-// ── Chart.js 設定 ─────────────────────────────────
+// ── Chart.js 设定 ─────────────────────────────────
 const CHART_DEFAULTS = {
   responsive: true,
   maintainAspectRatio: false,
@@ -807,13 +811,13 @@ const CHART_DEFAULTS = {
 
 function destroyChart(chart) { if (chart) { chart.destroy(); } return null; }
 
-// ── K線圖 + MA ────────────────────────────────────
+// ── K线图 + MA ────────────────────────────────────
 function renderPriceChart(dates, ohlcv, indicators) {
   priceChart = destroyChart(priceChart);
   const closes = ohlcv.map(d => d.Close);
 
-  // 蠟燭圖資料用 OHLC 顏色模擬（用 bar chart 做視覺）
-  // 實作：用 Close 折線圖代替（避免需要外部插件）
+  // 蜡烛图数据用 OHLC 颜色模拟（用 bar chart 做视觉）
+  // 实作：用 Close 折线图代替（避免需要外部插件）
   const ctx = $("priceChart").getContext("2d");
   priceChart = new Chart(ctx, {
     type: "line",
@@ -821,7 +825,7 @@ function renderPriceChart(dates, ohlcv, indicators) {
       labels: dates,
       datasets: [
         {
-          label: "收盤價",
+          label: "收盘价",
           data: closes,
           borderColor: "#60a5fa",
           backgroundColor: "rgba(96,165,250,0.08)",
@@ -921,7 +925,7 @@ function renderRSIChart(dates, rsiData) {
           tension: 0.3,
         },
         {
-          label: "超買線 70",
+          label: "高档线 70",
           data: new Array(dates.length).fill(70),
           borderColor: "rgba(239,68,68,0.6)",
           borderWidth: 1,
@@ -930,7 +934,7 @@ function renderRSIChart(dates, rsiData) {
           fill: false,
         },
         {
-          label: "超賣線 30",
+          label: "低档线 30",
           data: new Array(dates.length).fill(30),
           borderColor: "rgba(34,197,94,0.6)",
           borderWidth: 1,
@@ -1026,10 +1030,9 @@ window.renderDashboard = function (data) {
     ma20: lastVal(indicators.ma20)?.toFixed(2),
     ma60: lastVal(indicators.ma60)?.toFixed(2),
     advice: advice?.signal,
-    score: advice?.score,
   };
   const sub = document.getElementById("chatSubtitle");
-  if (sub) sub.textContent = `正在分析：${info?.name || symbol}`;
+  if (sub) sub.textContent = `数据解读：${info?.name || symbol}`;
 };
 
 function toggleChat() {
@@ -1070,7 +1073,7 @@ async function sendChat() {
     if (data.error) throw new Error(data.error);
     appendMessage("ai", data.reply);
   } catch (e) {
-    appendMessage("ai", `⚠️ 發生錯誤：${e.message}`);
+    appendMessage("ai", `?? 发生错误：${e.message}`);
   } finally {
     setChatLoading(false);
   }
@@ -1174,22 +1177,22 @@ function setChatLoading(loading) {
     document.getElementById("typingIndicator")?.remove();
   }
 }
-// ── 科普小教室 互動邏輯 ──────────────────────────────
+// ── 科普小教室 互动逻辑 ──────────────────────────────
 function expandKnowledge(index) {
   const container = $("welcomeKnowledge");
   const grid = $("knowledgeGrid");
   const backBtn = $("knowledgeBackBtn");
   const title = $("knowledgeTitle");
 
-  // 先滾動到科普區
+  // 先滚动到科普区
   container.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  // 設置 Grid 狀態
+  // 设置 Grid 状态
   grid.classList.add("expanded");
   backBtn.classList.remove("hidden");
   title.classList.add("hidden");
 
-  // 處理各個項目
+  // 处理各个项目
   for (let i = 0; i < 4; i++) {
     const item = $(`k-item-${i}`);
     if (i === index) {
@@ -1219,7 +1222,7 @@ function resetKnowledge() {
   }
 }
 
-// ── 滑雪遊戲啟動 ──────────────────────────────────
+// ── 滑雪游戏启动 ──────────────────────────────────
 let lobbyHighDetailMode = false;
 let skiTuningCollapsed = true;
 const SKI_PROGRESS_KEY = "skiProgress";
@@ -1238,7 +1241,7 @@ function setLobbyHighDetailMode(enabled) {
   const btn = document.getElementById('lobbyDetailToggle');
   if (btn) {
     btn.classList.toggle('active', lobbyHighDetailMode);
-    btn.querySelector('.detail-label').textContent = lobbyHighDetailMode ? '高細節：開啟' : '視覺細節';
+    btn.querySelector('.detail-label').textContent = lobbyHighDetailMode ? '高细节：开启' : '视觉细节';
   }
 }
 
@@ -1252,7 +1255,7 @@ function toggleLobbyDetailMode() {
 
 function launchSkiGame() {
   if (!window.currentGameData) {
-    alert('請先載入一支股票再開始滑雪！');
+    alert('请先加载一支股票再开始滑雪！');
     return;
   }
   if (window.SkiGame) {
@@ -1273,19 +1276,19 @@ function applySkiTuningCollapsed() {
   const card = document.querySelector('.stock-action-card');
   const caret = document.getElementById('skiTuningCaret');
   card?.classList.toggle('ski-tuning-collapsed', skiTuningCollapsed);
-  if (caret) caret.textContent = skiTuningCollapsed ? '▸' : '▾';
+  if (caret) caret.textContent = skiTuningCollapsed ? '?' : '?';
 }
 
 function launchSkiGamePractice() {
   if (!window.currentGameData) {
-    alert('請先載入一支股票再開始練習！');
+    alert('请先加载一支股票再开始练习！');
     return;
   }
   const steepness  = parseInt(document.getElementById('steepnessSlider')?.value ?? 40);
   const hitboxSize = parseInt(document.getElementById('hitboxSlider')?.value ?? 60);
   let startPct = parseInt(document.getElementById('rangeStart')?.value ?? 0);
   let endPct   = parseInt(document.getElementById('rangeEnd')?.value ?? 100);
-  // 防呆：確保 start < end 且在 0~100
+  // 防呆：确保 start < end 且在 0~100
   startPct = Math.max(0, Math.min(99, startPct));
   endPct   = Math.max(startPct + 1, Math.min(100, endPct));
   if (window.SkiGame) {
@@ -1318,18 +1321,18 @@ function updateSkiLaunchButton() {
 
   const state = getSkiDifficultyState();
   button.classList.toggle('ski-launch-practice', !state.isNormal);
-  button.title = state.isNormal ? '把這支股票變成滑雪關卡！' : '使用目前滑桿設定進入練習模式';
-  icon.textContent = state.isNormal ? '🎿' : '🟡';
-  text.textContent = state.isNormal ? '開始！' : '練習模式';
+  button.title = state.isNormal ? '把这支股票变成滑雪关卡！' : '使用目前滑杆设定进入练习模式';
+  icon.textContent = state.isNormal ? '??' : '??';
+  text.textContent = state.isNormal ? '开始！' : '练习模式';
 }
 
 function getSkiDifficultyDisplayLabel(label) {
   const labels = {
-    easy: '簡單',
+    easy: '简单',
     normal: '普通',
-    hard: '困難',
-    expert: '專家',
-    hell: '地獄',
+    hard: '困难',
+    expert: '专家',
+    hell: '地狱',
   };
   return labels[label] || window.SkiDifficulty?.getDifficultyLabel?.(label) || '未定';
 }
@@ -1345,7 +1348,7 @@ function applySkiDifficultyPreview(preview, state) {
   if (!scoreEl || !levelEl || !metaEl || !panelEl) return;
   scoreEl.textContent = String(preview.score);
   levelEl.textContent = getSkiDifficultyDisplayLabel(preview.label);
-  metaEl.textContent = `${window.currentGameData.symbol} ・ ${state.isNormal ? '標準模式' : `${state.startPct}% - ${state.endPct}% 練習區間`} ・ 下坡風險 ${Math.round((preview.factors.downhillRisk || 0) * 100)}%`;
+  metaEl.textContent = `${window.currentGameData.symbol} ? ${state.isNormal ? '标准模式' : `${state.startPct}% - ${state.endPct}% 练习区间`} ? 下坡风险 ${Math.round((preview.factors.downhillRisk || 0) * 100)}%`;
   panelEl.dataset.level = preview.label;
 }
 
@@ -1359,8 +1362,8 @@ function renderSkiDifficultyPreview() {
   if (!window.currentGameData) {
     lastSkiDifficultyPreview = null;
     scoreEl.textContent = '--';
-    levelEl.textContent = '尚未載入';
-    metaEl.textContent = '先查詢股票後，這裡會顯示目前滑雪地圖的難度係數。';
+    levelEl.textContent = '尚未加载';
+    metaEl.textContent = '先查询股票后，这里会显示目前滑雪地图的难度系数。';
     panelEl.dataset.level = 'unknown';
     return;
   }
@@ -1377,12 +1380,12 @@ function renderSkiDifficultyPreview() {
   if (!previewApi) {
     if (lastSkiDifficultyPreview) {
       applySkiDifficultyPreview(lastSkiDifficultyPreview.preview, lastSkiDifficultyPreview.state);
-      metaEl.textContent += ' ・ 暫用快取';
+      metaEl.textContent += ' ? 暂用快取';
       return;
     }
     scoreEl.textContent = '--';
-    levelEl.textContent = '尚未載入';
-    metaEl.textContent = '難度模組尚未初始化完成。';
+    levelEl.textContent = '尚未加载';
+    metaEl.textContent = '难度模组尚未初始化完成。';
     panelEl.dataset.level = 'unknown';
     return;
   }
@@ -1397,12 +1400,12 @@ function renderSkiDifficultyPreview() {
   if (!preview) {
     if (lastSkiDifficultyPreview) {
       applySkiDifficultyPreview(lastSkiDifficultyPreview.preview, lastSkiDifficultyPreview.state);
-      metaEl.textContent += ' ・ 暫停更新';
+      metaEl.textContent += ' ? 暂停更新';
       return;
     }
     scoreEl.textContent = '--';
-    levelEl.textContent = '無法計算';
-    metaEl.textContent = '目前資料不足，暫時無法建立滑雪難度。';
+    levelEl.textContent = '无法计算';
+    metaEl.textContent = '目前数据不足，暂时无法创建滑雪难度。';
     panelEl.dataset.level = 'unknown';
     return;
   }
@@ -1459,7 +1462,7 @@ function launchSkiGameAdaptive() {
   launchSkiGamePractice();
 }
 
-// 快速設定練習區間
+// 快速设定练习区间
 function setPracticeRange(start, end) {
   const s = document.getElementById('rangeStart');
   const e = document.getElementById('rangeEnd');
@@ -1469,7 +1472,7 @@ function setPracticeRange(start, end) {
   renderSkiDifficultyPreview();
 }
 
-// 滑桿初始化：讓 CSS --val 變數追蹤滑桿進度（填色效果）
+// 滑杆初始化：让 CSS --val 变数追踪滑杆进度（填色效果）
 (function initSliders() {
   let initialized = false;
   function syncSlider(el) {
@@ -1519,7 +1522,7 @@ function setPracticeRange(start, end) {
   }
 })();
 
-// 預設：正常難度（陡峭=100, 碰撞=1）
+// 预设：正常难度（陡峭=100, 碰撞=1）
 function setNormalPreset() {
   const s = document.getElementById('steepnessSlider');
   const h = document.getElementById('hitboxSlider');
@@ -1533,7 +1536,7 @@ function setNormalPreset() {
   renderSkiDifficultyPreview();
 }
 
-// ── 分類股票選股器 ─────────────────────────────────
+// ── 分类股票选股器 ─────────────────────────────────
 let _pickerOpen = false;
 
 function openStockPicker() {
