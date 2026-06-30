@@ -60,7 +60,7 @@ const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
   themes: [
     {
       id: "china-core",
-      icon: "??",
+      icon: "🐉",
       title: "中国核心",
       desc: "先看中国平台、消费、AI 与港股科技主线。",
       picks: [
@@ -70,7 +70,7 @@ const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
     },
     {
       id: "us-tech",
-      icon: "??",
+      icon: "💻",
       title: "美股科技",
       desc: "用美股科技做海外对照与补充。",
       picks: [
@@ -80,7 +80,7 @@ const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
     },
     {
       id: "taiwan-core",
-      icon: "????",
+      icon: "🇹🇼",
       title: "台湾地区",
       desc: "最后回看台湾地区供应链与核心权值。",
       picks: [
@@ -90,7 +90,7 @@ const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
     },
     {
       id: "ai-chip",
-      icon: "??",
+      icon: "🧠",
       title: "AI 芯片",
       desc: "把全球算力链放在同一张图上看。",
       picks: [
@@ -100,7 +100,7 @@ const FALLBACK_HOMEPAGE_RECOMMENDATIONS = {
     },
     {
       id: "future-motion",
-      icon: "?",
+      icon: "⚡",
       title: "电动车",
       desc: "适合观察题材情绪与高波动反应。",
       picks: [
@@ -571,7 +571,7 @@ async function loadStock() {
     $("dashboard").classList.remove("hidden");
 
   } catch (e) {
-    $("errorMsg").textContent = `? ${e.message}`;
+    $("errorMsg").textContent = `❌ ${e.message}`;
     $("errorBox").classList.remove("hidden");
     $("welcomePage").classList.remove("hidden");
     console.error(e);
@@ -1073,7 +1073,7 @@ async function sendChat() {
     if (data.error) throw new Error(data.error);
     appendMessage("ai", data.reply);
   } catch (e) {
-    appendMessage("ai", `?? 发生错误：${e.message}`);
+    appendMessage("ai", `⚠️ 发生错误：${e.message}`);
   } finally {
     setChatLoading(false);
   }
@@ -1322,7 +1322,7 @@ function updateSkiLaunchButton() {
   const state = getSkiDifficultyState();
   button.classList.toggle('ski-launch-practice', !state.isNormal);
   button.title = state.isNormal ? '把这支股票变成滑雪关卡！' : '使用目前滑杆设定进入练习模式';
-  icon.textContent = state.isNormal ? '??' : '??';
+  icon.textContent = state.isNormal ? '🎿' : '🟡';
   text.textContent = state.isNormal ? '开始！' : '练习模式';
 }
 

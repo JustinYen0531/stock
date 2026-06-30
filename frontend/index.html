@@ -20,7 +20,7 @@
   <header class="header">
     <div class="header-inner">
       <div class="logo" onclick="returnToHome()" title="点击返回首页">
-        <span class="logo-icon">??</span>
+        <span class="logo-icon">📈</span>
         <span class="logo-text">Stock Ski</span>
         <span class="logo-sub">技术面分析</span>
       </div>
@@ -47,12 +47,12 @@
       </div>
       <!-- 模式切换按钮 -->
       <button class="mode-toggle-btn" id="modeToggleBtn" onclick="toggleAppMode()" title="在专业仪表板与滑雪乐园模式之间切换">
-        <span class="mtb-icon" id="modeToggleIcon">??</span>
+        <span class="mtb-icon" id="modeToggleIcon">🎿</span>
         <span id="modeToggleText">冒险模式</span>
       </button>
       <!-- 个人数据按钮（park mode 才显示） -->
       <button class="park-profile-btn" id="parkProfileBtn" onclick="toggleParkProfile()">
-        <span>??</span>
+        <span>⛷️</span>
         <span id="parkProfileLabel">冒险者</span>
       </button>
     </div>
@@ -62,7 +62,7 @@
   <main class="main-container">
     <!-- 欢迎页 -->
     <div id="welcomePage" class="welcome-page">
-      <div class="welcome-icon">??</div>
+      <div class="welcome-icon">📊</div>
       <h1 class="welcome-title">AI 股市分析仪表板</h1>
       <p class="welcome-sub">输入股票代码，实时计算并可视化<br />MA、RSI、MACD 等技术指标</p>
       <section id="welcomeRecommendations" class="welcome-recommendations" aria-label="首页市场热度">
@@ -117,32 +117,32 @@
       </section>
       <div class="welcome-features">
         <div class="feature-card" title="查看 K 线与均线" onclick="expandKnowledge(0)">
-          <span class="feat-icon">???</span>
+          <span class="feat-icon">🕯️</span>
           <span>蜡烛图 + 均线</span>
         </div>
         <div class="feature-card" title="查看 RSI 指数" onclick="expandKnowledge(1)">
-          <span class="feat-icon">??</span>
+          <span class="feat-icon">📉</span>
           <span>RSI 强弱指数</span>
         </div>
         <div class="feature-card" title="查看 MACD 动能" onclick="expandKnowledge(2)">
-          <span class="feat-icon">??</span>
+          <span class="feat-icon">🌊</span>
           <span>MACD 动能</span>
         </div>
         <div class="feature-card" title="技术指标解读" onclick="expandKnowledge(3)">
-          <span class="feat-icon">??</span>
+          <span class="feat-icon">🤖</span>
           <span>技术指标解读</span>
         </div>
       </div>
 
-      <!-- ?? 新手科普区 -->
+      <!-- 💡 新手科普区 -->
       <div class="welcome-knowledge" id="welcomeKnowledge">
-        <h2 class="knowledge-title" id="knowledgeTitle">?? 投资新手村：这些图标代表什么？</h2>
+        <h2 class="knowledge-title" id="knowledgeTitle">💡 投资新手村：这些图标代表什么？</h2>
         <div class="knowledge-grid-container">
           <button id="knowledgeBackBtn" class="k-back-btn hidden" onclick="resetKnowledge()">← 返回列表</button>
           <div class="knowledge-grid" id="knowledgeGrid">
             <div class="knowledge-item" id="k-item-0" onclick="expandKnowledge(0)">
               <div class="k-header">
-                <span class="k-icon">???</span>
+                <span class="k-icon">🕯️</span>
                 <span class="k-name">蜡烛图</span>
               </div>
               <p class="k-desc"><b>「股市的心情温度计」</b><br />红色代表股市心情超棒（涨），绿色代表股市正在休息（跌）。蜡烛的高低代表当天心情起伏的范围哦！</p>
@@ -153,7 +153,7 @@
             </div>
             <div class="knowledge-item" id="k-item-1" onclick="expandKnowledge(1)">
               <div class="k-header">
-                <span class="k-icon">??</span>
+                <span class="k-icon">📉</span>
                 <span class="k-name">RSI 指数</span>
               </div>
               <p class="k-desc"><b>「体力过剩仪表板」</b><br />数字太高（超过 70）代表大家冲太快累坯了；数字太低（低于 30）代表大家垂头丧气，可能快要振作了！</p>
@@ -164,7 +164,7 @@
             </div>
             <div class="knowledge-item" id="k-item-2" onclick="expandKnowledge(2)">
               <div class="k-header">
-                <span class="k-icon">??</span>
+                <span class="k-icon">🌊</span>
                 <span class="k-name">MACD</span>
               </div>
               <p class="k-desc"><b>「股市冲浪浪潮」</b><br />我们用它来看波浪的大方向。当两条线交叉时，就像海浪变向，是提醒你准备冲浪或是上岸休息的信号。</p>
@@ -175,7 +175,7 @@
             </div>
             <div class="knowledge-item" id="k-item-3" onclick="expandKnowledge(3)">
               <div class="k-header">
-                <span class="k-icon">??</span>
+                <span class="k-icon">🤖</span>
                 <span class="k-name">技术指标解读</span>
               </div>
               <p class="k-desc"><b>「你的数据翻译机」</b><br />AI 帮你把复杂的指标数据翻成白话，说明每个数字代表什么状态，不替你做任何买卖决定。</p>
@@ -246,11 +246,11 @@
 
         <!-- HERO -->
         <div class="park-hero">
-          <span class="park-ski-char">??</span>
+          <span class="park-ski-char">⛷️</span>
 
           <div class="park-badge-row">
-            <span class="park-badge orange">?? 金融教育冒险平台</span>
-            <span class="park-badge teal">? Adventure Mode</span>
+            <span class="park-badge orange">🏆 金融教育冒险平台</span>
+            <span class="park-badge teal">✨ Adventure Mode</span>
             <span class="park-badge ghost">Beta</span>
           </div>
 
@@ -266,7 +266,7 @@
         <!-- 售票亭 -->
         <div class="park-booth">
           <div class="park-booth-header">
-            <span class="park-booth-icon">???</span>
+            <span class="park-booth-icon">🎟️</span>
             <span class="park-booth-title">售票亭 · 输入雪场代码</span>
           </div>
           <div class="park-booth-row" style="position:relative">
@@ -281,7 +281,7 @@
               <option value="2y">2 年</option>
             </select>
             <button class="park-start-btn" onclick="parkStartAdventure()">
-              ?? 开始探索！
+              🎿 开始探索！
             </button>
             <!-- 售票亭股票选股下拉 -->
             <div id="parkPickerPanel" class="park-picker-panel hidden"></div>
@@ -291,7 +291,7 @@
         <!-- ── 每日关卡（全宽 featured）── -->
         <div class="park-section" style="max-width:100%">
           <div class="park-section-header">
-            <span class="park-section-icon">??</span>
+            <span class="park-section-icon">📅</span>
             <div>
               <div class="park-section-kicker">TODAY'S QUEST</div>
               <h2 class="park-section-title">每日关卡</h2>
@@ -306,7 +306,7 @@
         <!-- ── 热门关卡 2×2 ── -->
         <div class="park-section" style="max-width:100%">
           <div class="park-section-header">
-            <span class="park-section-icon">??</span>
+            <span class="park-section-icon">🔥</span>
             <div>
               <div class="park-section-kicker">HOT QUESTS</div>
               <h2 class="park-section-title">热门关卡</h2>
@@ -321,7 +321,7 @@
         <!-- ── 主题关卡 1×4 ── -->
         <div class="park-section" style="max-width:100%">
           <div class="park-section-header">
-            <span class="park-section-icon">???</span>
+            <span class="park-section-icon">🗺️</span>
             <div>
               <div class="park-section-kicker">THEME STAGES</div>
               <h2 class="park-section-title">主题关卡地图</h2>
@@ -336,7 +336,7 @@
         <!-- 高细节模式开放精选雪场 -->
         <div class="park-section" style="max-width:100%">
           <div class="park-section-header">
-            <span class="park-section-icon">???</span>
+            <span class="park-section-icon">🎟️</span>
             <div>
               <div class="park-section-kicker">FEATURED ROUTES</div>
               <h2 class="park-section-title">高细节模式开放精选雪场</h2>
@@ -344,32 +344,32 @@
           </div>
         </div>
         <div class="park-tickets-section">
-          <div class="park-tickets-label">?? 高细节模式开放精选雪场</div>
+          <div class="park-tickets-label">⛷️ 高细节模式开放精选雪场</div>
           <div class="park-tickets-grid">
             <button class="park-ticket" data-color="silver" onclick="parkLoadSymbol('AAPL')">
               <div class="ticket-dash"></div>
               <span class="park-ticket-sym">AAPL</span>
-              <span class="park-ticket-name">?? 科技展示馆</span>
+              <span class="park-ticket-name">🍎 科技展示馆</span>
             </button>
             <button class="park-ticket" data-color="orange" onclick="parkLoadSymbol('AMZN')">
               <div class="ticket-dash"></div>
               <span class="park-ticket-sym">AMZN</span>
-              <span class="park-ticket-name">?? 电商云端城</span>
+              <span class="park-ticket-name">📦 电商云端城</span>
             </button>
             <button class="park-ticket" data-color="rainbow" onclick="parkLoadSymbol('GOOGL')">
               <div class="ticket-dash"></div>
               <span class="park-ticket-sym">GOOGL</span>
-              <span class="park-ticket-name">?? 搜索数据城</span>
+              <span class="park-ticket-name">🔍 搜索数据城</span>
             </button>
             <button class="park-ticket" data-color="purple" onclick="parkLoadSymbol('META')">
               <div class="ticket-dash"></div>
               <span class="park-ticket-sym">META</span>
-              <span class="park-ticket-name">?? 社群传送门</span>
+              <span class="park-ticket-name">🌐 社群传送门</span>
             </button>
             <button class="park-ticket" data-color="blue" onclick="parkLoadSymbol('MSFT')">
               <div class="ticket-dash"></div>
               <span class="park-ticket-sym">MSFT</span>
-              <span class="park-ticket-name">?? 云端雪山</span>
+              <span class="park-ticket-name">🪟 云端雪山</span>
             </button>
           </div>
         </div>
@@ -378,19 +378,19 @@
         <div class="park-steps">
           <div class="park-step">
             <div class="park-step-num">1</div>
-            <div class="park-step-icon">??</div>
+            <div class="park-step-icon">🎯</div>
             <div class="park-step-title">选择股票</div>
             <div class="park-step-desc">输入任何股票代码，AI 自动识别产业主题并生成对应雪场风格</div>
           </div>
           <div class="park-step">
             <div class="park-step-num">2</div>
-            <div class="park-step-icon">???</div>
+            <div class="park-step-icon">🏔️</div>
             <div class="park-step-title">生成雪道</div>
             <div class="park-step-desc">股价走势转为滑雪地图，K线→坡度，RSI→体力值，MACD→浪潮</div>
           </div>
           <div class="park-step">
             <div class="park-step-num">3</div>
-            <div class="park-step-icon">??</div>
+            <div class="park-step-icon">🎿</div>
             <div class="park-step-title">边玩边学</div>
             <div class="park-step-desc">在滑雪挑战中理解趋势，AI 向导缆车题目让技术分析变得直观</div>
           </div>
@@ -399,22 +399,22 @@
         <!-- 乐园设施说明 -->
         <div class="park-facilities">
           <div class="park-facility" onclick="parkLoadSymbol(document.getElementById('parkSymbolInput').value||'NVDA')">
-            <span class="park-fac-icon">???</span>
+            <span class="park-fac-icon">🕯️</span>
             <div class="park-fac-name">K线雪道</div>
             <div class="park-fac-alias">蜡烛图 + 均线</div>
           </div>
           <div class="park-facility" onclick="parkLoadSymbol(document.getElementById('parkSymbolInput').value||'NVDA')">
-            <span class="park-fac-icon">??</span>
+            <span class="park-fac-icon">💪</span>
             <div class="park-fac-name">体力仪表板</div>
             <div class="park-fac-alias">RSI 强弱指数</div>
           </div>
           <div class="park-facility" onclick="parkLoadSymbol(document.getElementById('parkSymbolInput').value||'NVDA')">
-            <span class="park-fac-icon">??</span>
+            <span class="park-fac-icon">🌊</span>
             <div class="park-fac-name">浪潮雷达</div>
             <div class="park-fac-alias">MACD 动能</div>
           </div>
           <div class="park-facility" onclick="parkLoadSymbol(document.getElementById('parkSymbolInput').value||'NVDA')">
-            <span class="park-fac-icon">??</span>
+            <span class="park-fac-icon">🤖</span>
             <div class="park-fac-name">AI 向导缆车</div>
             <div class="park-fac-alias">技术指标解读</div>
           </div>
@@ -425,7 +425,7 @@
 
     <!-- 错误讯息 -->
     <div id="errorBox" class="error-box hidden">
-      <span class="error-icon">??</span>
+      <span class="error-icon">⚠️</span>
       <span id="errorMsg"></span>
     </div>
 
@@ -462,7 +462,7 @@
       <div class="stock-action-card">
         <div class="stock-action-area">
           <div class="ski-action-info">
-            <span class="ski-action-icon">??</span>
+            <span class="ski-action-icon">⛷️</span>
             <div class="ski-action-text">
               <span class="ski-action-title">滑雪挑战模式</span>
               <span class="ski-action-desc">把这支股票的走势变成滑雪关卡！</span>
@@ -481,15 +481,15 @@
             </div>
             <div class="ski-medal-group" id="skiMedalGroup">
               <div class="ski-medal" id="medalBronze" title="铜牌：完成一般模式滑雪">
-                <span class="ski-medal-icon">??</span>
+                <span class="ski-medal-icon">🥉</span>
                 <span class="ski-medal-text">一般完成</span>
               </div>
               <div class="ski-medal" id="medalSilver" title="银牌：完成滑雪，且缆车题目全对">
-                <span class="ski-medal-icon">??</span>
+                <span class="ski-medal-icon">🥈</span>
                 <span class="ski-medal-text">缆车全对</span>
               </div>
               <div class="ski-medal" id="medalGold" title="金牌：滑雪与缆车都达 AA 以上">
-                <span class="ski-medal-icon">??</span>
+                <span class="ski-medal-icon">🥇</span>
                 <span class="ski-medal-text">双 AA</span>
               </div>
             </div>
@@ -498,20 +498,20 @@
             <!-- 练习模式调整滑杆 -->
             <div class="ski-sliders-panel">
               <div class="ski-slider-row">
-                <span class="ski-slider-label">?? 陡峭</span>
+                <span class="ski-slider-label">⛰️ 陡峭</span>
                 <input type="range" id="steepnessSlider" class="ski-slider" min="1" max="100" value="100"
                   oninput="document.getElementById('steepnessVal').textContent=this.value;this.style.setProperty('--val',this.value)">
                 <span class="ski-slider-val" id="steepnessVal">100</span>
               </div>
               <div class="ski-slider-row">
-                <span class="ski-slider-label">?? 碰撞</span>
+                <span class="ski-slider-label">📦 碰撞</span>
                 <input type="range" id="hitboxSlider" class="ski-slider" min="1" max="100" value="1"
                   oninput="document.getElementById('hitboxVal').textContent=this.value;this.style.setProperty('--val',this.value)">
                 <span class="ski-slider-val" id="hitboxVal">1</span>
               </div>
               <!-- 练习区间 -->
               <div class="ski-slider-row ski-range-row">
-                <span class="ski-slider-label">?? 区间</span>
+                <span class="ski-slider-label">📍 区间</span>
                 <input type="number" id="rangeStart" class="ski-range-num" min="0" max="99" value="0">
                 <span class="ski-range-sep">% ～</span>
                 <input type="number" id="rangeEnd" class="ski-range-num" min="1" max="100" value="100">
@@ -522,7 +522,7 @@
                 <button class="ski-preset-btn" onclick="setPracticeRange(0,33)" title="前段 0~33%">前段</button>
                 <button class="ski-preset-btn" onclick="setPracticeRange(33,67)" title="中段 33~67%">中段</button>
                 <button class="ski-preset-btn" onclick="setPracticeRange(67,100)" title="后段 67~100%">后段</button>
-                <button class="ski-preset-btn ski-preset-normal" onclick="setNormalPreset()" title="难度跟一般模式一样">?
+                <button class="ski-preset-btn ski-preset-normal" onclick="setNormalPreset()" title="难度跟一般模式一样">⚡
                   正常难度</button>
                 <button id="lobbyDetailToggle" class="ski-detail-toggle-lobby" onclick="toggleLobbyDetailMode()" title="切换高精度视觉模式">
                   <span class="detail-label">视觉细节</span>
@@ -532,7 +532,7 @@
             <div class="ski-btn-group">
               <button class="ski-difficulty-panel" id="skiDifficultyPanel" data-level="unknown" type="button" onclick="toggleSkiTuningPanel()"
                 title="展开或收合陡峭、碰撞与区间设定">
-                <div class="ski-difficulty-label">难度系数 <span id="skiTuningCaret" class="ski-tuning-caret">?</span></div>
+                <div class="ski-difficulty-label">难度系数 <span id="skiTuningCaret" class="ski-tuning-caret">▾</span></div>
                 <div class="ski-difficulty-main">
                   <span class="ski-difficulty-score" id="skiDifficultyScore">--</span>
                   <span class="ski-difficulty-level" id="skiDifficultyLevel">尚未加载</span>
@@ -541,7 +541,7 @@
               </button>
               <button id="skiLaunchButton" class="ski-launch-btn ski-launch-big" onclick="launchSkiGameAdaptive()"
                 title="把这支股票变成滑雪关卡！">
-                <span id="skiLaunchIcon" class="ski-btn-icon">??</span>
+                <span id="skiLaunchIcon" class="ski-btn-icon">🎿</span>
                 <span id="skiLaunchText" class="ski-btn-text">开始！</span>
               </button>
             </div>
@@ -552,9 +552,9 @@
       <!-- Park mode: Mission Intel toggle (hidden in pro mode via CSS) -->
       <div class="park-intel-toggle-wrap">
         <button class="park-intel-toggle-btn" onclick="toggleParkIntel()">
-          <span>??</span>
+          <span>🔍</span>
           <span class="park-intel-label">MISSION INTEL</span>
-          <span class="park-intel-arrow">?</span>
+          <span class="park-intel-arrow">▾</span>
         </button>
       </div>
 
@@ -574,7 +574,7 @@
       <!-- 技术指标摘要卡 -->
       <div id="adviceCard" class="advice-card">
         <div class="advice-header">
-          <span class="advice-icon">??</span>
+          <span class="advice-icon">🤖</span>
           <span class="advice-title">技术指标摘要</span>
           <span id="signalBadge" class="signal-badge">—</span>
         </div>
@@ -585,22 +585,22 @@
 
       <!-- 指标 tabs -->
       <div class="chart-tabs">
-        <button class="tab-btn active" onclick="switchTab('price')" id="tab-price">?? K线图 + MA<span class="park-tab-alias">?? 雪道地形图</span></button>
-        <button class="tab-btn" onclick="switchTab('rsi')" id="tab-rsi">?? RSI<span class="park-tab-alias">?? 体力值监测</span></button>
-        <button class="tab-btn" onclick="switchTab('macd')" id="tab-macd">?? MACD<span class="park-tab-alias">?? 浪潮雷达</span></button>
+        <button class="tab-btn active" onclick="switchTab('price')" id="tab-price">📈 K线图 + MA<span class="park-tab-alias">⛷️ 雪道地形图</span></button>
+        <button class="tab-btn" onclick="switchTab('rsi')" id="tab-rsi">📊 RSI<span class="park-tab-alias">💪 体力值监测</span></button>
+        <button class="tab-btn" onclick="switchTab('macd')" id="tab-macd">🌊 MACD<span class="park-tab-alias">🌊 浪潮雷达</span></button>
       </div>
 
       <!-- 图表容器 -->
       <div class="charts-area">
         <div id="panel-price" class="chart-panel">
           <div class="chart-card">
-            <div class="chart-label" data-park="?? 雪道地形图 · K线走势">K线图 + 移动平均线</div>
+            <div class="chart-label" data-park="⛷️ 雪道地形图 · K线走势">K线图 + 移动平均线</div>
             <div class="chart-wrapper">
               <canvas id="priceChart"></canvas>
             </div>
           </div>
           <div class="chart-card volume-card">
-            <div class="chart-label" data-park="??? 雪场人潮流量">成交量</div>
+            <div class="chart-label" data-park="🏔️ 雪场人潮流量">成交量</div>
             <div class="chart-wrapper chart-wrapper-sm">
               <canvas id="volumeChart"></canvas>
             </div>
@@ -609,7 +609,7 @@
 
         <div id="panel-rsi" class="chart-panel hidden">
           <div class="chart-card">
-            <div class="chart-label" data-park="?? 体力值监测 (RSI 14)">RSI (14) — 相对强弱指数</div>
+            <div class="chart-label" data-park="💪 体力值监测 (RSI 14)">RSI (14) — 相对强弱指数</div>
             <div class="chart-info">
               <span class="info-tag bear" data-park="体力透支 &gt; 70 · 小心回调">RSI &gt; 70 高位区</span>
               <span class="info-tag neutral" data-park="30–70 稳定滑行">30–70 中性区间</span>
@@ -623,7 +623,7 @@
 
         <div id="panel-macd" class="chart-panel hidden">
           <div class="chart-card">
-            <div class="chart-label" data-park="?? 市场浪潮仪 (MACD)">MACD — 指数移动平均收敛发散</div>
+            <div class="chart-label" data-park="🌊 市场浪潮仪 (MACD)">MACD — 指数移动平均收敛发散</div>
             <div class="chart-info">
               <span class="info-tag bull" data-park="浪潮翻涌 · 冲刺加速！">黄金交叉：MACD 上穿信号线</span>
               <span class="info-tag bear" data-park="浪潮逆转 · 立即防守！">死亡交叉：MACD 下穿信号线</span>
@@ -638,27 +638,27 @@
       <!-- 指标数值 -->
       <div class="stats-row">
         <div class="stat-card">
-          <div class="stat-card-title">MA5<span class="park-stat-alias">???短趋径</span></div>
+          <div class="stat-card-title">MA5<span class="park-stat-alias">🛤️短趋径</span></div>
           <div id="stat-ma5" class="stat-card-value">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-title">MA20<span class="park-stat-alias">???中趋径</span></div>
+          <div class="stat-card-title">MA20<span class="park-stat-alias">🗺️中趋径</span></div>
           <div id="stat-ma20" class="stat-card-value">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-title">MA60<span class="park-stat-alias">???长趋线</span></div>
+          <div class="stat-card-title">MA60<span class="park-stat-alias">🏔️长趋线</span></div>
           <div id="stat-ma60" class="stat-card-value">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-title">RSI(14)<span class="park-stat-alias">??体力值</span></div>
+          <div class="stat-card-title">RSI(14)<span class="park-stat-alias">💪体力值</span></div>
           <div id="stat-rsi" class="stat-card-value">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-title">MACD<span class="park-stat-alias">??浪潮仪</span></div>
+          <div class="stat-card-title">MACD<span class="park-stat-alias">🌊浪潮仪</span></div>
           <div id="stat-macd" class="stat-card-value">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-title">Signal<span class="park-stat-alias">??信号线</span></div>
+          <div class="stat-card-title">Signal<span class="park-stat-alias">📡信号线</span></div>
           <div id="stat-signal" class="stat-card-value">—</div>
         </div>
       </div>
@@ -675,12 +675,12 @@
     <div class="park-pp-inner">
       <!-- Header -->
       <div class="park-pp-header">
-        <div class="park-pp-avatar">??</div>
+        <div class="park-pp-avatar">⛷️</div>
         <div>
           <div class="park-pp-name">雪山冒险者</div>
           <div class="park-pp-level" id="parkPpLevel">Lv.1 入门探索者</div>
         </div>
-        <button class="park-pp-close" onclick="toggleParkProfile()">?</button>
+        <button class="park-pp-close" onclick="toggleParkProfile()">✕</button>
       </div>
       <!-- 数据 -->
       <div class="park-pp-stats">
@@ -699,19 +699,19 @@
       </div>
       <!-- 成就 -->
       <div class="park-pp-section" style="padding-bottom:0.6rem">
-        <div class="park-pp-section-title">?? 滑雪成就</div>
+        <div class="park-pp-section-title">🏅 滑雪成就</div>
         <div class="park-pp-medal-row" id="parkPpMedals">
-          <span class="park-pp-medal locked">?? 一般完成</span>
-          <span class="park-pp-medal locked">?? 缆车全对</span>
-          <span class="park-pp-medal locked">?? 双 AA</span>
+          <span class="park-pp-medal locked">🥉 一般完成</span>
+          <span class="park-pp-medal locked">🥈 缆车全对</span>
+          <span class="park-pp-medal locked">🥇 双 AA</span>
         </div>
       </div>
       <!-- 闯关纪录 -->
       <div class="park-pp-section" style="padding-bottom:0">
-        <div class="park-pp-section-title">?? 最近闯关纪录</div>
+        <div class="park-pp-section-title">📜 最近闯关纪录</div>
       </div>
       <div id="parkPpHistoryList" class="park-pp-history-list">
-        <div class="park-pp-empty">还没有闯关纪录，快去探索吧！??</div>
+        <div class="park-pp-empty">还没有闯关纪录，快去探索吧！⛷️</div>
       </div>
     </div>
   </div>
@@ -719,7 +719,7 @@
   <!-- ═══ AI 聊天视窗 ═══ -->
   <!-- 浮动开关按钮 -->
   <button id="chatToggleBtn" class="chat-toggle-btn" onclick="toggleChat()" title="技术指标解读助手">
-    <span class="chat-toggle-icon">??</span>
+    <span class="chat-toggle-icon">🤖</span>
     <span class="chat-toggle-label">数据解读</span>
   </button>
 
@@ -727,18 +727,18 @@
   <div id="chatPanel" class="chat-panel hidden">
     <div class="chat-header">
       <div class="chat-header-left">
-        <span class="chat-avatar">??</span>
+        <span class="chat-avatar">🤖</span>
         <div>
           <div class="chat-title">技术指标解读助手</div>
           <div class="chat-subtitle" id="chatSubtitle">只解读数据 · 不提供投资建议</div>
         </div>
       </div>
-      <button class="chat-close-btn" onclick="toggleChat()">?</button>
+      <button class="chat-close-btn" onclick="toggleChat()">✕</button>
     </div>
     <div id="chatMessages" class="chat-messages">
       <div class="chat-msg ai">
         <div class="chat-bubble">
-          ?? 你好！我是技术指标解读助手。<br />
+          👋 你好！我是技术指标解读助手。<br />
           我只负责客观说明指标数据，不提供任何投资建议。你可以问我：<br />
           <span class="chat-hint" onclick="sendHint(this)">「RSI 低位区代表什么？」</span>
           <span class="chat-hint" onclick="sendHint(this)">「MACD 和信号线怎么看？」</span>
@@ -750,7 +750,7 @@
       <textarea id="chatInput" class="chat-input" placeholder="问我指标数据代表什么..." rows="1"
         onkeydown="handleChatKey(event)"></textarea>
       <button id="chatSendBtn" class="chat-send-btn" onclick="sendChat()">
-        <span id="chatSendIcon">?</span>
+        <span id="chatSendIcon">➤</span>
         <span id="chatSendSpinner" class="spinner hidden"></span>
       </button>
     </div>
@@ -760,16 +760,16 @@
   <div id="stockPickerPanelLegacy" class="stock-picker-panel hidden">
     <div class="picker-panel-inner">
       <div class="picker-search-row">
-        <input id="pickerSearchInputLegacy" class="picker-search" type="text" placeholder="?? 搜索股票代码或名称..."
+        <input id="pickerSearchInputLegacy" class="picker-search" type="text" placeholder="🔍 搜索股票代码或名称..."
           autocomplete="off" />
-        <button class="picker-close-btn" type="button">?</button>
+        <button class="picker-close-btn" type="button">✕</button>
       </div>
       <div class="picker-categories" id="pickerCategoriesLegacy">
 
         <!-- 中概股 / 港股科技 -->
         <div class="picker-category">
           <div class="picker-cat-header">
-            <span class="picker-cat-icon">??</span>
+            <span class="picker-cat-icon">🐉</span>
             <span class="picker-cat-name">中概股 / 港股科技</span>
           </div>
           <div class="picker-stocks">
@@ -793,7 +793,7 @@
         <!-- 美国科技 -->
         <div class="picker-category">
           <div class="picker-cat-header">
-            <span class="picker-cat-icon">??</span>
+            <span class="picker-cat-icon">💻</span>
             <span class="picker-cat-name">美国科技</span>
           </div>
           <div class="picker-stocks">
@@ -823,7 +823,7 @@
         <!-- 半导体 -->
         <div class="picker-category">
           <div class="picker-cat-header">
-            <span class="picker-cat-icon">??</span>
+            <span class="picker-cat-icon">⚙️</span>
             <span class="picker-cat-name">半导体</span>
           </div>
           <div class="picker-stocks">
@@ -845,7 +845,7 @@
         <!-- 电动车 / 新能源 -->
         <div class="picker-category">
           <div class="picker-cat-header">
-            <span class="picker-cat-icon">?</span>
+            <span class="picker-cat-icon">⚡</span>
             <span class="picker-cat-name">电动车 / 新能源</span>
           </div>
           <div class="picker-stocks">
@@ -867,7 +867,7 @@
         <!-- 美国金融 -->
         <div class="picker-category">
           <div class="picker-cat-header">
-            <span class="picker-cat-icon">??</span>
+            <span class="picker-cat-icon">🏦</span>
             <span class="picker-cat-name">美国金融</span>
           </div>
           <div class="picker-stocks">
@@ -889,7 +889,7 @@
         <!-- 台湾科技 -->
         <div class="picker-category">
           <div class="picker-cat-header">
-            <span class="picker-cat-icon">????</span>
+            <span class="picker-cat-icon">🇹🇼</span>
             <span class="picker-cat-name">台湾科技</span>
           </div>
           <div class="picker-stocks">
@@ -915,7 +915,7 @@
         <!-- 台湾 ETF -->
         <div class="picker-category">
           <div class="picker-cat-header">
-            <span class="picker-cat-icon">??</span>
+            <span class="picker-cat-icon">📦</span>
             <span class="picker-cat-name">台湾 ETF</span>
           </div>
           <div class="picker-stocks">
@@ -937,7 +937,7 @@
         <!-- 能源 / 原物料 -->
         <div class="picker-category">
           <div class="picker-cat-header">
-            <span class="picker-cat-icon">???</span>
+            <span class="picker-cat-icon">🛢️</span>
             <span class="picker-cat-name">能源 / 原物料</span>
           </div>
           <div class="picker-stocks">
@@ -979,7 +979,7 @@
     // 更新按钮文字
     const icon = document.getElementById('modeToggleIcon');
     const label = document.getElementById('modeToggleText');
-    if (icon)  icon.textContent  = _parkMode ? '??' : '??';
+    if (icon)  icon.textContent  = _parkMode ? '📊' : '🎿';
     if (label) label.textContent = _parkMode ? '分析模式' : '冒险模式';
 
     // 判断目前在哪个页面
@@ -1030,18 +1030,18 @@
       const activeTheme = (activeThemeIdx !== null) ? _PARK_THEME_DEFS[activeThemeIdx] : null;
       const taskBtn = activeTheme
         ? `<button class="park-dash-banner-task" onclick="openThemeQuest(${activeThemeIdx})">
-             ??? ${_escHtml(activeTheme.icon)} ${_escHtml(activeTheme.title)} 继续任务
+             🗺️ ${_escHtml(activeTheme.icon)} ${_escHtml(activeTheme.title)} 继续任务
            </button>` : '';
       banner.innerHTML = `
-        <div class="park-dash-banner-icon">???</div>
+        <div class="park-dash-banner-icon">🏔️</div>
         <div class="park-dash-banner-text">
-          <h3>?? ${sym} 雪场技术分析</h3>
+          <h3>⛷️ ${sym} 雪场技术分析</h3>
           <p>技术指标已转译为滑雪地图语言 · 分析完成后可直接启动滑雪挑战赛道</p>
         </div>
         ${taskBtn}
         <button class="park-dash-ski-btn"
           onclick="document.getElementById('skiLaunchButton')?.click()">
-          ?? 开始滑雪！
+          🎿 开始滑雪！
         </button>
       `;
       dash.insertBefore(banner, dash.firstChild);
@@ -1094,7 +1094,7 @@
   /* ── 主题关卡定义（每主题 6 关）─────────────── */
   const _PARK_THEME_DEFS = [
     {
-      id:'ai_chip', title:'AI 芯片', icon:'??',
+      id:'ai_chip', title:'AI 芯片', icon:'🧠',
       desc:'聚焦算力与服务器 GPU 主线，探索 AI 芯片供应链从设计到封装的完整生态。',
       stages:[
         {sym:'NVDA',    name:'Nvidia',    disp:'NVDA',    desc:'AI GPU 算力核心，全球市场领头羊'},
@@ -1106,7 +1106,7 @@
       ]
     },
     {
-      id:'us_tech', title:'美股科技', icon:'??',
+      id:'us_tech', title:'美股科技', icon:'💻',
       desc:'从 FAANG 到 AI 转型股，逐一解锁美国科技龙头的核心竞争力。',
       stages:[
         {sym:'AAPL',  name:'Apple',     disp:'AAPL',  desc:'消费电子生态护城河，Apple Intelligence 押注'},
@@ -1118,7 +1118,7 @@
       ]
     },
     {
-      id:'tw_dragon', title:'台湾龙头', icon:'????',
+      id:'tw_dragon', title:'台湾龙头', icon:'🇹🇼',
       desc:'台湾半导体护城河，从晶圆代工到 AI 服务器供应链全面制霸。',
       stages:[
         {sym:'2330.TW', name:'台积电', disp:'2330', desc:'全球晶圆代工霸主，先进制程护城河无人能敌'},
@@ -1130,7 +1130,7 @@
       ]
     },
     {
-      id:'ev', title:'电动车', icon:'?',
+      id:'ev', title:'电动车', icon:'⚡',
       desc:'最能反映市场情绪起伏的题材，从领头羊到新能源全面解锁。',
       stages:[
         {sym:'TSLA', name:'Tesla',      disp:'TSLA', desc:'电动车龙头，FSD 自动驾驶 + Robotaxi 催化'},
@@ -1184,15 +1184,15 @@
       const isActive = !isDone && (i === 0 || visitedSyms.has(theme.stages[i-1].sym));
       const isLocked = !isDone && !isActive;
       const cls      = isDone ? 'done' : isActive ? 'active' : 'locked';
-      const ind      = isDone ? '?'   : isActive ? '?'      : '??';
+      const ind      = isDone ? '✓'   : isActive ? '▶'      : '🔒';
       const action   = isDone
-        ? `<span class="park-quest-stage-done-label">? 已完成</span>`
+        ? `<span class="park-quest-stage-done-label">✓ 已完成</span>`
         : isActive
           ? `<button class="park-quest-stage-btn"
                onclick="_enterThemeStage('${_escHtml(s.sym)}','${_escHtml(s.name)}',${idx})">
-               ?? 进入关卡
+               ⛷️ 进入关卡
              </button>`
-          : `<span class="park-quest-stage-locked-label">?? 请先完成上一关</span>`;
+          : `<span class="park-quest-stage-locked-label">🔒 请先完成上一关</span>`;
       const connector = i < theme.stages.length - 1
         ? `<div class="park-quest-connector"></div>` : '';
       return `
@@ -1215,7 +1215,7 @@
 
     const completeBanner = allDone
       ? `<div class="park-quest-complete-banner">
-           ?? 恭喜完成「${_escHtml(theme.title)}」主题全 ${total} 关！获得专属勋章 ${_escHtml(theme.icon)}
+           🎉 恭喜完成「${_escHtml(theme.title)}」主题全 ${total} 关！获得专属勋章 ${_escHtml(theme.icon)}
          </div>` : '';
 
     document.getElementById('parkQuestModalContent').innerHTML = `
@@ -1225,7 +1225,7 @@
           <div class="park-quest-modal-title">${_escHtml(theme.title)} 主题关卡</div>
           <div class="park-quest-modal-desc">${_escHtml(theme.desc)}</div>
         </div>
-        <button class="park-quest-modal-close" onclick="closeThemeQuest()">?</button>
+        <button class="park-quest-modal-close" onclick="closeThemeQuest()">✕</button>
       </div>
       <div class="park-quest-progress-section">
         <div class="park-quest-prog-bar">
@@ -1246,46 +1246,46 @@
 
   /* ── 售票亭选股数据 ─────────────────────────── */
   const _PARK_STOCKS = [
-    { cat:'?? 中概股 / 港股科技', stocks:[
+    { cat:'🐉 中概股 / 港股科技', stocks:[
       {sym:'BABA',name:'阿里巴巴'},{sym:'9988.HK',name:'阿里 (港)'},
       {sym:'700.HK',name:'腾讯'},{sym:'PDD',name:'拼多多'},
       {sym:'JD',name:'京东'},{sym:'BIDU',name:'百度'},
       {sym:'NIO',name:'蔚来 NIO'},
     ]},
-    { cat:'?? 美国科技', stocks:[
+    { cat:'💻 美国科技', stocks:[
       {sym:'AAPL',name:'Apple'},{sym:'MSFT',name:'Microsoft'},
       {sym:'GOOGL',name:'Google'},{sym:'META',name:'Meta'},
       {sym:'AMZN',name:'Amazon'},{sym:'NFLX',name:'Netflix'},
       {sym:'NVDA',name:'Nvidia'},{sym:'AMD',name:'AMD'},
       {sym:'CRM',name:'Salesforce'},{sym:'ORCL',name:'Oracle'},
     ]},
-    { cat:'?? 半导体', stocks:[
+    { cat:'⚙️ 半导体', stocks:[
       {sym:'QCOM',name:'Qualcomm'},{sym:'INTC',name:'Intel'},
       {sym:'AVGO',name:'Broadcom'},{sym:'MU',name:'Micron'},
       {sym:'AMAT',name:'Applied Materials'},{sym:'LRCX',name:'Lam Research'},
     ]},
-    { cat:'? 电动车/新能源', stocks:[
+    { cat:'⚡ 电动车/新能源', stocks:[
       {sym:'TSLA',name:'Tesla'},{sym:'RIVN',name:'Rivian'},
       {sym:'LCID',name:'Lucid Motors'},{sym:'NIO',name:'蔚来 NIO'},
       {sym:'ENPH',name:'Enphase'},{sym:'PLUG',name:'Plug Power'},
     ]},
-    { cat:'?? 美国金融', stocks:[
+    { cat:'🏦 美国金融', stocks:[
       {sym:'JPM',name:'JPMorgan'},{sym:'BAC',name:'Bank of America'},
       {sym:'GS',name:'Goldman Sachs'},{sym:'V',name:'Visa'},
       {sym:'MA',name:'Mastercard'},{sym:'BRK-B',name:'Berkshire B'},
     ]},
-    { cat:'???? 台湾科技', stocks:[
+    { cat:'🇹🇼 台湾科技', stocks:[
       {sym:'2330.TW',name:'台积电',disp:'2330'},{sym:'2317.TW',name:'鸿海',disp:'2317'},
       {sym:'2454.TW',name:'联发科',disp:'2454'},{sym:'2303.TW',name:'联电',disp:'2303'},
       {sym:'2308.TW',name:'台达电',disp:'2308'},{sym:'3711.TW',name:'日月光',disp:'3711'},
       {sym:'2382.TW',name:'广达',disp:'2382'},{sym:'2395.TW',name:'研华',disp:'2395'},
     ]},
-    { cat:'?? 台湾 ETF', stocks:[
+    { cat:'📦 台湾 ETF', stocks:[
       {sym:'0050.TW',name:'台湾50',disp:'0050'},{sym:'0056.TW',name:'高股息',disp:'0056'},
       {sym:'006208.TW',name:'富邦台50',disp:'006208'},{sym:'00878.TW',name:'国泰永续高股息',disp:'00878'},
       {sym:'00919.TW',name:'群益高息',disp:'00919'},{sym:'00929.TW',name:'复华科技优息',disp:'00929'},
     ]},
-    { cat:'??? 能源/原物料', stocks:[
+    { cat:'🛢️ 能源/原物料', stocks:[
       {sym:'XOM',name:'ExxonMobil'},{sym:'CVX',name:'Chevron'},
       {sym:'COP',name:'ConocoPhillips'},{sym:'GLD',name:'黄金 ETF'},{sym:'SLV',name:'白银 ETF'},
     ]},
@@ -1297,7 +1297,7 @@
     const panel = document.getElementById('parkPickerPanel');
     if (!panel) return;
     q = (q || '').toLowerCase().trim();
-    let html = `<div class="park-picker-hint">?? 选择雪场 · 或直接输入代码后按 Enter</div>`;
+    let html = `<div class="park-picker-hint">⛷️ 选择雪场 · 或直接输入代码后按 Enter</div>`;
     let anyResult = false;
     _PARK_STOCKS.forEach(({ cat, stocks }) => {
       const btns = stocks.map(s => {
@@ -1324,7 +1324,7 @@
     });
     if (!anyResult) {
       html += `<div class="park-picker-hint" style="color:rgba(255,180,100,0.6);padding:0.6rem 0.4rem">
-        找不到「${_escHtml(q)}」，直接按 ?? 开始探索！</div>`;
+        找不到「${_escHtml(q)}」，直接按 🎿 开始探索！</div>`;
     }
     panel.innerHTML = html;
   }
@@ -1406,13 +1406,13 @@
       `<span class="park-quest-chip ${_escHtml(c.tone||'')}">${_escHtml(c.label)}</span>`
     ).join('');
     const reasons = (f.reasons||[]).map(r =>
-      `<span class="park-victory-cond">? ${_escHtml(r)}</span>`
+      `<span class="park-victory-cond">✓ ${_escHtml(r)}</span>`
     ).join('');
     const diff  = Math.min(5, Math.max(2, (f.chips?.length||3)));
     const stars = '★'.repeat(diff) + '☆'.repeat(5-diff);
     const [c1, c2] = _getSymbolTheme(f.symbol||'');
     const spark = _buildSparklineSvg(f.series||[]);
-    const icon  = (f.chips||[]).length > 3 ? '??' : '??';
+    const icon  = (f.chips||[]).length > 3 ? '🔥' : '⛷️';
     return `
       <div class="park-daily-card" onclick="parkLoadSymbol('${_escHtml(f.symbol)}')">
         <div class="park-daily-thumb">
@@ -1437,7 +1437,7 @@
           <p class="park-daily-summary">${_escHtml(f.summary||f.detail||'')}</p>
           <div class="park-daily-chips">${chips}</div>
           <div>
-            <span class="park-victory-label">?? 胜利条件</span>
+            <span class="park-victory-label">🏆 胜利条件</span>
             <div class="park-victory-list">${reasons}</div>
           </div>
         </div>
@@ -1448,7 +1448,7 @@
           </div>
           <button class="park-daily-btn"
             onclick="event.stopPropagation();parkLoadSymbol('${_escHtml(f.symbol)}')">
-            ?? 进入今日关卡
+            🎿 进入今日关卡
           </button>
         </div>
       </div>`;
@@ -1470,7 +1470,7 @@
         <p class="park-hot-blurb">${_escHtml(item.blurb||'')}</p>
         <button class="park-hot-btn"
           onclick="event.stopPropagation();parkLoadSymbol('${_escHtml(item.symbol)}')">
-          ?? 挑战
+          ⚔️ 挑战
         </button>
       </div>`).join('');
   }
@@ -1489,7 +1489,7 @@
       ).join('');
       return `
         <div class="park-theme-card${allDone?' is-complete':''}" onclick="openThemeQuest(${idx})">
-          <div class="park-theme-card-icon">${_escHtml(theme.icon)}${allDone?'<span class="park-theme-crown">??</span>':''}</div>
+          <div class="park-theme-card-icon">${_escHtml(theme.icon)}${allDone?'<span class="park-theme-crown">👑</span>':''}</div>
           <div class="park-theme-card-title">${_escHtml(theme.title)}</div>
           <div class="park-theme-card-desc">${_escHtml(theme.desc)}</div>
           <div class="park-theme-prog-bar">
@@ -1499,7 +1499,7 @@
           <div class="park-theme-picks">${picks}</div>
           <button class="park-theme-btn"
             onclick="event.stopPropagation();openThemeQuest(${idx})">
-            ??? 探索关卡
+            🗺️ 探索关卡
           </button>
         </div>`;
     }).join('');
@@ -1591,14 +1591,14 @@
     const explored = questLog.length;
     const visits   = questLog.reduce((sum, q) => sum + (q.count || 1), 0);
     const bestSki  = progress.bestSkiScore || 0;
-    const level    = explored >= 20 ? '?? 滑雪大师' :
-                     explored >= 10 ? '?? 中级滑手' :
-                     explored >=  3 ? '??? 初级探险者' : '?? 新手滑手';
+    const level    = explored >= 20 ? '⛷️ 滑雪大师' :
+                     explored >= 10 ? '🎿 中级滑手' :
+                     explored >=  3 ? '🌨️ 初级探险者' : '🎪 新手滑手';
 
     const medalHtml = [
-      { icon:'??', label:'金牌', key:'gold'   },
-      { icon:'??', label:'银牌', key:'silver' },
-      { icon:'??', label:'铜牌', key:'bronze' },
+      { icon:'🥇', label:'金牌', key:'gold'   },
+      { icon:'🥈', label:'银牌', key:'silver' },
+      { icon:'🥉', label:'铜牌', key:'bronze' },
     ].map(m => {
       const cnt = medals[m.key] || progress[m.key] || 0;
       return `<span class="park-pp-medal ${cnt>0?'earned':'locked'}">${m.icon} ${m.label} ×${cnt}</span>`;
@@ -1623,7 +1623,7 @@
     const completedThemes = _PARK_THEME_DEFS.filter(t => t.stages.every(s => visitedSyms.has(s.sym)));
     const themeMedalsHtml = completedThemes.length
       ? `<div class="park-pp-section" style="padding-bottom:0">
-           <div class="park-pp-section-title">??? 主题通关勋章</div>
+           <div class="park-pp-section-title">🗺️ 主题通关勋章</div>
          </div>
          <div class="park-pp-theme-medals">
            ${completedThemes.map((t, i) => {
@@ -1634,7 +1634,7 @@
                  <span class="park-pp-theme-medal-title">${_escHtml(t.title)}</span>
                  <span class="park-pp-theme-medal-sub">全 ${t.stages.length} 关通关</span>
                </span>
-               <span class="park-pp-theme-medal-badge">?? 完成</span>
+               <span class="park-pp-theme-medal-badge">👑 完成</span>
              </div>`;
            }).join('')}
          </div>` : '';
@@ -1644,12 +1644,12 @@
     panel.innerHTML = `
       <div class="park-pp-inner">
         <div class="park-pp-header">
-          <div class="park-pp-avatar">??</div>
+          <div class="park-pp-avatar">⛷️</div>
           <div>
             <div class="park-pp-name">冒险者</div>
             <div class="park-pp-level">${level}</div>
           </div>
-          <button class="park-pp-close" onclick="toggleParkProfile()">?</button>
+          <button class="park-pp-close" onclick="toggleParkProfile()">✕</button>
         </div>
         <div class="park-pp-stats">
           <div class="park-pp-stat">
@@ -1666,12 +1666,12 @@
           </div>
         </div>
         <div class="park-pp-section">
-          <div class="park-pp-section-title">?? 滑雪奖牌</div>
+          <div class="park-pp-section-title">🏅 滑雪奖牌</div>
           <div class="park-pp-medal-row">${medalHtml}</div>
         </div>
         ${themeMedalsHtml}
         <div class="park-pp-section" style="padding-bottom:0.4rem">
-          <div class="park-pp-section-title">?? 闯关纪录</div>
+          <div class="park-pp-section-title">📋 闯关纪录</div>
         </div>
         <div class="park-pp-history-list">${historyHtml}</div>
       </div>`;
@@ -1681,7 +1681,7 @@
   function _initParkSnowflakes() {
     const canvas = document.getElementById('parkSnowCanvas');
     if (!canvas || canvas.childElementCount > 0) return;
-    const chars = ['?','?','?','·','?','*','?'];
+    const chars = ['❄','❅','❆','·','•','*','✦'];
     for (let i = 0; i < 38; i++) {
       const flake = document.createElement('span');
       flake.className = 'park-snowflake';

@@ -1730,11 +1730,11 @@
     modal.className = 'ski-modal hidden';
     modal.innerHTML = `
       <canvas id="skiCanvas"></canvas>
-      <button class="ski-close-btn" onclick="SkiGame.close()">? 离开</button>
+      <button class="ski-close-btn" onclick="SkiGame.close()">✕ 离开</button>
       <button class="ski-detail-toggle ${highDetailMode ? 'active' : ''}" onclick="SkiGame.toggleDetail()">
         <span class="detail-label">${highDetailMode ? '高细节模式：开启' : '低细节模式'}</span>
       </button>
-      <div class="ski-hint">??? 滚轮上下移动 &nbsp;·&nbsp; 同时按住 ←→ 或 A+D 往右冲刺 &nbsp;·&nbsp; 别被拖到最左边</div>
+      <div class="ski-hint">🖱️ 滚轮上下移动 &nbsp;·&nbsp; 同时按住 ←→ 或 A+D 往右冲刺 &nbsp;·&nbsp; 别被拖到最左边</div>
     `;
     return modal;
   }
@@ -4036,7 +4036,7 @@
       ctx.fillStyle = `rgba(255,150,150,${ratio * pulse})`;
       ctx.textAlign = 'center';
       ctx.fillText(
-        isDangerAbove ? '? 风险权重过高，立即下修！' : '? 部位曝险不足，立即上修！',
+        isDangerAbove ? '⬆ 风险权重过高，立即下修！' : '⬇ 部位曝险不足，立即上修！',
         W / 2,
         dir === 'top' ? 60 : H - 50
       );
@@ -4074,11 +4074,11 @@
     let modeLabel;
     if (practiceMode) {
       const s = practiceOpts.startPct, e = practiceOpts.endPct;
-      modeLabel = (s === 0 && e === 100) ? '?? 练习模式' : `?? 练习 ${s}%～${e}%`;
+      modeLabel = (s === 0 && e === 100) ? '🟡 练习模式' : `🟡 练习 ${s}%～${e}%`;
     } else {
       modeLabel = '关卡';
     }
-    ctx.fillText(`??  ${stockData?.symbol || ''}  ${modeLabel}`, 16, 28);
+    ctx.fillText(`⛷️  ${stockData?.symbol || ''}  ${modeLabel}`, 16, 28);
 
     ctx.font = '600 10px Inter, sans-serif';
     ctx.fillStyle = 'rgba(191,219,254,0.9)';
@@ -4216,7 +4216,7 @@
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = timeColor;
-    ctx.fillText(`?? ${Math.floor(timeRatio * 100)}%`, hbx + hbW + barLabelGap + smallValueW, timeBarY + hbH / 2);
+    ctx.fillText(`🕒 ${Math.floor(timeRatio * 100)}%`, hbx + hbW + barLabelGap + smallValueW, timeBarY + hbH / 2);
 
     // 准确率条底框
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
@@ -4253,7 +4253,7 @@
     ctx.textAlign = 'right';
     ctx.font = '700 18px JetBrains Mono, monospace';
     ctx.fillStyle = heatColor;
-    ctx.fillText(`? ${accuracyPct.toFixed(0)}%`, hbx + hbW + barLabelGap + smallValueW, hby + hbH / 2);
+    ctx.fillText(`⚡ ${accuracyPct.toFixed(0)}%`, hbx + hbW + barLabelGap + smallValueW, hby + hbH / 2);
 
     if (isBoosting) {
       ctx.textAlign = 'center';
@@ -4494,7 +4494,7 @@
     bullets.forEach((bullet) => {
       ctx.fillStyle = '#67e8f9';
       ctx.font = '900 22px Inter, sans-serif';
-      ctx.fillText('?', x + pad + 4, cursorY - 2);
+      ctx.fillText('•', x + pad + 4, cursorY - 2);
       ctx.fillStyle = 'rgba(226, 232, 240, 0.96)';
       ctx.font = '700 17px Inter, sans-serif';
       const usedH = drawWrappedText(bullet, x + pad + 30, cursorY, cardW - pad * 2 - 30, 26, 2);
@@ -4888,7 +4888,7 @@
     ctx.fillStyle = '#f87171';
     ctx.shadowColor = '#f87171';
     ctx.shadowBlur  = 20;
-    ctx.fillText(getElapsedSeconds() > timeLimitSeconds ? '? 时间耗尽！' : '?? 挑战失败！', W / 2, centerY - 52);
+    ctx.fillText(getElapsedSeconds() > timeLimitSeconds ? '⏰ 时间耗尽！' : '💥 挑战失败！', W / 2, centerY - 52);
 
     // 绩效
     ctx.font = '700 32px JetBrains Mono, monospace';
@@ -4907,7 +4907,7 @@
     // 方向提示
     const tip = getElapsedSeconds() > timeLimitSeconds
       ? '时间拖太久了，试着更早冲过终点'
-      : isDangerAbove ? '贴线太近了，鼠标往下让角色降一点 ???↓' : '离路线太远了，鼠标往上把节奏拉回来 ???↑';
+      : isDangerAbove ? '贴线太近了，鼠标往下让角色降一点 🖱️↓' : '离路线太远了，鼠标往上把节奏拉回来 🖱️↑';
     ctx.font = '400 16px Inter, sans-serif';
     ctx.fillStyle = 'rgba(148,163,184,0.8)';
     ctx.fillText(tip, W / 2, tableBottom + 30);
