@@ -1692,9 +1692,10 @@
     // 7) 生成雪花
     _initParkSnowflakes();
 
-    // 5) 还原上次偏好设定
+    // 5) 首次进入默认展示冒险首页，并保留用户之后的明确选择
     try {
-      if (localStorage.getItem('_stockai_park') === '1') {
+      const savedParkMode = localStorage.getItem('_stockai_park');
+      if (savedParkMode === null || savedParkMode === '1') {
         toggleAppMode();
       }
     } catch(e) {}
