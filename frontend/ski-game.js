@@ -26,7 +26,7 @@
   const BELOW_LINE_DANGER_MULTIPLIER = 0.45; // 在線下方時放慢 danger 累積，避免看起來像被卡住
   const LINE_Y_MID     = 0.55; // 地平線在畫面高度的比例
   const TIME_LIMIT_RATIO = 0.8; // 通關時間限制：正常基準時間的 80%
-  const EDUCATION_TIME_LIMIT_MULTIPLIER = 1.3; // 分段答題會吃跑關時間，所以整體時間補 30%
+  const EDUCATION_FAST_ANSWER_MAX_BONUS_SECONDS = 6; // 單題答得越快，最多額外送 6 秒主時間
   const CAMERA_STATE_FREE = 'free';
   const CAMERA_STATE_LOCKED = 'locked';
   const CAMERA_STATE_DYNAMIC = 'dynamic';
@@ -645,6 +645,7 @@
   let elapsedMs = 0;
   let lastFrameTs = 0;
   let earlyFinishBonus = 0;
+  let educationTimeBonusSeconds = 0;
   let scoreBandFrames = {
     perfect: 0,
     light: 0,
@@ -726,8 +727,12 @@
     return elapsedMs / 1000;
   }
 
+  function getRemainingRunSeconds() {
+    return Math.max(0, timeLimitSeconds - getElapsedSeconds());
+  }
+
   function isRunTimerActive() {
-    return gameState === 'playing' || gameState === 'education_station' || gameState === 'education_final';
+    return gameState === 'countdown' || gameState === 'playing';
   }
 
   function frameAdjustedLerp(baseAmount, deltaFactor) {
@@ -736,6 +741,11 @@
 
   function getQualifyingSeconds() {
     return timeLimitSeconds;
+  }
+
+  function getEducationFastAnswerBonusSeconds(elapsedSeconds) {
+    const timeRatio = clamp(1 - elapsedSeconds / EDUCATION_QUESTION_LIMIT_SECONDS, 0, 1);
+    return Math.round(EDUCATION_FAST_ANSWER_MAX_BONUS_SECONDS * timeRatio * 10) / 10;
   }
 
   function normalizeThemeSymbol(symbol) {
@@ -1490,16 +1500,19 @@
     const timeRatio = timedOut ? 0 : clamp(1 - elapsedSeconds / EDUCATION_QUESTION_LIMIT_SECONDS, 0, 1);
     const isCorrect = !timedOut && choiceIndex === node.answerIndex;
     const questionScore = isCorrect ? Math.round(45 + 55 * timeRatio) : 0;
+    const timeBonusSeconds = isCorrect ? getEducationFastAnswerBonusSeconds(elapsedSeconds) : 0;
     educationSession.selectedChoice = timedOut ? null : choiceIndex;
     educationSession.answered[index] = true;
     educationSession.correct[index] = isCorrect;
     educationSession.timedOut[index] = timedOut;
     educationSession.answerTimes[index] = Math.min(elapsedSeconds, EDUCATION_QUESTION_LIMIT_SECONDS);
     educationSession.questionScores[index] = questionScore;
+    educationTimeBonusSeconds += timeBonusSeconds;
+    timeLimitSeconds += timeBonusSeconds;
     educationSession.feedback = timedOut
       ? `時間到，這題算錯。${node.explanation}`
       : isCorrect
-        ? `答對了，速度越快分數越高。${node.explanation}`
+        ? `答對了，主時間額外增加 ${timeBonusSeconds.toFixed(1)} 秒。${node.explanation}`
         : `再看一次會更穩。${node.explanation}`;
     educationSession.awaitingContinue = true;
   }
@@ -1649,10 +1662,12 @@
       hud: {
         score: getFinalScore(),
         elapsedSeconds: Number(getElapsedSeconds().toFixed(2)),
+        remainingSeconds: Number(getRemainingRunSeconds().toFixed(2)),
         dangerRatio: Number(getDangerRatio().toFixed(3)),
       },
       education: educationSession ? {
         active: gameState.startsWith('education'),
+        timeBonusSeconds: Number(educationTimeBonusSeconds.toFixed(1)),
         nodeIndex: educationSession.activeNodeIndex,
         introIndex: educationSession.introIndex,
         introProgress: Number((educationSession.introProgress || 0).toFixed(3)),
@@ -1858,6 +1873,7 @@
     elapsedMs = 0;
     lastFrameTs = 0;
     earlyFinishBonus = 0;
+    educationTimeBonusSeconds = 0;
     scoreBandFrames = {
       perfect: 0,
       light: 0,
@@ -1883,7 +1899,7 @@
     // 我們粗略估計：總距離 / 平均速度 = 總幀數 * 10
     const lastX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     maxPossibleScore = Math.floor((lastX / SCROLL_SPEED) * 10);
-    timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO * EDUCATION_TIME_LIMIT_MULTIPLIER);
+    timeLimitSeconds = Math.max(0.1, (lastX / SCROLL_SPEED / 60) * TIME_LIMIT_RATIO);
 
     // 角色與橘線固定在較低的畫面錨點，山體則對齊到這條線
     const charX = getCharX();
@@ -2181,10 +2197,6 @@
     }
 
     if (gameState === 'education_station' || gameState === 'education_final') {
-      if (getElapsedSeconds() > timeLimitSeconds) {
-        triggerDeath(getScreenLineYAt(getCharWorldX()));
-        return;
-      }
       updateEducationQuestionTimer();
       return;
     }
@@ -4738,6 +4750,7 @@
       ['完美滑行', `${getBandPct('perfect').toFixed(0)}% / ${getBandPct('light').toFixed(0)}% / ${getBandPct('mild').toFixed(0)}%`],
       ['驚險擦邊', `${getBandPct('medium').toFixed(0)}% / ${getBandPct('heavy').toFixed(0)}%`],
       ['通關時間 / 挑戰目標 / 速通加分', `${getElapsedSeconds().toFixed(2)}s / ${getQualifyingSeconds().toFixed(2)}s / +${earlyFinishBonus}`],
+      ['答題時間加成 / 剩餘主時間', `+${educationTimeBonusSeconds.toFixed(1)}s / ${getRemainingRunSeconds().toFixed(2)}s`],
       ['連段加分 / 完美節奏', `+${streakBonusScore} / ${getBestPerfectPct().toFixed(0)}%`],
     ];
 
