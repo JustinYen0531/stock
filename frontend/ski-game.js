@@ -38,11 +38,6 @@
   const CAMERA_DYNAMIC_ZOOM = 1.12;
   const THEME_BACKGROUND_BASE = '/static/assets/homepage-backgrounds';
   const PROP_SPRITE_BASE = '/static/assets/ski-props';
-  const AAPL_PROP_BASE = '/static/assets/themes/AAPL/props';
-  const AMZN_PROP_BASE = '/static/assets/themes/AMZN/props';
-  const META_PROP_BASE = '/static/assets/themes/META/props';
-  const MSFT_PROP_BASE = '/static/assets/themes/MSFT/props';
-  const GOOGL_PROP_BASE = '/static/assets/themes/GOOGL/props';
   const PERIOD_TUNING = {
     "1mo": { mapWidth: 3.2, heightScale: 1.45, localSensitivity: 1.0, slopeAccel: 0.095, dangerTolerance: 38 },
     "3mo": { mapWidth: 4.2, heightScale: 1.2, localSensitivity: 1.0, slopeAccel: 0.085, dangerTolerance: 42 },
@@ -149,69 +144,6 @@
     { prop: 'amat-toolframe-gate', band: 0.22, depthRatio: 0.16, size: 184, anchor: 'hero' },
     { prop: 'amat-cleanroom-crane', band: 0.76, depthRatio: 0.48, size: 176, anchor: 'hero' },
   ];
-  const AAPL_PROP_PACK = [
-    'aapl-ice-cube',
-    'aapl-candlestick-board',
-    'aapl-airpods-case',
-    'aapl-laptop-chart',
-    'aapl-coin-stack',
-    'aapl-glass-chart',
-    'aapl-airpods-platform',
-    'aapl-ice-mountain',
-    'aapl-hover-device',
-  ];
-  const MSFT_PROP_PACK = [
-    'msft-glass-wall',
-    'msft-cloud-orb',
-    'msft-copilot-arch',
-    'msft-data-elevator',
-    'msft-signal-tower',
-    'msft-ice-campus',
-    'msft-azure-platform',
-    'msft-server-core',
-    'msft-market-panel',
-  ];
-  const GOOGL_PROP_PACK = [
-    'googl-prism-crystals',
-    'googl-search-curve-blue',
-    'googl-search-curve-green',
-    'googl-cloud-network',
-    'googl-rainbow-arch',
-    'googl-floating-island',
-    'googl-data-platform',
-    'googl-neural-globe',
-    'googl-orbit-node',
-  ];
-  const AMZN_PROP_PACK = [
-    'amzn-orange-ring',
-    'amzn-delivery-capsule',
-    'amzn-cloud-crate',
-    'amzn-data-crystal',
-    'amzn-glass-rail',
-    'amzn-forest-platform',
-    'amzn-market-coin',
-    'amzn-vine-bridge',
-    'amzn-cloud-island',
-  ];
-  const META_PROP_PACK = [
-    'meta-portal-ring',
-    'meta-crystal-cluster',
-    'meta-network-orb',
-    'meta-glass-cube',
-    'meta-floating-island',
-    'meta-cloud-platform',
-    'meta-portal-gate',
-    'meta-neural-sphere',
-    'meta-neon-path',
-  ];
-  const HIGH_DETAIL_RAW_PROP_THEMES = new Set(['AAPL', 'AMZN', 'META', 'MSFT', 'GOOGL']);
-  const HIGH_DETAIL_RAW_PROP_PREFIXES = {
-    AAPL: 'aapl-',
-    AMZN: 'amzn-',
-    META: 'meta-',
-    MSFT: 'msft-',
-    GOOGL: 'googl-',
-  };
   const STOCK_HERO_PACKS = {
     META: [
       { prop: 'meta-social-window', band: 0.18, depthRatio: 0.16, size: 184, anchor: 'hero' },
@@ -240,11 +172,6 @@
     JPM: [
       { prop: 'jpm-vault-facade', band: 0.24, depthRatio: 0.18, size: 186, anchor: 'hero' },
       { prop: 'jpm-column-crown', band: 0.72, depthRatio: 0.44, size: 170, anchor: 'hero' },
-    ],
-    AAPL: [
-      { prop: 'aapl-coin-stack', band: 0.22, depthRatio: 0.18, size: 184, anchor: 'hero' },
-      { prop: 'aapl-glass-chart', band: 0.54, depthRatio: 0.36, size: 172, anchor: 'hero' },
-      { prop: 'aapl-hover-device', band: 0.82, depthRatio: 0.48, size: 174, anchor: 'hero' },
     ],
     AMD: [
       { prop: 'amd-core-fabric', band: 0.22, depthRatio: 0.16, size: 180, anchor: 'hero' },
@@ -457,54 +384,6 @@
     'amat-toolframe-gate': 'amat-toolframe-gate',
     'amat-cleanroom-crane': 'amat-cleanroom-crane',
   };
-  const PROP_SPRITE_ASSETS = {
-    'aapl-ice-cube': { src: `${AAPL_PROP_BASE}/ice-cube.png`, raw: true },
-    'aapl-candlestick-board': { src: `${AAPL_PROP_BASE}/candlestick-board.png`, raw: true },
-    'aapl-airpods-case': { src: `${AAPL_PROP_BASE}/airpods-case.png`, raw: true },
-    'aapl-laptop-chart': { src: `${AAPL_PROP_BASE}/laptop-chart.png`, raw: true },
-    'aapl-coin-stack': { src: `${AAPL_PROP_BASE}/coin-stack.png`, raw: true },
-    'aapl-glass-chart': { src: `${AAPL_PROP_BASE}/glass-chart.png`, raw: true },
-    'aapl-airpods-platform': { src: `${AAPL_PROP_BASE}/airpods-platform.png`, raw: true },
-    'aapl-ice-mountain': { src: `${AAPL_PROP_BASE}/ice-mountain.png`, raw: true },
-    'aapl-hover-device': { src: `${AAPL_PROP_BASE}/hover-device.png`, raw: true },
-    'msft-glass-wall': { src: `${MSFT_PROP_BASE}/glass-wall.png`, raw: true },
-    'msft-cloud-orb': { src: `${MSFT_PROP_BASE}/cloud-orb.png`, raw: true },
-    'msft-copilot-arch': { src: `${MSFT_PROP_BASE}/copilot-arch.png`, raw: true },
-    'msft-data-elevator': { src: `${MSFT_PROP_BASE}/data-elevator.png`, raw: true },
-    'msft-signal-tower': { src: `${MSFT_PROP_BASE}/signal-tower.png`, raw: true },
-    'msft-ice-campus': { src: `${MSFT_PROP_BASE}/ice-campus.png`, raw: true },
-    'msft-azure-platform': { src: `${MSFT_PROP_BASE}/azure-platform.png`, raw: true },
-    'msft-server-core': { src: `${MSFT_PROP_BASE}/server-core.png`, raw: true },
-    'msft-market-panel': { src: `${MSFT_PROP_BASE}/market-panel.png`, raw: true },
-    'googl-prism-crystals': { src: `${GOOGL_PROP_BASE}/prism-crystals.png`, raw: true },
-    'googl-search-curve-blue': { src: `${GOOGL_PROP_BASE}/search-curve-blue.png`, raw: true },
-    'googl-search-curve-green': { src: `${GOOGL_PROP_BASE}/search-curve-green.png`, raw: true },
-    'googl-cloud-network': { src: `${GOOGL_PROP_BASE}/cloud-network.png`, raw: true },
-    'googl-rainbow-arch': { src: `${GOOGL_PROP_BASE}/rainbow-arch.png`, raw: true },
-    'googl-floating-island': { src: `${GOOGL_PROP_BASE}/floating-island.png`, raw: true },
-    'googl-data-platform': { src: `${GOOGL_PROP_BASE}/data-platform.png`, raw: true },
-    'googl-neural-globe': { src: `${GOOGL_PROP_BASE}/neural-globe.png`, raw: true },
-    'googl-orbit-node': { src: `${GOOGL_PROP_BASE}/orbit-node.png`, raw: true },
-    'amzn-orange-ring': { src: `${AMZN_PROP_BASE}/orange-ring.png`, raw: true },
-    'amzn-delivery-capsule': { src: `${AMZN_PROP_BASE}/delivery-capsule.png`, raw: true },
-    'amzn-cloud-crate': { src: `${AMZN_PROP_BASE}/cloud-crate.png`, raw: true },
-    'amzn-data-crystal': { src: `${AMZN_PROP_BASE}/data-crystal.png`, raw: true },
-    'amzn-glass-rail': { src: `${AMZN_PROP_BASE}/glass-rail.png`, raw: true },
-    'amzn-forest-platform': { src: `${AMZN_PROP_BASE}/forest-platform.png`, raw: true },
-    'amzn-market-coin': { src: `${AMZN_PROP_BASE}/market-coin.png`, raw: true },
-    'amzn-vine-bridge': { src: `${AMZN_PROP_BASE}/vine-bridge.png`, raw: true },
-    'amzn-cloud-island': { src: `${AMZN_PROP_BASE}/cloud-island.png`, raw: true },
-    'meta-portal-ring': { src: `${META_PROP_BASE}/portal-ring.png`, raw: true },
-    'meta-crystal-cluster': { src: `${META_PROP_BASE}/crystal-cluster.png`, raw: true },
-    'meta-network-orb': { src: `${META_PROP_BASE}/network-orb.png`, raw: true },
-    'meta-glass-cube': { src: `${META_PROP_BASE}/glass-cube.png`, raw: true },
-    'meta-floating-island': { src: `${META_PROP_BASE}/floating-island.png`, raw: true },
-    'meta-cloud-platform': { src: `${META_PROP_BASE}/cloud-platform.png`, raw: true },
-    'meta-portal-gate': { src: `${META_PROP_BASE}/portal-gate.png`, raw: true },
-    'meta-neural-sphere': { src: `${META_PROP_BASE}/neural-sphere.png`, raw: true },
-    'meta-neon-path': { src: `${META_PROP_BASE}/neon-path.png`, raw: true },
-  };
-
   /* ── 状态 ───────────────────────────────────────── */
   let canvas, ctx;
   let animId;
@@ -519,24 +398,11 @@
   let practiceMode = false; // 练习模式开关
   let practiceOpts = { steepness: 40, hitboxSize: 60, startPct: 0, endPct: 100 }; // 从滑框传入
 
-  // ── 视觉细节状态 ──
-  let highDetailMode = false;
-  let themeAssets = { vista: null, texture: null };
-  let cachedPatterns = { terrain: null, detail: null, hd: null, hdSrc: null, themeSrc: null };
-  const HIGH_DETAIL_THEME_DIRS = {
-    AAPL: 'AAPL',
-    GOOGL: 'GOOGL',
-    AMZN: 'AMZN',
-    META: 'META',
-    MSFT: 'MSFT',
-    NVDA: 'NVDA',
-    INTC: 'intel',
-  };
+  let cachedPatterns = { terrain: null, detail: null, themeSrc: null };
   const themeBackgroundCache = new Map();
   const terrainPatternCache = new Map();
   const terrainDetailCache = new Map();
   const propSpriteCache = new Map();
-  let highDetailVistaCache = { canvas: null, img: null, width: 0, height: 0 };
   let themeManifestMap = null;
   let themeManifestPromise = null;
 
@@ -849,11 +715,10 @@
   function getPropSpriteSpec(kind) {
     const key = getPropSpriteKey(kind);
     if (!key) return null;
-    const asset = PROP_SPRITE_ASSETS[key];
     return {
       key,
-      src: asset?.src || `${PROP_SPRITE_BASE}/${key}.svg`,
-      raw: !!asset?.raw,
+      src: `${PROP_SPRITE_BASE}/${key}.svg`,
+      raw: false,
     };
   }
 
@@ -904,12 +769,6 @@
   }
 
   function getStockPropPack(symbol, manifestProps) {
-    const symbolKey = normalizeThemeSymbol(symbol);
-    if (symbolKey === 'AAPL') return AAPL_PROP_PACK;
-    if (symbolKey === 'AMZN') return AMZN_PROP_PACK;
-    if (symbolKey === 'META') return META_PROP_PACK;
-    if (symbolKey === 'MSFT') return MSFT_PROP_PACK;
-    if (symbolKey === 'GOOGL') return GOOGL_PROP_PACK;
     return Array.isArray(manifestProps) ? manifestProps : [];
   }
 
@@ -978,8 +837,7 @@
 
   function buildPropPlacements(symbol, props, stats, heroSpecs = []) {
     if (!terrainPoints.length) return [];
-    const symbolKey = normalizeThemeSymbol(symbol);
-    const compactSpriteMode = HIGH_DETAIL_RAW_PROP_THEMES.has(symbolKey);
+    const compactSpriteMode = false;
     const rng = createRng(`${symbol}:${terrainPoints.length}:${stats.trend.toFixed(3)}:${stats.volatility.toFixed(3)}`);
     const totalX = terrainPoints[terrainPoints.length - 1]?.x || 1;
     const viewportH = canvas?.height || terrainYMax || 720;
@@ -1165,11 +1023,8 @@
     ensureThemeManifest();
     activeTerrainTheme = buildActiveTerrainTheme(stockData?.symbol);
 
-    // 永远尝试加载主题资产（GOOGL/INTC 有资产的才会真的去抓图）
-    loadThemeAssets(stockData?.symbol);
-
     // 主题切换时清除 Pattern 快取
-    cachedPatterns = { terrain: null, detail: null, hd: null, hdSrc: null, themeSrc: null };
+    cachedPatterns = { terrain: null, detail: null, themeSrc: null };
 
     for (const prop of activeTerrainTheme?.props || []) ensurePropSprite(prop);
     for (const hero of activeTerrainTheme?.heroProps || []) ensurePropSprite(hero.prop);
@@ -1586,7 +1441,6 @@
     launch(data, options = {}) {
       stockData    = data; // { symbol, closes: [], dates: [], period }
       educationData = options.education || data.education || null;
-      highDetailMode = !!options.highDetail || !!HIGH_DETAIL_THEME_DIRS[normalizeThemeSymbol(data?.symbol)];
       practiceMode   = !!options.practice;
 
       if (practiceMode) {
@@ -1612,15 +1466,6 @@
         return window.SkiDifficulty.previewDifficulty(data, options);
       }
       return null;
-    },
-    toggleDetail() {
-      highDetailMode = !highDetailMode;
-      const btn = document.querySelector('.ski-detail-toggle');
-      if (btn) {
-        btn.classList.toggle('active', highDetailMode);
-        btn.querySelector('.detail-label').textContent = highDetailMode ? '高细节模式：开启' : '低细节模式';
-      }
-      refreshThemeAssets();
     }
   };
 
@@ -1731,33 +1576,10 @@
     modal.innerHTML = `
       <canvas id="skiCanvas"></canvas>
       <button class="ski-close-btn" onclick="SkiGame.close()">✕ 离开</button>
-      <button class="ski-detail-toggle ${highDetailMode ? 'active' : ''}" onclick="SkiGame.toggleDetail()">
-        <span class="detail-label">${highDetailMode ? '高细节模式：开启' : '低细节模式'}</span>
-      </button>
       <div class="ski-hint">🖱️ 滚轮上下移动 &nbsp;·&nbsp; 同时按住 ←→ 或 A+D 往右冲刺 &nbsp;·&nbsp; 别被拖到最左边</div>
     `;
     return modal;
   }
-
-  // ── 主题资产加载 ──
-  function loadThemeAssets(symbol) {
-    themeAssets = { vista: null, texture: null };
-    highDetailVistaCache = { canvas: null, img: null, width: 0, height: 0 };
-    const sym = normalizeThemeSymbol(symbol);
-    const themeDir = HIGH_DETAIL_THEME_DIRS[sym];
-    if (!themeDir) return;
-
-    const vistaImg = new Image();
-    vistaImg.src = `/static/assets/themes/${themeDir}/vista.png`;
-    vistaImg.onload = () => { themeAssets.vista = vistaImg; };
-    vistaImg.onerror = () => console.warn(`[theme] vista 加载失败: ${vistaImg.src}`);
-
-    const textureImg = new Image();
-    textureImg.src = `/static/assets/themes/${themeDir}/texture.png`;
-    textureImg.onload = () => { themeAssets.texture = textureImg; };
-    textureImg.onerror = () => console.warn(`[theme] texture 加载失败: ${textureImg.src}`);
-  }
-
 
   function resizeCanvas() {
     if (!canvas) return;
@@ -2515,24 +2337,10 @@
     ctx.fillStyle = bg;
     ctx.fillRect(-20, -20, W + 40, H + 40); 
 
-    // ── 高细节：远景 Vista (Parallax) ──
-    const vistaDrawn = highDetailMode && !!themeAssets.vista;
-    if (vistaDrawn) {
-      const vistaFrame = getHighDetailVistaFrame(W, H);
-
-      ctx.save();
-      ctx.globalAlpha = 0.96;
-      ctx.drawImage(vistaFrame, 0, 0);
-      ctx.restore();
-    }
-
-    // Vista 已显示时跳过 themeBackground、stars 与 mountains，避免遮挡
-    if (!vistaDrawn) {
-      const usedThemeBackground = drawThemeBackground(W, H);
-      if (!usedThemeBackground) {
-        drawStars(W, H);
-        drawMountains(W, H);
-      }
+    const usedThemeBackground = drawThemeBackground(W, H);
+    if (!usedThemeBackground) {
+      drawStars(W, H);
+      drawMountains(W, H);
     }
 
     // 地形线
@@ -3051,12 +2859,11 @@
   function drawTerrainFill(theme, fillPath, W, H) {
     ctx.save();
     ctx.clip(fillPath);
-    const useHighDetailTerrain = highDetailMode && themeAssets.texture && HIGH_DETAIL_RAW_PROP_THEMES.has(theme?.key);
 
     const baseGrad = ctx.createLinearGradient(0, terrainYMin - 30, 0, H);
-    baseGrad.addColorStop(0, useHighDetailTerrain ? 'rgba(222,244,255,0.86)' : withAlpha(theme.palette.base, 0.94));
-    baseGrad.addColorStop(0.58, useHighDetailTerrain ? 'rgba(67,118,156,0.78)' : withAlpha(theme.palette.mid, 0.82));
-    baseGrad.addColorStop(1, useHighDetailTerrain ? 'rgba(8,22,38,0.92)' : withAlpha(theme.palette.shadow, 0.92));
+    baseGrad.addColorStop(0, withAlpha(theme.palette.base, 0.94));
+    baseGrad.addColorStop(0.58, withAlpha(theme.palette.mid, 0.82));
+    baseGrad.addColorStop(1, withAlpha(theme.palette.shadow, 0.92));
     ctx.fillStyle = baseGrad;
     ctx.fillRect(-60, terrainYMin - 80, W + 120, H - terrainYMin + 140);
 
@@ -3070,37 +2877,22 @@
       cachedPatterns.themeSrc = themeSrcKey;
     }
 
-    if (!useHighDetailTerrain && cachedPatterns.terrain) {
+    if (cachedPatterns.terrain) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.22 + theme.stats.volatility * 5.5)) % 256), 0);
-      ctx.globalAlpha = useHighDetailTerrain ? 0.18 : clamp(0.45 + (theme.textureDensity - 0.7) * 0.22, 0.45, 0.75);
+      ctx.globalAlpha = clamp(0.45 + (theme.textureDensity - 0.7) * 0.22, 0.45, 0.75);
       ctx.fillStyle = cachedPatterns.terrain;
       ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 240);
       ctx.restore();
     }
 
-    if (!useHighDetailTerrain && cachedPatterns.detail) {
+    if (cachedPatterns.detail) {
       ctx.save();
       ctx.translate(-((terrainScrollX * (0.08 + theme.stats.volatility * 2.8)) % 384), -18);
       ctx.globalCompositeOperation = 'overlay';
-      ctx.globalAlpha = useHighDetailTerrain ? 0.14 : clamp(0.38 + (theme.textureDensity - 0.7) * 0.18, 0.38, 0.62);
+      ctx.globalAlpha = clamp(0.38 + (theme.textureDensity - 0.7) * 0.18, 0.38, 0.62);
       ctx.fillStyle = cachedPatterns.detail;
       ctx.fillRect(-768, terrainYMin - 180, W + 1536, H - terrainYMin + 320);
-      ctx.restore();
-    }
-
-    if (useHighDetailTerrain) {
-      ctx.save();
-      if (cachedPatterns.hdSrc !== themeAssets.texture) {
-        cachedPatterns.hd = ctx.createPattern(themeAssets.texture, 'repeat');
-        cachedPatterns.hdSrc = themeAssets.texture;
-      }
-      const xOffset = -((terrainScrollX * 0.34) % 512);
-      ctx.translate(xOffset, -((terrainScrollX * 0.035) % 512));
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = 0.42;
-      ctx.fillStyle = cachedPatterns.hd;
-      ctx.fillRect(-512, terrainYMin - 160, W + 1024, H - terrainYMin + 280);
       ctx.restore();
     }
 
@@ -3132,52 +2924,7 @@
     ctx.globalCompositeOperation = 'screen';
     ctx.fillStyle = sheen;
     ctx.fillRect(-20, terrainYMin - 30, W + 40, H - terrainYMin + 60);
-    // ── 高细节：材质叠加模式 (Overlay Texture) ──
-    if (highDetailMode && themeAssets.texture && !useHighDetailTerrain) {
-      ctx.save();
-      // hd Pattern 同样只在图片换掉时重建
-      if (cachedPatterns.hdSrc !== themeAssets.texture) {
-        cachedPatterns.hd = ctx.createPattern(themeAssets.texture, 'repeat');
-        cachedPatterns.hdSrc = themeAssets.texture;
-      }
-      const xOffset = -((terrainScrollX * 0.3) % 512);
-      ctx.translate(xOffset, 0);
-      ctx.globalCompositeOperation = 'overlay';
-      ctx.globalAlpha = 0.15; // 大幅调低透明度，避免画面太乱
-      ctx.fillStyle = cachedPatterns.hd;
-      ctx.fillRect(-512, terrainYMin - 80, W + 1024, H - terrainYMin + 160);
-      ctx.restore();
-    }
-
     ctx.restore();
-  }
-
-  function getHighDetailVistaFrame(W, H) {
-    const img = themeAssets.vista;
-    if (!img) return null;
-    if (
-      highDetailVistaCache.canvas &&
-      highDetailVistaCache.img === img &&
-      highDetailVistaCache.width === W &&
-      highDetailVistaCache.height === H
-    ) {
-      return highDetailVistaCache.canvas;
-    }
-
-    const cacheCanvas = document.createElement('canvas');
-    cacheCanvas.width = W;
-    cacheCanvas.height = H;
-    const cacheCtx = cacheCanvas.getContext('2d');
-    cacheCtx.drawImage(img, 0, 0, W, H);
-
-    const veil = cacheCtx.createLinearGradient(0, H * 0.45, 0, H);
-    veil.addColorStop(0, 'rgba(5,10,20,0)');
-    veil.addColorStop(1, 'rgba(7,12,24,0.42)');
-    cacheCtx.fillStyle = veil;
-    cacheCtx.fillRect(0, 0, W, H);
-
-    highDetailVistaCache = { canvas: cacheCanvas, img, width: W, height: H };
-    return cacheCanvas;
   }
 
   function drawTerrainPropSprite(kind, x, y, size, theme, alphaScale = 1, motion = null) {
@@ -3631,61 +3378,32 @@
 
   function drawTerrainProps(theme, fillPath, W, H) {
     if (!theme?.placements?.length) return;
-    const rawPropPrefix = HIGH_DETAIL_RAW_PROP_PREFIXES[theme.key] || '';
-    const hasRawPropPack = rawPropPrefix && HIGH_DETAIL_RAW_PROP_THEMES.has(theme.key);
-    const rawSpriteBudget = hasRawPropPack ? 22 : Infinity;
-    let rawSpritesDrawn = 0;
     const motionFor = (placement, floating = false) => ({
       phase: ((placement.worldX * 0.011 + placement.ridgeY * 0.017 + String(placement.prop || '').length) % (Math.PI * 2)),
       floating,
     });
-    const shouldDrawPlacement = (placement) => {
-      if (!hasRawPropPack || !String(placement.prop || '').startsWith(rawPropPrefix)) return true;
-      if (rawSpritesDrawn >= rawSpriteBudget) return false;
-      rawSpritesDrawn++;
-      return true;
-    };
     ctx.save();
     ctx.clip(fillPath);
     for (const placement of theme.placements) {
       if (placement.anchor === 'ridge') continue;
       const screenX = placement.worldX - terrainScrollX;
       if (screenX < -40 || screenX > W + 40) continue;
-      const y = placement.ridgeY + placement.depth + (hasRawPropPack ? placement.size * 0.18 : 0);
+      const y = placement.ridgeY + placement.depth;
       if (y > H + 40) continue;
-      if (!shouldDrawPlacement(placement)) continue;
       const scale =
-        placement.anchor === 'hero' ? (hasRawPropPack ? 0.98 : 1)
-        : placement.anchor === 'lower-band' ? (hasRawPropPack ? 1.08 : 0.88)
+        placement.anchor === 'hero' ? 1
+        : placement.anchor === 'lower-band' ? 0.88
         : placement.anchor === 'deep' ? 0.9
-        : placement.anchor === 'mid' ? (hasRawPropPack ? 1.08 : 0.96)
-        : hasRawPropPack ? 1.04 : 0.94;
+        : placement.anchor === 'mid' ? 0.96
+        : 0.94;
       drawTerrainPropSprite(placement.prop, screenX, y, placement.size * scale, theme, placement.alpha, motionFor(placement));
     }
     ctx.restore();
-
-    if (hasRawPropPack) {
-      for (let i = 0; i < theme.placements.length; i++) {
-        const placement = theme.placements[i];
-        if (!String(placement.prop || '').startsWith(rawPropPrefix)) continue;
-        if (placement.anchor === 'lower-band' || placement.anchor === 'deep') continue;
-        if (i % 4 !== 1 && placement.anchor !== 'hero') continue;
-        const screenX = placement.worldX - terrainScrollX;
-        if (screenX < 90 || screenX > W - 90) continue;
-        if (!shouldDrawPlacement(placement)) continue;
-        const floatLift = placement.anchor === 'hero' ? placement.size * 1.18 : placement.size * 0.92;
-        const floatY = placement.ridgeY - floatLift;
-        if (floatY < H * 0.34 || floatY > H - 90) continue;
-        const floatSize = placement.size * (placement.anchor === 'hero' ? 1.1 : 0.92);
-        drawTerrainPropSprite(placement.prop, screenX, floatY, floatSize, theme, placement.alpha * 0.74, motionFor(placement, true));
-      }
-    }
 
     for (const placement of theme.placements) {
       if (placement.anchor !== 'ridge') continue;
       const screenX = placement.worldX - terrainScrollX;
       if (screenX < -40 || screenX > W + 40) continue;
-      if (!shouldDrawPlacement(placement)) continue;
       const y = placement.ridgeY - placement.size * 0.44;
       drawTerrainPropSprite(placement.prop, screenX, y, placement.size, theme, placement.alpha, motionFor(placement));
     }

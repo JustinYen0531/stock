@@ -78,7 +78,7 @@
 ### 當前進度
 - [x] **視覺控制核心**：在 `ski-game.js` 中實作 `highDetailMode` 切換邏輯。
 - [x] **UI 控制層**：完成右下角「書籤式」Detail Toggle 切換按鈕。
-- [x] **自動資產獲取**：支援從 `/assets/themes/{symbol}/` 加載特製 PNG 資源。
+- [x] **輕量主題資產**：統一從 `homepage-backgrounds` 與 `ski-props` 載入可控的 SVG 資源，不再載入高細節 PNG 主題包。
 - [x] **範例實作 (Intel/INTC)**：
     *   完成 **Digital Vista** (遠景視差背景)。
     *   完成 **Tech Grid Texture** (山體覆蓋材質疊加)。

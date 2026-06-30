@@ -12,7 +12,6 @@
   ],
   "rewrites": [
     { "source": "/full/(.*)", "destination": "/backend/server.js" },
-    { "source": "/chat", "destination": "/backend/server.js" },
     { "source": "/static/(.*)", "destination": "/frontend/$1" },
     { "source": "/(.*)", "destination": "/backend/server.js" }
   ]

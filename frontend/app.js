@@ -222,13 +222,6 @@ function buildSparklineSvg(series, color) {
 
 function getHomepageBackgroundFile(symbol) {
   const s = String(symbol || "").toUpperCase();
-  // 已优化的主流股优先使用高细节 VISTA
-  if (['NVDA', 'AMZN', 'META', 'MSFT', 'GOOGL', 'GOOG', 'INTC'].includes(s)) {
-    let themeDir = s;
-    if (s === 'GOOG' || s === 'GOOGL') themeDir = 'GOOGL';
-    if (s === 'INTC') themeDir = 'intel';
-    return `/static/assets/themes/${themeDir}/vista.png`;
-  }
   return `/static/assets/homepage-backgrounds/${s.replace(/[^A-Za-z0-9]+/g, "_")}.svg`;
 }
 
@@ -236,25 +229,8 @@ function getHomepageBackgroundStyle(symbol) {
   return `style="--stock-bg: url('${getHomepageBackgroundFile(symbol)}')"`;
 }
 
-function getHomepageBackgroundVideoFile(symbol) {
-  const s = String(symbol || "").toUpperCase();
-  if (s === "GOOGL" || s === "GOOG") {
-    return "/static/assets/themes/GOOGL/Subtle_breathing_motion,_extremely_slow_movement,_cinemagraph_style,_high_temporal_consistency._Loop_seed3953574263.mp4";
-  }
-  return "";
-}
-
 function renderHomepageBackgroundMedia(symbol) {
-  const videoSrc = getHomepageBackgroundVideoFile(symbol);
-  if (!videoSrc) return "";
-  const poster = getHomepageBackgroundFile(symbol);
-  return `
-    <span class="homepage-stock-video-wrap" aria-hidden="true">
-      <video class="homepage-stock-video" autoplay muted loop playsinline preload="auto" poster="${escapeHtml(poster)}">
-        <source src="${escapeHtml(videoSrc)}" type="video/mp4">
-      </video>
-    </span>
-  `;
+  return "";
 }
 
 function buildHomepageQuickEntries() {
@@ -317,7 +293,7 @@ function buildHomepageFeaturedCard() {
         <button class="welcome-rec-button ${watched ? "is-watched" : "is-ghost"}" data-action="watch" data-symbol="${escapeHtml(featured.symbol)}">${watched ? "已加入观察" : "加入观察"}</button>
       </div>
       <div class="welcome-rec-ai-rationale">
-        <div class="welcome-rec-ai-kicker">Gemini 今日数据摘要</div>
+        <div class="welcome-rec-ai-kicker">今日数据摘要</div>
         <div class="welcome-rec-ai-copy">${renderHomepageRecommendationMarkdown(featured.aiReason || featured.detail || "")}</div>
       </div>
     </div>
@@ -662,7 +638,6 @@ function renderDashboard(data, education = currentEducationData) {
     period: $("periodSelect").value,
     education,
   };
-  syncLobbyDetailModeForStock(symbol);
   updateSkiMedals();
   renderSkiDifficultyPreview();
 }
@@ -1009,97 +984,6 @@ function renderMACDChart(dates, indicators) {
   });
 }
 
-// ═══════════════════════════════════════════════
-// AI 聊天功能
-// ═══════════════════════════════════════════════
-let currentStockContext = null;
-
-const _origRenderDashboard = renderDashboard;
-window.renderDashboard = function (data) {
-  _origRenderDashboard(data);
-  const { symbol, info, ohlcv, indicators, advice } = data;
-  const close = ohlcv[ohlcv.length - 1]?.Close;
-  currentStockContext = {
-    symbol,
-    name: info?.name || symbol,
-    close: close?.toFixed(2),
-    rsi: lastVal(indicators.rsi)?.toFixed(1),
-    macd: lastVal(indicators.macd)?.toFixed(4),
-    signal: lastVal(indicators.signal)?.toFixed(4),
-    ma5: lastVal(indicators.ma5)?.toFixed(2),
-    ma20: lastVal(indicators.ma20)?.toFixed(2),
-    ma60: lastVal(indicators.ma60)?.toFixed(2),
-    advice: advice?.signal,
-  };
-  const sub = document.getElementById("chatSubtitle");
-  if (sub) sub.textContent = `数据解读：${info?.name || symbol}`;
-};
-
-function toggleChat() {
-  const panel = document.getElementById("chatPanel");
-  panel.classList.toggle("hidden");
-  if (!panel.classList.contains("hidden")) {
-    setTimeout(() => document.getElementById("chatInput")?.focus(), 100);
-  }
-}
-
-function sendHint(el) {
-  const text = el.textContent.replace(/「|」/g, "").trim();
-  document.getElementById("chatInput").value = text;
-  sendChat();
-}
-
-function handleChatKey(e) {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendChat();
-  }
-}
-
-async function sendChat() {
-  const input = document.getElementById("chatInput");
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = "";
-  appendMessage("user", msg);
-  setChatLoading(true);
-  try {
-    const res = await fetch(`${API_BASE}/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: msg, context: currentStockContext }),
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    appendMessage("ai", data.reply);
-  } catch (e) {
-    appendMessage("ai", `⚠️ 发生错误：${e.message}`);
-  } finally {
-    setChatLoading(false);
-  }
-}
-
-function appendMessage(role, text) {
-  const messages = document.getElementById("chatMessages");
-  const div = document.createElement("div");
-  div.className = `chat-msg ${role}`;
-  const bubble = document.createElement("div");
-  bubble.className = "chat-bubble";
-  bubble.innerHTML = simpleMarkdown(text);
-  div.appendChild(bubble);
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
-}
-
-function simpleMarkdown(text) {
-  return text
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/`(.+?)`/g, "<code>$1</code>")
-    .replace(/\n/g, "<br/>");
-}
-
 function renderHomepageRecommendationMarkdown(text) {
   const escaped = String(text)
     .replace(/&/g, "&amp;")
@@ -1158,25 +1042,6 @@ function renderHomepageRecommendationMarkdown(text) {
   }).join("");
 }
 
-function setChatLoading(loading) {
-  const sendBtn = document.getElementById("chatSendBtn");
-  const sendIcon = document.getElementById("chatSendIcon");
-  const sendSpinner = document.getElementById("chatSendSpinner");
-  sendBtn.disabled = loading;
-  sendIcon.classList.toggle("hidden", loading);
-  sendSpinner.classList.toggle("hidden", !loading);
-  if (loading) {
-    const messages = document.getElementById("chatMessages");
-    const typing = document.createElement("div");
-    typing.className = "chat-msg ai";
-    typing.id = "typingIndicator";
-    typing.innerHTML = `<div class="chat-bubble typing-dots"><span></span><span></span><span></span></div>`;
-    messages.appendChild(typing);
-    messages.scrollTop = messages.scrollHeight;
-  } else {
-    document.getElementById("typingIndicator")?.remove();
-  }
-}
 // ── 科普小教室 互动逻辑 ──────────────────────────────
 function expandKnowledge(index) {
   const container = $("welcomeKnowledge");
@@ -1223,35 +1088,8 @@ function resetKnowledge() {
 }
 
 // ── 滑雪游戏启动 ──────────────────────────────────
-let lobbyHighDetailMode = false;
 let skiTuningCollapsed = true;
 const SKI_PROGRESS_KEY = "skiProgress";
-const SKI_HIGH_DETAIL_THEME_SYMBOLS = new Set(["AAPL", "GOOGL", "AMZN", "META", "MSFT", "NVDA", "INTC"]);
-
-function normalizeSkiThemeSymbol(symbol) {
-  return String(symbol || "").trim().toUpperCase().replace(/\./g, "_");
-}
-
-function hasSkiHighDetailTheme(symbol) {
-  return SKI_HIGH_DETAIL_THEME_SYMBOLS.has(normalizeSkiThemeSymbol(symbol));
-}
-
-function setLobbyHighDetailMode(enabled) {
-  lobbyHighDetailMode = !!enabled;
-  const btn = document.getElementById('lobbyDetailToggle');
-  if (btn) {
-    btn.classList.toggle('active', lobbyHighDetailMode);
-    btn.querySelector('.detail-label').textContent = lobbyHighDetailMode ? '高细节：开启' : '视觉细节';
-  }
-}
-
-function syncLobbyDetailModeForStock(symbol) {
-  setLobbyHighDetailMode(hasSkiHighDetailTheme(symbol));
-}
-
-function toggleLobbyDetailMode() {
-  setLobbyHighDetailMode(!lobbyHighDetailMode);
-}
 
 function launchSkiGame() {
   if (!window.currentGameData) {
@@ -1260,7 +1098,6 @@ function launchSkiGame() {
   }
   if (window.SkiGame) {
     window.SkiGame.launch(window.currentGameData, {
-      highDetail: lobbyHighDetailMode,
       education: window.currentGameData.education,
     });
   }
@@ -1298,7 +1135,6 @@ function launchSkiGamePractice() {
       hitboxSize,
       startPct,
       endPct,
-      highDetail: lobbyHighDetailMode,
       education: window.currentGameData.education,
     });
   }

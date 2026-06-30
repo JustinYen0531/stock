@@ -2368,23 +2368,13 @@ async function fetchEducationNews(symbol, name) {
 
     if (!news.length) return null;
 
-    const headlineText = news.map((item, index) => `${index + 1}. ${item.title}`).join("\n");
-    let summary = `${name} 最近新闻焦点包含：${news.map((item) => item.title).join("；")}。`;
-
-    if (GEMINI_API_KEY) {
-      const prompt = `请用简体中文把以下 ${symbol} / ${name} 的近期新闻标题整理成一段 80 字以内的游戏教学摘要，聚焦「可能造成股价震荡的原因」。不要给投资建议，不要夸大因果。\n\n${headlineText}`;
-      try {
-        summary = await generateGeminiText(prompt, { temperature: 0.35, maxOutputTokens: 180 });
-      } catch (error) {
-        console.error("[Education Gemini News]", error.message);
-      }
-    }
+    const summary = `${name} 最近新闻焦点包含：${news.map((item) => item.title).join("；")}。`;
 
     return {
       summary: String(summary || "").trim(),
       headlines: news,
       generatedAt: new Date().toISOString(),
-      sourceKind: GEMINI_API_KEY ? "live_news" : "fallback",
+      sourceKind: "live_news",
     };
   } catch (error) {
     console.error("[Education News]", error.message);
@@ -2558,7 +2548,7 @@ function scoreRecommendationSnapshots(snapshots) {
   });
 }
 
-async function buildFeaturedGeminiReason(snapshot) {
+function buildFeaturedDataReason(snapshot) {
   const fallbackMarkdown = `# ${snapshot.symbol} 今日数据摘要
 
 ${snapshot.name} 今天进入首页热度榜首，是因为它在 **单日波动、量能与近期动能** 这几项市场数据上的变化幅度，相对其他追踪标的最为明显。以下内容只整理客观数据，不含任何买卖或推荐判断。
@@ -2585,47 +2575,7 @@ ${snapshot.name} 今天进入首页热度榜首，是因为它在 **单日波动
 ## 结论
 总结来说，${snapshot.name} 会出现在首页第一张，只是因为它今天的 **波动、量能与动能数据** 变化最大。本卡仅作数据可视化，不构成任何投资建议。`;
 
-  const isUsableFeaturedReason = (text) => {
-    const normalized = String(text || "").trim();
-    if (!normalized) return false;
-    const lines = normalized.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-    const paragraphCount = lines.filter((line) => !/^#{1,6}\s/.test(line) && line !== "---" && !/^\|.*\|$/.test(line)).length;
-    const hasDivider = normalized.includes("---");
-    const hasTable = /\|.+\|/.test(normalized);
-    return lines.length >= 8 && paragraphCount >= 3 && hasDivider && hasTable;
-  };
-
-  if (!GEMINI_API_KEY) {
-    return fallbackMarkdown;
-  }
-
-  const prompt = `你是一个股票数据仪表板的文字产生器，请用繁体中文为 ${snapshot.symbol}${snapshot.name ? `（${snapshot.name}）` : ""} 撰写一段「今日数据摘要」，使用 Markdown 格式。
-
-请只根据以下客观数据撰写：
-- 单日涨跌幅：${formatPct(snapshot.changePercent)}
-- 5 日动能：${formatPct(snapshot.momentum5d)}
-- 量能脉冲：${snapshot.volumePulse.toFixed(1)}x
-- 区间走势：${snapshot.adviceSignal}
-- 技术指标读数：${snapshot.adviceReasons.join("、")}
-
-严格限制（非常重要）：
-1. 全文只能客观描述数据，严禁出现任何投资建议、买进、卖出、加码、减码、推荐、值得买、看好、看坯、目标价、进场、出场等字眼或暗示。
-2. 不要评价这只股票好或不好，只陈述数据变化大小与指标当前状态。
-3. 一定要有一个 H1 标题，命名为「今日数据摘要」相关。
-4. 不要出现「过程一 / 过程二 / 过程三」这种字眼。
-5. 内容用三个面向描述：市场热度（量能与波动）、技术指标状态、点进去能看到哪些图表数据。
-6. 一定要有 --- 分隔线。
-7. 一定要有一个 Markdown 表格，至少三列。
-8. 一定要有 ## 结论 收尾，并在结论注明本卡仅作数据可视化、不构成投资建议。
-9. 段落内可自然使用 **粗体** 强调数据重点。`;
-
-  try {
-    const generated = await generateGeminiText(prompt, { temperature: 0.6, maxOutputTokens: 520 });
-    return isUsableFeaturedReason(generated) ? generated : fallbackMarkdown;
-  } catch (error) {
-    console.error("[Homepage Gemini Reason]", error.message);
-    return fallbackMarkdown;
-  }
+  return fallbackMarkdown;
 }
 
 async function buildFeaturedRecommendation(snapshot) {
@@ -2633,7 +2583,7 @@ async function buildFeaturedRecommendation(snapshot) {
   const primaryTheme = HOMEPAGE_THEME_DEFS.find((theme) => theme.id === primaryThemeId);
   const changeLabel = snapshot.changePercent >= 0 ? `走势转强 ${formatPct(snapshot.changePercent)}` : `震荡扩大 ${formatPct(snapshot.changePercent)}`;
   const pulseLabel = snapshot.volumePulse >= 1.1 ? `量能 ${snapshot.volumePulse.toFixed(1)}x` : "量能稳定";
-  const aiReason = await buildFeaturedGeminiReason(snapshot);
+  const aiReason = buildFeaturedDataReason(snapshot);
 
   return {
     symbol: snapshot.symbol,
@@ -2756,109 +2706,6 @@ async function getHomepageRecommendations(forceFresh = false) {
 
   return homepageRecommendationCache.promise;
 }
-
-// ═══════════════════════════════════════════════
-// Gemini AI 聊天端点
-// ═══════════════════════════════════════════════
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-flash-latest"];
-
-async function generateGeminiText(prompt, { temperature = 0.7, maxOutputTokens = 8192 } = {}) {
-  if (!GEMINI_API_KEY) throw new Error("Gemini API key 未设定");
-
-  let lastError = "";
-  for (const model of GEMINI_MODELS) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature,
-          maxOutputTokens,
-        },
-      }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "（无回复）";
-    }
-
-    lastError = await response.text();
-    console.error(`[Gemini Error:${model}]`, lastError);
-  }
-
-  throw new Error(`Gemini API 错误：${lastError.slice(0, 180)}`);
-}
-
-function buildLocalChatFallback(message, context = {}) {
-  if (!context?.symbol) {
-    return "Gemini 目前请求量太高，我先用本机备用说明回复：你可以先选一支股票，系统会列出 K 线、RSI、MACD 与均线等技术指标的数值。这是展示用备援，仅说明指标数据，不提供任何投资建议。";
-  }
-
-  const macd = Number(context.macd);
-  const signal = Number(context.signal);
-  const rsi = Number(context.rsi);
-  const close = context.close ?? "N/A";
-  const ma20 = context.ma20 ?? "N/A";
-  const macdText = Number.isFinite(macd) && Number.isFinite(signal)
-    ? macd >= signal
-      ? "MACD 目前高于信号线。"
-      : "MACD 目前低于信号线。"
-    : "MACD 数据暂时不足。";
-  const rsiText = Number.isFinite(rsi)
-    ? rsi >= 70
-      ? "RSI 高于 70，位于高位区。"
-      : rsi <= 30
-        ? "RSI 低于 30，位于低位区。"
-        : "RSI 位于 30–70 的中性区间。"
-    : "RSI 数据暂时不足。";
-
-  return `Gemini 目前请求量太高，我先启用本机备用说明。\n\n${context.symbol} 最新收盘价约 ${close}，MA20 约 ${ma20}。${macdText}${rsiText}\n\n说明一下这些指标的定义：MACD 比较长短期均线的收敛发散，RSI 衡量近期涨跌力道落在 0–100 的哪个区间，均线则是一段期间的平均收盘价。以上仅为技术指标的数据说明，不含任何投资建议。`;
-}
-
-app.post("/chat", async (req, res) => {
-  const { message, context } = req.body;
-  if (!message) return res.status(400).json({ error: "缺少 message" });
-
-  // 将股票指标数据组成 system prompt
-  let systemContext = `你是一个股市技术指标的「数据解读助手」，只负责用简体中文客观说明 RSI、MACD、移动平均线等技术指标的定义与当前数值。
-
-严格规则（非常重要，务必遵守）：
-1. 只能解释指标的意义与目前的数据状态，绝对不可以提供任何投资建议。
-2. 严禁出现买进、卖出、加码、减码、进场、出场、停利、停损、推荐、值得买、适合买、看好、看坯、目标价等字眼或任何暗示。
-3. 如果用户问「现在适不适合买 / 该不该卖 / 会涨还是会跌 / 帮我推荐」这类问题，请礼貌说明本工具只呈现与解读数据、不提供投资建议，并改为客观说明相关指标目前的数值与定义。
-4. 【绝对严禁谈论政治与敏感话题】：如果用户询问任何地缘政治、国家主权、历史事件、政治人物、宗教、色情或任何与股市/本游戏无关的敏感话题，你必须礼貌地拒绝回答，一律回答：“我是滑雪游戏的数据助手，仅能提供客观的技术指标科普与游戏关卡说明，无法回答其他话题。”。
-5. 语气亲切但中立，只陈述事实，不替用户做决定，且一律使用简体中文回答。`;
-
-  if (context && context.symbol) {
-    systemContext += `
-
-目前用户正在查看的股票：【${context.symbol}】${context.name ? `（${context.name}）` : ""}
-最新技术指标数据（仅供客观说明，不要据此给建议）：
-- 最新收盘价：${context.close ?? "N/A"}
-- RSI(14)：${context.rsi ?? "N/A"}
-- MACD：${context.macd ?? "N/A"}
-- 信号线 Signal：${context.signal ?? "N/A"}
-- MA5：${context.ma5 ?? "N/A"}
-- MA20：${context.ma20 ?? "N/A"}
-- MA60：${context.ma60 ?? "N/A"}
-- 本区间走势：${context.advice ?? "N/A"}
-
-请只根据以上数据，客观说明用户询问的指标代表什么、目前数值落在什么状态，不要给任何买卖或推荐判断。`;
-  }
-
-  try {
-    const text = await generateGeminiText(systemContext + "\n\n用户问题：" + message);
-    res.json({ reply: text });
-
-  } catch (e) {
-    console.error("[Chat Error]", e.message);
-    res.json({ reply: buildLocalChatFallback(message, context), fallback: true });
-  }
-});
 
 // ═══════════════════════════════════════════════
 // Routes

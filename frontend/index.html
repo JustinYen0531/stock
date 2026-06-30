@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>股市分析 — AI 技术面仪表板</title>
+  <title>Stock Ski — 股市滑雪分析仪表板</title>
   <meta name="description" content="实时股票数据仪表板，自动计算并可视化 MA、RSI、MACD 等技术指标。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
@@ -63,7 +63,7 @@
     <!-- 欢迎页 -->
     <div id="welcomePage" class="welcome-page">
       <div class="welcome-icon">📊</div>
-      <h1 class="welcome-title">AI 股市分析仪表板</h1>
+      <h1 class="welcome-title">股市滑雪分析仪表板</h1>
       <p class="welcome-sub">输入股票代码，实时计算并可视化<br />MA、RSI、MACD 等技术指标</p>
       <section id="welcomeRecommendations" class="welcome-recommendations" aria-label="首页市场热度">
         <div class="welcome-rec-header">
@@ -128,9 +128,9 @@
           <span class="feat-icon">🌊</span>
           <span>MACD 动能</span>
         </div>
-        <div class="feature-card" title="技术指标解读" onclick="expandKnowledge(3)">
-          <span class="feat-icon">🤖</span>
-          <span>技术指标解读</span>
+        <div class="feature-card" title="滑雪挑战" onclick="expandKnowledge(3)">
+          <span class="feat-icon">⛷️</span>
+          <span>滑雪挑战</span>
         </div>
       </div>
 
@@ -175,13 +175,13 @@
             </div>
             <div class="knowledge-item" id="k-item-3" onclick="expandKnowledge(3)">
               <div class="k-header">
-                <span class="k-icon">🤖</span>
-                <span class="k-name">技术指标解读</span>
+                <span class="k-icon">⛷️</span>
+                <span class="k-name">滑雪挑战</span>
               </div>
-              <p class="k-desc"><b>「你的数据翻译机」</b><br />AI 帮你把复杂的指标数据翻成白话，说明每个数字代表什么状态，不替你做任何买卖决定。</p>
+              <p class="k-desc"><b>「把走势图变成雪道」</b><br />系统会把股票区间走势转换成滑雪路线，并在关卡中穿插技术指标与公司知识题。</p>
               <div class="k-detail hidden">
                 <hr />
-                <p>我们的数据解读助手会把均线、RSI、MACD 的当前数值整理成易读的说明，纯粹解释指标状态与定义，不提供任何投资建议。</p>
+                <p>仪表板会把均线、RSI、MACD 的当前数值整理成易读的说明，纯粹解释指标状态与定义，不提供任何投资建议。</p>
               </div>
             </div>
           </div>
@@ -333,54 +333,13 @@
           </div>
         </div>
 
-        <!-- 高细节模式开放精选雪场 -->
-        <div class="park-section" style="max-width:100%">
-          <div class="park-section-header">
-            <span class="park-section-icon">🎟️</span>
-            <div>
-              <div class="park-section-kicker">FEATURED ROUTES</div>
-              <h2 class="park-section-title">高细节模式开放精选雪场</h2>
-            </div>
-          </div>
-        </div>
-        <div class="park-tickets-section">
-          <div class="park-tickets-label">⛷️ 高细节模式开放精选雪场</div>
-          <div class="park-tickets-grid">
-            <button class="park-ticket" data-color="silver" onclick="parkLoadSymbol('AAPL')">
-              <div class="ticket-dash"></div>
-              <span class="park-ticket-sym">AAPL</span>
-              <span class="park-ticket-name">🍎 科技展示馆</span>
-            </button>
-            <button class="park-ticket" data-color="orange" onclick="parkLoadSymbol('AMZN')">
-              <div class="ticket-dash"></div>
-              <span class="park-ticket-sym">AMZN</span>
-              <span class="park-ticket-name">📦 电商云端城</span>
-            </button>
-            <button class="park-ticket" data-color="rainbow" onclick="parkLoadSymbol('GOOGL')">
-              <div class="ticket-dash"></div>
-              <span class="park-ticket-sym">GOOGL</span>
-              <span class="park-ticket-name">🔍 搜索数据城</span>
-            </button>
-            <button class="park-ticket" data-color="purple" onclick="parkLoadSymbol('META')">
-              <div class="ticket-dash"></div>
-              <span class="park-ticket-sym">META</span>
-              <span class="park-ticket-name">🌐 社群传送门</span>
-            </button>
-            <button class="park-ticket" data-color="blue" onclick="parkLoadSymbol('MSFT')">
-              <div class="ticket-dash"></div>
-              <span class="park-ticket-sym">MSFT</span>
-              <span class="park-ticket-name">🪟 云端雪山</span>
-            </button>
-          </div>
-        </div>
-
         <!-- 三步骤流程 -->
         <div class="park-steps">
           <div class="park-step">
             <div class="park-step-num">1</div>
             <div class="park-step-icon">🎯</div>
             <div class="park-step-title">选择股票</div>
-            <div class="park-step-desc">输入任何股票代码，AI 自动识别产业主题并生成对应雪场风格</div>
+            <div class="park-step-desc">输入任何股票代码，系统会自动套用产业主题与对应雪场风格</div>
           </div>
           <div class="park-step">
             <div class="park-step-num">2</div>
@@ -392,7 +351,7 @@
             <div class="park-step-num">3</div>
             <div class="park-step-icon">🎿</div>
             <div class="park-step-title">边玩边学</div>
-            <div class="park-step-desc">在滑雪挑战中理解趋势，AI 向导缆车题目让技术分析变得直观</div>
+            <div class="park-step-desc">在滑雪挑战中理解趋势，知识向导缆车题目让技术分析变得直观</div>
           </div>
         </div>
 
@@ -414,8 +373,8 @@
             <div class="park-fac-alias">MACD 动能</div>
           </div>
           <div class="park-facility" onclick="parkLoadSymbol(document.getElementById('parkSymbolInput').value||'NVDA')">
-            <span class="park-fac-icon">🤖</span>
-            <div class="park-fac-name">AI 向导缆车</div>
+            <span class="park-fac-icon">📚</span>
+            <div class="park-fac-name">知识向导缆车</div>
             <div class="park-fac-alias">技术指标解读</div>
           </div>
         </div>
@@ -524,9 +483,6 @@
                 <button class="ski-preset-btn" onclick="setPracticeRange(67,100)" title="后段 67~100%">后段</button>
                 <button class="ski-preset-btn ski-preset-normal" onclick="setNormalPreset()" title="难度跟一般模式一样">⚡
                   正常难度</button>
-                <button id="lobbyDetailToggle" class="ski-detail-toggle-lobby" onclick="toggleLobbyDetailMode()" title="切换高精度视觉模式">
-                  <span class="detail-label">视觉细节</span>
-                </button>
               </div>
             </div>
             <div class="ski-btn-group">
@@ -574,7 +530,7 @@
       <!-- 技术指标摘要卡 -->
       <div id="adviceCard" class="advice-card">
         <div class="advice-header">
-          <span class="advice-icon">🤖</span>
+          <span class="advice-icon">📊</span>
           <span class="advice-title">技术指标摘要</span>
           <span id="signalBadge" class="signal-badge">—</span>
         </div>
@@ -713,46 +669,6 @@
       <div id="parkPpHistoryList" class="park-pp-history-list">
         <div class="park-pp-empty">还没有闯关纪录，快去探索吧！⛷️</div>
       </div>
-    </div>
-  </div>
-
-  <!-- ═══ AI 聊天视窗 ═══ -->
-  <!-- 浮动开关按钮 -->
-  <button id="chatToggleBtn" class="chat-toggle-btn" onclick="toggleChat()" title="技术指标解读助手">
-    <span class="chat-toggle-icon">🤖</span>
-    <span class="chat-toggle-label">数据解读</span>
-  </button>
-
-  <!-- 聊天面板 -->
-  <div id="chatPanel" class="chat-panel hidden">
-    <div class="chat-header">
-      <div class="chat-header-left">
-        <span class="chat-avatar">🤖</span>
-        <div>
-          <div class="chat-title">技术指标解读助手</div>
-          <div class="chat-subtitle" id="chatSubtitle">只解读数据 · 不提供投资建议</div>
-        </div>
-      </div>
-      <button class="chat-close-btn" onclick="toggleChat()">✕</button>
-    </div>
-    <div id="chatMessages" class="chat-messages">
-      <div class="chat-msg ai">
-        <div class="chat-bubble">
-          👋 你好！我是技术指标解读助手。<br />
-          我只负责客观说明指标数据，不提供任何投资建议。你可以问我：<br />
-          <span class="chat-hint" onclick="sendHint(this)">「RSI 低位区代表什么？」</span>
-          <span class="chat-hint" onclick="sendHint(this)">「MACD 和信号线怎么看？」</span>
-          <span class="chat-hint" onclick="sendHint(this)">「目前这只的 MA20 是多少？」</span>
-        </div>
-      </div>
-    </div>
-    <div class="chat-input-area">
-      <textarea id="chatInput" class="chat-input" placeholder="问我指标数据代表什么..." rows="1"
-        onkeydown="handleChatKey(event)"></textarea>
-      <button id="chatSendBtn" class="chat-send-btn" onclick="sendChat()">
-        <span id="chatSendIcon">➤</span>
-        <span id="chatSendSpinner" class="spinner hidden"></span>
-      </button>
     </div>
   </div>
 
@@ -1111,7 +1027,7 @@
       stages:[
         {sym:'AAPL',  name:'Apple',     disp:'AAPL',  desc:'消费电子生态护城河，Apple Intelligence 押注'},
         {sym:'MSFT',  name:'Microsoft', disp:'MSFT',  desc:'Azure 云端 + Copilot AI，企业软件王者'},
-        {sym:'GOOGL', name:'Google',    disp:'GOOGL', desc:'搜索广告霸主，Gemini AI 强力迎战'},
+        {sym:'GOOGL', name:'Google',    disp:'GOOGL', desc:'搜索广告霸主，生成式 AI 竞争加剧'},
         {sym:'META',  name:'Meta',      disp:'META',  desc:'社群广告巨头，Llama AI + AR 眼镜'},
         {sym:'AMZN',  name:'Amazon',    disp:'AMZN',  desc:'电商 + AWS 云端双引擎，AI 全面布局'},
         {sym:'NFLX',  name:'Netflix',   disp:'NFLX',  desc:'流媒体媒体获利转型先驱，广告层加速增长'},

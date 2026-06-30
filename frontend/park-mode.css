@@ -1859,7 +1859,7 @@ body.park-mode .education-preview-badge::before {
   font-size: 0.70rem;
 }
 
-/* ── 4. AI 建议 → NPC 向导对话框 ── */
+/* ── 4. 数据摘要 → NPC 向导对话框 ── */
 body.park-mode .advice-card {
   background: rgba(4,12,34,0.96);
   border: 1.5px solid rgba(80,160,255,0.22) !important;
@@ -1889,7 +1889,7 @@ body.park-mode .advice-icon {
 /* NPC name replace */
 body.park-mode .advice-title { font-size: 0 !important; }
 body.park-mode .advice-title::before {
-  content: '?? AI 向导';
+  content: '知识向导';
   font-size: 1rem;
   font-weight: 900;
   color: #fff;
